@@ -1,0 +1,24 @@
+<main class="login-page">
+  <section class="login-card" aria-labelledby="login-title">
+    <a class="login-brand" href="/" aria-label="BERETA, accueil"><span class="login-mark">B</span><span>bereta<span class="brand-dot">.</span></span></a>
+    <p class="login-eyebrow">VOTRE ESPACE ASSOCIATIF</p>
+    <h1 id="login-title">Ravi de vous revoir</h1>
+    <p class="login-intro">Connectez-vous pour gérer les membres et les cotisations de votre association.</p>
+
+    @if (errorMessage()) { <p class="login-error" role="alert">{{ errorMessage() }}</p> }
+
+    <form (ngSubmit)="submit()">
+      <label for="login-email">Adresse e-mail</label>
+      <input id="login-email" name="email" type="email" [(ngModel)]="email" autocomplete="username" required autofocus />
+
+      <div class="password-label"><label for="login-password">Mot de passe</label></div>
+      <input id="login-password" name="password" type="password" [(ngModel)]="password" autocomplete="current-password" required />
+
+      <button class="login-submit" type="submit" [disabled]="isSubmitting()">{{ isSubmitting() ? 'Connexion…' : 'Se connecter' }}</button>
+    </form>
+
+    <p class="login-help">Votre accès est créé par le responsable de l’association. Contactez-le si vous n’avez pas encore de compte.</p>
+    <p class="login-security"><span aria-hidden="true">▣</span> Connexion sécurisée</p>
+  </section>
+  <p class="login-footer">BERETA · Gestion des cotisations associatives</p>
+</main>

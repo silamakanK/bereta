@@ -1,0 +1,122 @@
+<section class="fund-setup" aria-labelledby="fund-setup-title">
+  <header class="setup-header">
+    <div>
+      <p class="setup-eyebrow">CONFIGURATION</p>
+      <h2 id="fund-setup-title">Caisses et campagnes</h2>
+      <p>Organisez les caisses et définissez les cotisations attendues.</p>
+    </div>
+    <button class="setup-close" type="button" (click)="close.emit()" aria-label="Fermer la configuration">×</button>
+  </header>
+
+  @if (errorMessage()) { <p class="setup-message setup-error" role="alert">{{ errorMessage() }}</p> }
+  @if (successMessage()) { <p class="setup-message setup-success" role="status">{{ successMessage() }}</p> }
+
+  @if (isLoading()) {
+    <div class="setup-loading">Chargement de la configuration…</div>
+  } @else {
+    <div class="setup-grid">
+      <article class="setup-card">
+        <div class="setup-card-heading">
+          <span class="setup-card-icon primary-icon" aria-hidden="true">▤</span>
+          <div><h3>Caisses principales</h3><p>Chaque caisse porte un objectif associatif.</p></div>
+        </div>
+        <button class="setup-add" type="button" (click)="primaryFormOpen.set(!primaryFormOpen())">
+          {{ primaryFormOpen() ? 'Fermer' : '＋ Créer une caisse principale' }}
+        </button>
+        @if (primaryFormOpen()) {
+          <form class="setup-form" (ngSubmit)="createPrimaryFund()">
+            <label>Nom de la caisse *<input name="primaryName" [(ngModel)]="primaryName" required maxlength="100" placeholder="Ex. Solidarité et rapatriement" /></label>
+            <label>Objectif *<input name="primaryObjective" [(ngModel)]="primaryObjective" required maxlength="180" placeholder="À quoi sert cette caisse ?" /></label>
+            <label>Description <span class="optional">(facultative)</span><textarea name="primaryDescription" [(ngModel)]="primaryDescription" maxlength="1000" rows="2" placeholder="Informations complémentaires"></textarea></label>
+            <button class="setup-submit" type="submit" [disabled]="saving()">{{ saving() ? 'Enregistrement…' : 'Créer la caisse' }}</button>
+          </form>
+        }
+        <div class="setup-list" aria-live="polite">
+          @for (fund of primaryFunds(); track fund.id) {
+            <div class="setup-list-item"><span class="list-marker primary-marker">●</span><div><strong>{{ fund.name }}</strong><small>{{ fund.objective }}</small></div></div>
+          } @empty {
+            <p class="setup-empty">Aucune caisse principale pour le moment.</p>
+          }
+        </div>
+      </article>
+
+      <article class="setup-card">
+        <div class="setup-card-heading">
+          <span class="setup-card-icon local-icon" aria-hidden="true">⌂</span>
+          <div><h3>Caisses locales</h3><p>Rattachez une caisse locale à une caisse principale.</p></div>
+        </div>
+        @if (primaryFunds().length > 0) {
+          <label class="select-label">Caisse principale
+            <select name="selectedLocalParent" [(ngModel)]="selectedPrimaryFundId" (ngModelChange)="onPrimaryFundChange($event)">
+              @for (fund of primaryFunds(); track fund.id) { <option [value]="fund.id">{{ fund.name }}</option> }
+            </select>
+          </label>
+          <button class="setup-add" type="button" (click)="localFormOpen.set(!localFormOpen())">
+            {{ localFormOpen() ? 'Fermer' : '＋ Ajouter une caisse locale' }}
+          </button>
+          @if (localFormOpen()) {
+            <form class="setup-form" (ngSubmit)="createLocalFund()">
+              <label>Nom de la caisse locale *<input name="localFundName" [(ngModel)]="localFundName" required maxlength="100" placeholder="Ex. Caisse de Mamadou" /></label>
+              <button class="setup-submit" type="submit" [disabled]="saving()">{{ saving() ? 'Enregistrement…' : 'Créer la caisse locale' }}</button>
+            </form>
+          }
+          <div class="setup-list" aria-live="polite">
+            @for (fund of localFunds(); track fund.id) {
+              <div class="setup-list-item"><span class="list-marker local-marker">●</span><div><strong>{{ fund.name }}</strong><small>{{ fund.primaryFundName }}</small></div></div>
+            } @empty {
+              <p class="setup-empty">Aucune caisse locale rattachée.</p>
+            }
+          </div>
+        } @else {
+          <p class="setup-empty">Créez d’abord une caisse principale.</p>
+        }
+      </article>
+
+      <article class="setup-card campaigns-card">
+        <div class="setup-card-heading">
+          <span class="setup-card-icon campaign-icon" aria-hidden="true">◷</span>
+          <div><h3>Campagnes de cotisation</h3><p>Une campagne annuelle ou dédiée à un événement.</p></div>
+        </div>
+        @if (primaryFunds().length > 0) {
+          <button class="setup-add" type="button" (click)="campaignFormOpen.set(!campaignFormOpen())">
+            {{ campaignFormOpen() ? 'Fermer' : '＋ Créer une campagne' }}
+          </button>
+          @if (campaignFormOpen()) {
+            <form class="setup-form campaign-form" (ngSubmit)="createCampaign()">
+              <label>Caisse principale *
+                <select name="campaignParent" [(ngModel)]="selectedPrimaryFundId" (ngModelChange)="onPrimaryFundChange($event)" required>
+                  @for (fund of primaryFunds(); track fund.id) { <option [value]="fund.id">{{ fund.name }}</option> }
+                </select>
+              </label>
+              <label>Type de campagne *
+                <select name="campaignType" [(ngModel)]="campaignType">
+                  <option value="ANNUAL">Annuelle</option><option value="EVENT">Événement</option>
+                </select>
+              </label>
+              <label>Nom de la campagne *<input name="campaignName" [(ngModel)]="campaignName" required maxlength="120" placeholder="Ex. Cotisation 2026" /></label>
+              @if (campaignType === 'ANNUAL') {
+                <label>Année *<input name="campaignYear" type="number" [(ngModel)]="campaignYear" required min="2000" max="2200" /></label>
+              }
+              <label>Montant attendu {{ campaignType === 'ANNUAL' ? '*' : '(facultatif)' }}<input name="campaignAmount" type="text" inputmode="decimal" [(ngModel)]="campaignAmount" [required]="campaignType === 'ANNUAL'" pattern="[0-9]+([.,][0-9]{1,2})?" placeholder="Ex. 30,00" /></label>
+              <label>Échéance <span class="optional">(facultative)</span><input name="campaignDueDate" type="date" [(ngModel)]="campaignDueDate" /></label>
+              <button class="setup-submit campaign-submit" type="submit" [disabled]="saving()">{{ saving() ? 'Enregistrement…' : 'Créer la campagne' }}</button>
+            </form>
+          }
+        } @else {
+          <p class="setup-empty">Créez une caisse principale avant ses campagnes.</p>
+        }
+        <div class="campaign-list" aria-live="polite">
+          @for (campaign of campaigns(); track campaign.id) {
+            <div class="campaign-row">
+              <span class="campaign-type" [class.event-type]="campaign.campaignType === 'EVENT'">{{ campaignTypeLabel(campaign.campaignType) }}</span>
+              <div class="campaign-name"><strong>{{ campaign.name }}</strong><small>{{ campaign.primaryFundName }}{{ campaign.campaignYear ? ' · ' + campaign.campaignYear : '' }}</small></div>
+              <div class="campaign-amount"><strong>{{ campaign.expectedAmount === null ? 'À définir' : (campaign.expectedAmount | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR') }}</strong><small>{{ campaign.dueDate ? ('Échéance ' + (campaign.dueDate | date:'d MMM y':'':'fr-FR')) : 'Sans échéance' }}</small></div>
+            </div>
+          } @empty {
+            <p class="setup-empty">Aucune campagne créée pour le moment.</p>
+          }
+        </div>
+      </article>
+    </div>
+  }
+</section>

@@ -1,0 +1,221 @@
+@if (isCheckingSession()) {
+  <main class="session-check" role="status"><span class="session-spinner"></span>Vérification de votre connexion…</main>
+} @else if (currentUser()) {
+<div class="app-shell">
+  <aside class="sidebar" aria-label="Navigation principale">
+    <a class="brand" href="#accueil" aria-label="BERETA, accueil">
+      <span class="brand-mark" aria-hidden="true">B</span>
+      <span class="brand-name">bereta<span>.</span></span>
+    </a>
+
+    <div class="workspace-label">ESPACE TRÉSORIER</div>
+    <nav class="main-nav">
+      <a class="nav-link is-active" href="#accueil" aria-current="page">
+        <span class="nav-icon" aria-hidden="true">⌂</span><span>Ma caisse</span>
+      </a>
+          <a class="nav-link" href="#membres"><span class="nav-icon" aria-hidden="true">♙</span><span>Membres</span></a>
+      <a class="nav-link" href="#paiements"><span class="nav-icon" aria-hidden="true">↗</span><span>Paiements</span></a>
+      <a class="nav-link" href="#bilans"><span class="nav-icon" aria-hidden="true">▤</span><span>Bilans</span></a>
+    </nav>
+
+    <div class="sidebar-bottom">
+      <div class="help-card">
+        <span class="help-spark" aria-hidden="true">✳</span>
+        <strong>Besoin d’aide ?</strong>
+        <p>Nous sommes là pour vous accompagner.</p>
+        <a href="mailto:aide@bereta.fr">Contacter l’équipe <span aria-hidden="true">→</span></a>
+      </div>
+      <button class="profile-button" type="button" (click)="logout()" aria-label="Se déconnecter">
+        <span class="avatar">{{ userInitials() }}</span>
+        <span class="profile-copy"><strong>{{ userDisplayName() }}</strong><small>{{ roleLabel() }} · Déconnexion</small></span>
+        <span class="profile-menu" aria-hidden="true">↪</span>
+      </button>
+    </div>
+  </aside>
+
+  <main class="main-content" id="accueil">
+    <header class="topbar">
+      <div class="breadcrumb"><span>Mon espace</span><span aria-hidden="true">/</span><strong>Ma caisse</strong></div>
+      <div class="topbar-right">
+        <span class="demo-badge"><span></span> Démonstration</span>
+        <button class="icon-button notification-button" type="button" aria-label="Notifications">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg>
+          <i></i>
+        </button>
+        <span class="avatar top-avatar" aria-hidden="true">{{ userInitials() }}</span>
+      </div>
+    </header>
+
+    <div class="page-content">
+      <section class="welcome-row" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">{{ today | date:'EEEE d MMMM y':'':'fr-FR' | uppercase }}</p>
+          <h1 id="page-title">Bonjour {{ userDisplayName() }} <span aria-hidden="true">✳</span></h1>
+          <p class="welcome-subtitle">Voici la situation de votre caisse aujourd’hui.</p>
+        </div>
+        <button class="primary-button" type="button">
+          <span class="button-plus" aria-hidden="true">＋</span> Enregistrer un paiement
+        </button>
+      </section>
+
+      <section class="fund-banner" aria-label="Caisse et campagne sélectionnées">
+        <div class="fund-icon" aria-hidden="true">
+          <svg viewBox="0 0 40 40"><path d="M20 4 4 12v3h32v-3L20 4Zm-12 14v11m8-11v11m8-11v11m8-11v11M5 33h30v3H5z" /></svg>
+        </div>
+        <div class="fund-info">
+          <span class="fund-label">VOTRE CAISSE LOCALE</span>
+          <strong>{{ selectedFund() }}</strong>
+        </div>
+        <span class="fund-divider" aria-hidden="true"></span>
+        <div class="campaign-info"><span class="fund-label">CAMPAGNE EN COURS</span><strong>Année 2026</strong></div>
+        <button class="change-campaign" type="button" [attr.aria-label]="showFundSetup() ? 'Fermer la gestion des caisses' : 'Gérer les caisses'" [attr.aria-expanded]="showFundSetup()" (click)="showFundSetup.set(!showFundSetup())">
+          <span class="change-campaign-icon" aria-hidden="true">{{ showFundSetup() ? '×' : '＋' }}</span>
+        </button>
+      </section>
+
+      @if (showFundSetup()) { <app-fund-setup (close)="showFundSetup.set(false)" /> }
+
+      <section class="stats-grid" aria-label="Résumé de la caisse">
+        <article class="stat-card">
+          <div class="stat-top"><span class="stat-icon people" aria-hidden="true">♙</span><span class="stat-note">Caisse locale</span></div>
+          <p class="stat-label">Membres suivis</p><strong class="stat-value">{{ members().length }}</strong>
+          <span class="stat-foot">dans votre caisse locale</span>
+        </article>
+        <article class="stat-card">
+          <div class="stat-top"><span class="stat-icon collected" aria-hidden="true">€</span><span class="stat-note">Campagne 2026</span></div>
+          <p class="stat-label">Cotisations encaissées</p><strong class="stat-value">{{ 960 | currency:'EUR':'symbol-narrow':'1.0-0':'fr-FR' }}</strong>
+          <div class="progress-track" role="progressbar" aria-label="Progression des cotisations encaissées" aria-valuenow="64" aria-valuemin="0" aria-valuemax="100"><span></span></div>
+          <span class="stat-foot">64 % de l’objectif de la campagne</span>
+        </article>
+        <article class="stat-card">
+          <div class="stat-top"><span class="stat-icon due" aria-hidden="true">◷</span><span class="stat-note">32 membres concernés</span></div>
+          <p class="stat-label">Reste à collecter</p><strong class="stat-value">{{ 540 | currency:'EUR':'symbol-narrow':'1.0-0':'fr-FR' }}</strong>
+          <span class="stat-foot">sur les cotisations attendues</span>
+        </article>
+        <article class="stat-card held-card">
+          <div class="stat-top"><span class="stat-icon held" aria-hidden="true">▣</span><span class="held-status"><i></i> À jour</span></div>
+          <p class="stat-label">Argent détenu</p><strong class="stat-value">{{ 720 | currency:'EUR':'symbol-narrow':'1.0-0':'fr-FR' }}</strong>
+          <span class="stat-foot">dans votre caisse locale</span>
+        </article>
+      </section>
+
+      <section class="content-grid">
+        <article class="panel members-panel" id="membres">
+          <div class="panel-heading">
+            <div><h2>Membres de votre caisse</h2><p>Recherchez ou ajoutez un membre à votre liste.</p></div>
+            <button class="text-button" type="button" (click)="showMemberForm() ? closeMemberForm() : openCreateForm()">
+              {{ showMemberForm() ? 'Fermer le formulaire' : '＋ Ajouter un membre' }}
+            </button>
+          </div>
+          <label class="search-box">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
+            <input type="search" placeholder="Rechercher un nom ou un numéro…" [value]="searchTerm()" (input)="updateSearch($event)" aria-label="Rechercher un membre par nom ou téléphone" />
+            <kbd>⌘ K</kbd>
+          </label>
+
+          @if (showMemberForm()) {
+            <form class="member-form" (ngSubmit)="saveMember()">
+              <div class="form-heading"><strong>{{ editingMemberId() ? 'Modifier la fiche membre' : 'Ajouter un membre' }}</strong><span>Les champs marqués * sont obligatoires.</span></div>
+              <div class="form-fields">
+                <label>Prénom *<input name="firstName" [(ngModel)]="firstName" required maxlength="100" autocomplete="given-name" /></label>
+                <label>Nom *<input name="lastName" [(ngModel)]="lastName" required maxlength="100" autocomplete="family-name" /></label>
+                <label>Téléphone <span class="optional-label">(facultatif)</span><input name="phone" [(ngModel)]="phone" maxlength="30" autocomplete="tel" inputmode="tel" /></label>
+              </div>
+              <div class="form-actions"><button class="cancel-button" type="button" (click)="closeMemberForm()">Annuler</button><button class="primary-button form-submit" type="submit" [disabled]="isSaving()">{{ isSaving() ? 'Enregistrement…' : editingMemberId() ? 'Enregistrer les modifications' : 'Enregistrer le membre' }}</button></div>
+            </form>
+          }
+          @if (loadErrorMessage()) { <p class="api-message api-error" role="alert">{{ loadErrorMessage() }} <button type="button" (click)="loadMembers()">Réessayer</button></p> }
+          @if (saveErrorMessage()) { <p class="api-message api-error" role="alert">{{ saveErrorMessage() }}</p> }
+          @if (successMessage()) { <p class="api-message api-success" role="status">{{ successMessage() }}</p> }
+
+          <div class="member-list" aria-live="polite">
+            @if (isLoading()) {
+              <div class="member-state"><span class="loading-dot"></span>Chargement des membres…</div>
+            } @else {
+            @for (member of filteredMembers(); track member.id) {
+              <article class="member-row">
+                <span class="member-avatar">{{ initials(member) }}</span>
+                <div class="member-name"><strong>{{ member.firstName }} {{ member.lastName }}</strong><span>{{ member.phone || 'Aucun téléphone renseigné' }}</span></div>
+                <div class="member-created"><span>Ajouté le</span><strong>{{ member.createdAt | date:'d MMM y':'':'fr-FR' }}</strong></div>
+                <span class="member-status"><i></i> Inscrit</span>
+                <div class="member-actions">
+                  <button class="edit-member-button" type="button" (click)="openEditForm(member)" [attr.aria-label]="'Modifier la fiche de ' + member.firstName + ' ' + member.lastName">Modifier</button>
+                  <button class="enroll-member-button" type="button" (click)="openEnrollment(member)" [attr.aria-label]="'Inscrire ' + member.firstName + ' ' + member.lastName + ' à une campagne'">Inscrire</button>
+                </div>
+              </article>
+            } @empty {
+              <div class="empty-state"><span aria-hidden="true">⌕</span><strong>{{ searchTerm() ? 'Aucun membre trouvé' : 'La liste est encore vide' }}</strong><p>{{ searchTerm() ? 'Essayez avec un autre nom ou numéro de téléphone.' : 'Ajoutez le premier membre de votre caisse.' }}</p></div>
+            }
+            }
+          </div>
+          @if (selectedMemberForEnrollment(); as selectedMember) {
+            <section class="member-enrollment" aria-labelledby="enrollment-title">
+              <div class="enrollment-heading">
+                <div><h3 id="enrollment-title">Inscrire {{ selectedMember.firstName }} {{ selectedMember.lastName }}</h3><p>Choisissez une campagne et la caisse locale qui la suit.</p></div>
+                <button class="enrollment-close" type="button" (click)="closeEnrollment()" aria-label="Fermer l’inscription">×</button>
+              </div>
+              @if (isLoadingEnrollments()) {
+                <div class="member-state">Chargement des campagnes…</div>
+              } @else {
+                @if (enrollmentErrorMessage()) { <p class="api-message api-error" role="alert">{{ enrollmentErrorMessage() }}</p> }
+                @if (enrollmentSuccessMessage()) { <p class="api-message api-success" role="status">{{ enrollmentSuccessMessage() }}</p> }
+                @if (enrollmentCampaigns().length > 0) {
+                  <form class="enrollment-form" (ngSubmit)="enrollMember()">
+                    <label>Campagne *
+                      <select name="enrollmentCampaign" [(ngModel)]="selectedCampaignId" (ngModelChange)="onEnrollmentCampaignChange($event)" required>
+                        @for (campaign of enrollmentCampaigns(); track campaign.id) { <option [value]="campaign.id">{{ campaignLabel(campaign) }}</option> }
+                      </select>
+                    </label>
+                    <label>Caisse locale *
+                      <select name="enrollmentLocalFund" [(ngModel)]="selectedEnrollmentLocalFundId" [disabled]="enrollmentLocalFunds().length === 0" required>
+                        @for (fund of enrollmentLocalFunds(); track fund.id) { <option [value]="fund.id">{{ fund.name }}</option> }
+                      </select>
+                    </label>
+                    @if (enrollmentLocalFunds().length === 0) { <p class="enrollment-hint">Créez d’abord une caisse locale pour la caisse principale de cette campagne.</p> }
+                    <button class="primary-button enrollment-submit" type="submit" [disabled]="isSavingEnrollment() || enrollmentLocalFunds().length === 0">{{ isSavingEnrollment() ? 'Inscription…' : 'Inscrire à cette campagne' }}</button>
+                  </form>
+                } @else {
+                  <p class="enrollment-hint">Créez d’abord une caisse principale, une caisse locale et une campagne.</p>
+                }
+                <div class="enrollment-history">
+                  <strong>Campagnes de ce membre</strong>
+                  @for (enrollment of memberEnrollments(); track enrollment.id) {
+                    <div class="enrollment-history-row"><span>{{ enrollment.campaignName }}{{ enrollment.campaignYear ? ' · ' + enrollment.campaignYear : '' }}</span><small>{{ enrollment.localFundName }} · {{ enrollment.expectedAmount === null ? 'Montant à définir' : (enrollment.expectedAmount | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR') }}</small></div>
+                  } @empty {
+                    <p class="enrollment-empty">Aucune campagne pour ce membre.</p>
+                  }
+                </div>
+              }
+            </section>
+          }
+          @if (!isLoading() && members().length > 0) { <p class="member-count">{{ members().length }} membre{{ members().length > 1 ? 's' : '' }} enregistré{{ members().length > 1 ? 's' : '' }}</p> }
+        </article>
+
+        <aside class="side-panels">
+          <article class="panel quick-panel">
+            <div class="panel-heading compact-heading"><div><h2>Actions rapides</h2><p>Les tâches les plus courantes</p></div></div>
+            <button class="quick-action" type="button"><span class="quick-icon quick-search" aria-hidden="true">⌕</span><span><strong>Rechercher un membre</strong><small>Consulter son suivi</small></span><b aria-hidden="true">→</b></button>
+            <button class="quick-action" type="button"><span class="quick-icon quick-pay" aria-hidden="true">＋</span><span><strong>Enregistrer un paiement</strong><small>Saisir une cotisation reçue</small></span><b aria-hidden="true">→</b></button>
+            <button class="quick-action" type="button"><span class="quick-icon quick-import" aria-hidden="true">↑</span><span><strong>Importer mon cahier</strong><small>Photo, PDF, Excel ou CSV</small></span><b aria-hidden="true">→</b></button>
+          </article>
+
+          <article class="reminder-card">
+            <span class="reminder-icon" aria-hidden="true">✳</span>
+            <div><strong>Votre bilan semestriel approche</strong><p>Préparez la prochaine réunion en consultant les paiements et remises de votre caisse.</p><button type="button">Consulter mon bilan <span aria-hidden="true">→</span></button></div>
+          </article>
+        </aside>
+      </section>
+      <p class="demo-disclaimer">Les indicateurs financiers sont des exemples ; la liste des membres vient du backend.</p>
+    </div>
+  </main>
+
+  <nav class="mobile-nav" aria-label="Navigation mobile">
+    <a class="mobile-nav-item is-active" href="#accueil" aria-current="page"><span aria-hidden="true">⌂</span>Ma caisse</a>
+    <a class="mobile-nav-item" href="#membres"><span aria-hidden="true">♙</span>Membres</a>
+    <a class="mobile-nav-item" href="#paiements"><span aria-hidden="true">↗</span>Paiements</a>
+    <a class="mobile-nav-item" href="#bilans"><span aria-hidden="true">▤</span>Bilans</a>
+  </nav>
+</div>
+} @else {
+  <app-login (signedIn)="onAuthenticated($event)" />
+}
