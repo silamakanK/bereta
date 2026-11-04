@@ -14,6 +14,37 @@ export interface LocalFund {
   createdAt: string;
 }
 
+export interface FundMembership {
+  id: string;
+  userId: string;
+  email: string | null;
+  phone: string | null;
+  displayName: string;
+  role: 'RESPONSABLE' | 'TRESORIER';
+  localFundId: string | null;
+  localFundName: string | null;
+  createdAt: string;
+}
+
+export interface DesignateTreasurerRequest {
+  localFundId: string;
+  phone: string;
+  firstName?: string;
+  lastName?: string;
+}
+
+/** temporaryPassword n'est fourni qu'une fois, à la création du compte. */
+export interface TreasurerDesignation {
+  membership: FundMembership;
+  accountCreated: boolean;
+  temporaryPassword: string | null;
+}
+
+export interface TemporaryPassword {
+  temporaryPassword: string;
+  maskedPhone: string | null;
+}
+
 export type CampaignType = 'ANNUAL' | 'EVENT';
 
 export interface Campaign {

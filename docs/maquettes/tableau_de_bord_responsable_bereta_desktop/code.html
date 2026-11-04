@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+
+<html lang="fr"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"surface-container-high":"#e2e7ff","on-tertiary":"#ffffff","on-primary-fixed":"#00210b","surface-container-low":"#f2f3ff","surface-tint":"#1f6c3a","on-surface-variant":"#404940","on-primary-container":"#93e0a2","tertiary":"#653400","tertiary-container":"#874700","on-secondary-fixed":"#00174b","primary-container":"#166534","on-tertiary-fixed":"#2f1500","on-secondary":"#ffffff","surface-variant":"#dae2fd","secondary":"#0051d5","on-surface":"#131b2e","inverse-primary":"#8bd79b","inverse-on-surface":"#eef0ff","on-background":"#131b2e","on-error-container":"#93000a","secondary-fixed":"#dbe1ff","primary":"#004c22","on-secondary-fixed-variant":"#003ea8","on-primary":"#ffffff","on-primary-fixed-variant":"#005226","surface-bright":"#faf8ff","surface-dim":"#d2d9f4","background":"#faf8ff","surface-container":"#eaedff","outline-variant":"#bfc9bd","tertiary-fixed-dim":"#ffb77d","error":"#ba1a1a","on-error":"#ffffff","primary-fixed-dim":"#8bd79b","surface":"#faf8ff","on-tertiary-fixed-variant":"#6e3900","on-tertiary-container":"#ffc292","secondary-container":"#316bf3","outline":"#707a6f","on-secondary-container":"#fefcff","primary-fixed":"#a6f4b5","surface-container-highest":"#dae2fd","surface-container-lowest":"#ffffff","error-container":"#ffdad6","inverse-surface":"#283044","secondary-fixed-dim":"#b4c5ff","tertiary-fixed":"#ffdcc3"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-xs":"0.375rem","space-sm":"0.75rem","gutter-desktop":"2rem","margin":"1rem","gutter-tablet":"1.5rem","space-xl":"2.25rem","margin-desktop":"3rem","space-lg":"1.5rem","gutter":"1rem","space-md":"1rem","margin-tablet":"2rem"},"fontFamily":{"headline-lg-mobile":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"amount-display":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"body-bold":["Plus Jakarta Sans"]},"fontSize":{"headline-lg-mobile":["26px",{"lineHeight":"34px","fontWeight":"700"}],"headline-md":["24px",{"lineHeight":"32px","fontWeight":"700"}],"amount-display":["36px",{"lineHeight":"44px","fontWeight":"800"}],"headline-sm":["20px",{"lineHeight":"28px","fontWeight":"600"}],"label-lg":["16px",{"lineHeight":"24px","fontWeight":"600"}],"label-md":["14px",{"lineHeight":"20px","fontWeight":"600"}],"body-md":["16px",{"lineHeight":"26px","fontWeight":"400"}],"headline-lg":["32px",{"lineHeight":"40px","fontWeight":"700"}],"body-lg":["18px",{"lineHeight":"28px","fontWeight":"500"}],"body-bold":["16px",{"lineHeight":"26px","fontWeight":"600"}]}}}}</script></head><body class="bg-surface font-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-72 bg-primary-container z-50 flex flex-col justify-between py-6 px-4 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col gap-6"><div class="flex items-center gap-3 px-3"><img alt="Brand logo. - Primary color: #166534
+- Font: plusJakartaSans
+- Mode: light
+- Roundness: rounded-md
+" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VQIKpwXVoOA5VKNZPTCYn2JkXpoRSqsXUDDj9lU42mgNcOA6_vTlrkdajYpV3mDv93r9Z_0bn4t27xAyh5lPp25AeuYUAhp_iZdI56LEkh1NlJAt15xcqre2QWwsI7__l3EM-pxDhtzRLjLWfVULVEx-Joq58rLyS2-71PyXJZFIECPl5wgBO9QG_6cqRjaiigc2oNCSZLpR92k8SkwWQbsENa1R97kSh3jMphQjYt5a-LyPfGiZ9m4Nk"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-primary tracking-wide">BERETA</span><span class="font-label-md text-label-md text-on-primary-container leading-none">Tontines &amp; Cotisations</span></div></div><div class="h-px bg-white/10 mx-2"></div><nav class="flex flex-col gap-1" data-active-classes="bg-surface-container-lowest text-primary font-body-bold rounded-lg shadow-sm"><a aria-current="page" class="flex items-center gap-3 px-3 py-3 transition-colors bg-surface-container-lowest text-primary font-body-bold rounded-lg shadow-sm" data-path="tableau-de-bord" href="#"><span class="material-symbols-outlined text-[22px]">dashboard</span><span>Tableau de bord</span></a><a class="flex items-center gap-3 px-3 py-3 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors font-body-md text-body-md" data-path="caisses-locales" href="#"><span class="material-symbols-outlined text-[22px]">account_balance_wallet</span><span>Caisses Locales</span></a><a class="flex items-center gap-3 px-3 py-3 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors font-body-md text-body-md" data-path="campagnes-de-cotisation" href="#"><span class="material-symbols-outlined text-[22px]">event_repeat</span><span>Campagnes de Cotisation</span></a><a class="flex items-center gap-3 px-3 py-3 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors font-body-md text-body-md" data-path="membres-et-cotisants" href="#"><span class="material-symbols-outlined text-[22px]">group</span><span>Membres &amp; Cotisants</span></a><a class="flex items-center gap-3 px-3 py-3 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors font-body-md text-body-md" data-path="imports-et-cahiers" href="#"><span class="material-symbols-outlined text-[22px]">menu_book</span><span>Imports &amp; Cahiers</span></a><a class="flex items-center gap-3 px-3 py-3 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors font-body-md text-body-md" data-path="rapports-et-grand-livre" href="#"><span class="material-symbols-outlined text-[22px]">analytics</span><span>Rapports &amp; Grand Livre</span></a><a class="flex items-center gap-3 px-3 py-3 rounded-lg text-white/90 hover:bg-white/10 hover:text-white transition-colors font-body-md text-body-md" data-path="parametres" href="#"><span class="material-symbols-outlined text-[22px]">settings</span><span>Paramètres</span></a></nav></div><div class="px-3"><div class="bg-white/10 rounded-lg p-3 flex items-center justify-between"><div class="flex flex-col"><span class="font-label-md text-label-md text-on-primary">Sécurisé &amp; Intègre</span><span class="font-label-md text-label-md text-on-primary-container text-xs">Système d'audit actif</span></div><span class="material-symbols-outlined text-on-primary-container text-[20px]">verified_user</span></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-20 bg-surface/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40"><div class="h-20 w-full px-8 flex items-center justify-between gap-4"><div class="flex items-center gap-3"><img alt="Brand logo. - Primary color: #166534
+- Font: plusJakartaSans
+- Mode: light
+- Roundness: rounded-md
+" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VQIKpwXVoOA5VKNZPTCYn2JkXpoRSqsXUDDj9lU42mgNcOA6_vTlrkdajYpV3mDv93r9Z_0bn4t27xAyh5lPp25AeuYUAhp_iZdI56LEkh1NlJAt15xcqre2QWwsI7__l3EM-pxDhtzRLjLWfVULVEx-Joq58rLyS2-71PyXJZFIECPl5wgBO9QG_6cqRjaiigc2oNCSZLpR92k8SkwWQbsENa1R97kSh3jMphQjYt5a-LyPfGiZ9m4Nk"/><div class="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant font-label-md text-label-md"><span class="material-symbols-outlined text-[18px] text-primary">shield</span><span>Portail de Gestion Fédérée BERETA</span></div></div><div class="flex items-center gap-4"><div class="flex items-center gap-2 bg-surface-container-low px-3 py-2 rounded-lg"><span class="material-symbols-outlined text-primary text-[20px]">groups</span><div class="flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface-variant text-xs leading-none">Association</span><span class="font-body-bold text-body-bold text-on-surface text-xs leading-tight">Assoc. Développement Niogoméra</span></div><span class="material-symbols-outlined text-on-surface-variant text-[18px] ml-1">expand_more</span></div><div class="flex items-center gap-2 bg-surface-container-low px-3 py-2 rounded-lg"><span class="material-symbols-outlined text-secondary text-[20px]">calendar_today</span><div class="flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface-variant text-xs leading-none">Période</span><span class="font-body-bold text-body-bold text-on-surface text-xs leading-tight">Exercice 2025</span></div><span class="material-symbols-outlined text-on-surface-variant text-[18px] ml-1">expand_more</span></div><button class="relative p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[24px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-error rounded-full"></span></button><div class="h-8 w-px bg-surface-container-high"></div><div class="flex items-center gap-3 pl-2"><div class="flex flex-col text-right hidden md:flex"><span class="font-body-bold text-body-bold text-on-surface text-sm leading-tight">Samba Diakité</span><span class="font-label-md text-label-md text-on-surface-variant text-xs leading-tight">Responsable Général</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></div></header><main class="relative pt-20 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<div class="w-full max-w-[1440px] mx-auto px-6 py-8 flex flex-col gap-8">
+<!-- Top Bar: Header & Actions -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-2">
+<div class="flex flex-col gap-2">
+<div class="flex flex-wrap items-center gap-3">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Tableau de Bord Associatif</h1>
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high text-primary font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
+            Registre scellé SHA-256
+          </span>
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-md text-label-md">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+            3 Caisses locales
+          </span>
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-md text-label-md">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+            60 Membres inscrits
+          </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+          Association de Développement Niogoméra • Exercice budgétaire 2025 • Clôture trimestrielle Q1
+        </p>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-wrap items-center gap-3 shrink-0">
+<button class="h-[52px] px-5 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container transition-colors flex items-center gap-2.5 font-label-lg text-label-lg" type="button">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant">download</span>
+<span>Bilan Consolidé (PDF)</span>
+</button>
+<button class="h-[52px] px-5 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container transition-colors flex items-center gap-2.5 font-label-lg text-label-lg" type="button">
+<span class="material-symbols-outlined text-[20px] text-secondary">account_balance_wallet</span>
+<span>Créer une Caisse</span>
+</button>
+<button class="h-[52px] px-6 rounded-lg bg-primary-container text-on-primary shadow-md hover:opacity-95 transition-opacity flex items-center gap-2.5 font-label-lg text-label-lg" type="button">
+<span class="material-symbols-outlined text-[22px]">add_circle</span>
+<span>Lancer une Campagne</span>
+</button>
+</div>
+</div>
+<!-- 4 Key KPI Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+<!-- KPI 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm flex flex-col justify-between relative overflow-hidden group">
+<div class="flex items-start justify-between">
+<div class="flex flex-col gap-1">
+<span class="font-label-md text-label-md text-on-surface-variant">Total Collecté Exercice</span>
+<div class="flex items-baseline gap-2">
+<span class="font-amount-display text-amount-display text-on-surface tracking-tight">2 880,00 €</span>
+</div>
+</div>
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[26px]">savings</span>
+</div>
+</div>
+<div class="mt-4 pt-3 flex flex-col gap-2">
+<div class="flex items-center justify-between font-label-md text-label-md">
+<span class="text-on-surface-variant">Objectif: 3 600,00 €</span>
+<span class="text-primary font-body-bold">80 %</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 80%"></div>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-primary font-label-md mt-0.5">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span>+380,00 € comptabilisés ce mois</span>
+</div>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="flex items-start justify-between">
+<div class="flex flex-col gap-1">
+<span class="font-label-md text-label-md text-on-surface-variant">Fonds en Caisses Physiques</span>
+<div class="flex items-baseline gap-2">
+<span class="font-amount-display text-amount-display text-on-surface tracking-tight">280,00 €</span>
+</div>
+</div>
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-tertiary-container shrink-0">
+<span class="material-symbols-outlined text-[26px]">payments</span>
+</div>
+</div>
+<div class="mt-4 pt-3 flex flex-col gap-1.5">
+<div class="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-surface-container text-xs text-on-surface-variant font-label-md">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed-dim"></span>
+<span>2 sections détentrices d'espèces</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-tight">
+            En attente de remise bancaire ou décharge par les trésoriers locaux.
+          </p>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="flex items-start justify-between">
+<div class="flex flex-col gap-1">
+<span class="font-label-md text-label-md text-on-surface-variant">Taux de Recouvrement Membres</span>
+<div class="flex items-baseline gap-2">
+<span class="font-amount-display text-amount-display text-on-surface tracking-tight">80,0 %</span>
+</div>
+</div>
+<div class="w-12 h-12 rounded-xl bg-secondary-fixed flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined text-[26px]">group_add</span>
+</div>
+</div>
+<div class="mt-4 pt-3 flex flex-col gap-2">
+<div class="flex items-center justify-between font-label-md text-label-md">
+<span class="text-primary font-body-bold">48 à jour</span>
+<span class="text-error font-body-bold">12 en retard</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container overflow-hidden flex">
+<div class="h-full bg-primary-container" style="width: 80%"></div>
+<div class="h-full bg-error" style="width: 20%"></div>
+</div>
+<span class="text-xs text-on-surface-variant">Sur 60 cotisants communautaires actifs</span>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="flex items-start justify-between">
+<div class="flex flex-col gap-1">
+<span class="font-label-md text-label-md text-on-surface-variant">Conformité des Écritures</span>
+<div class="flex items-baseline gap-2">
+<span class="font-amount-display text-amount-display text-on-surface tracking-tight">98,4 %</span>
+</div>
+</div>
+<div class="w-12 h-12 rounded-xl bg-primary-fixed flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[26px]">verified_user</span>
+</div>
+</div>
+<div class="mt-4 pt-3 flex flex-col gap-1.5">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-surface-container text-xs text-primary font-body-bold">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+<span>100 % intégrité hash SHA-256</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-tight">
+            1 justificatif physique en attente de numérisation à Montreuil.
+          </p>
+</div>
+</div>
+</div>
+<!-- Main Content Layout (2/3 + 1/3) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- LEFT COLUMN (8 cols / 12) -->
+<div class="lg:col-span-8 flex flex-col gap-8">
+<!-- Monthly Collections Evolution Chart & Stats -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col gap-6">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<div class="flex flex-col">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Rythme des Encaissements Mensuels</h2>
+<span class="font-body-md text-body-md text-on-surface-variant">Comparatif réel consolidé vs prévisions d'appels de fonds 2025</span>
+</div>
+<div class="flex items-center gap-4 text-xs font-label-md">
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded-sm bg-primary-container"></span>
+<span class="text-on-surface">Cotisations encaissées</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded-sm bg-surface-container-high"></span>
+<span class="text-on-surface-variant">Objectif attendu</span>
+</div>
+</div>
+</div>
+<!-- CSS Bar Chart Component -->
+<div class="pt-6 pb-2">
+<div class="grid grid-cols-5 gap-4 sm:gap-8 items-end h-48 border-b border-surface-container px-2">
+<!-- Janvier -->
+<div class="flex flex-col items-center gap-2 h-full justify-end group">
+<span class="text-xs font-body-bold text-on-surface opacity-0 group-hover:opacity-100 transition-opacity">650 €</span>
+<div class="w-full flex items-end justify-center gap-1.5 h-full max-h-40">
+<div class="w-full sm:w-10 bg-primary-container rounded-t-lg transition-all" style="height: 72%;"></div>
+<div class="w-full sm:w-10 bg-surface-container-high rounded-t-lg transition-all" style="height: 90%;"></div>
+</div>
+<span class="font-label-md text-label-md text-on-surface">Janv</span>
+</div>
+<!-- Février -->
+<div class="flex flex-col items-center gap-2 h-full justify-end group">
+<span class="text-xs font-body-bold text-on-surface opacity-0 group-hover:opacity-100 transition-opacity">820 €</span>
+<div class="w-full flex items-end justify-center gap-1.5 h-full max-h-40">
+<div class="w-full sm:w-10 bg-primary-container rounded-t-lg transition-all" style="height: 92%;"></div>
+<div class="w-full sm:w-10 bg-surface-container-high rounded-t-lg transition-all" style="height: 90%;"></div>
+</div>
+<span class="font-label-md text-label-md text-on-surface">Févr</span>
+</div>
+<!-- Mars (Current) -->
+<div class="flex flex-col items-center gap-2 h-full justify-end group">
+<span class="text-xs font-body-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">960 €</span>
+<div class="w-full flex items-end justify-center gap-1.5 h-full max-h-40">
+<div class="w-full sm:w-10 bg-primary-container rounded-t-lg transition-all shadow-md" style="height: 100%;"></div>
+<div class="w-full sm:w-10 bg-surface-container-high rounded-t-lg transition-all" style="height: 90%;"></div>
+</div>
+<span class="font-label-md text-label-md text-primary font-body-bold">Mars *</span>
+</div>
+<!-- Avril (Projeté) -->
+<div class="flex flex-col items-center gap-2 h-full justify-end opacity-60 group">
+<span class="text-xs font-body-bold text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">250 € (est.)</span>
+<div class="w-full flex items-end justify-center gap-1.5 h-full max-h-40">
+<div class="w-full sm:w-10 bg-primary-container/40 rounded-t-lg transition-all" style="height: 28%;"></div>
+<div class="w-full sm:w-10 bg-surface-container-high rounded-t-lg transition-all" style="height: 90%;"></div>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Avr</span>
+</div>
+<!-- Mai (Projeté) -->
+<div class="flex flex-col items-center gap-2 h-full justify-end opacity-40 group">
+<span class="text-xs font-body-bold text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">0 €</span>
+<div class="w-full flex items-end justify-center gap-1.5 h-full max-h-40">
+<div class="w-full sm:w-10 bg-primary-container/20 rounded-t-lg transition-all" style="height: 5%;"></div>
+<div class="w-full sm:w-10 bg-surface-container-high rounded-t-lg transition-all" style="height: 90%;"></div>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Mai</span>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap items-center justify-between text-xs text-on-surface-variant pt-2 bg-surface-container-low p-3 rounded-lg">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-primary">insights</span>
+              Moyenne mensuelle constatée : <strong>810,00 €</strong> / mois
+            </span>
+<span>Date de clôture annuelle prévue : 31 Décembre 2025</span>
+</div>
+</div>
+<!-- Section: Campagnes de Cotisation Actives -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Campagnes de Cotisation Actives</h2>
+<span class="font-body-md text-body-md text-on-surface-variant">Suivi détaillé des appels à contribution votés en assemblée</span>
+</div>
+<a class="font-label-md text-label-md text-secondary hover:underline flex items-center gap-1" href="#">
+<span>Voir tout l'historique</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+<div class="flex flex-col gap-4">
+<!-- Campagne 1 -->
+<div class="p-5 rounded-xl bg-surface-container-low flex flex-col gap-4 hover:shadow-sm transition-shadow">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">Cotisation Annuelle 2025 - Projets &amp; Fonctionnement</span>
+<span class="px-2.5 py-0.5 rounded-full text-xs font-body-bold bg-primary/10 text-primary">En cours</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Appel obligatoire • Barème : 30,00 € par membre • Échéance 31 Mars 2025</span>
+</div>
+<div class="flex items-baseline gap-2 shrink-0">
+<span class="font-headline-sm text-headline-sm text-on-surface">1 350,00 €</span>
+<span class="text-sm text-on-surface-variant">/ 1 800,00 €</span>
+</div>
+</div>
+<!-- Progression bar -->
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between text-xs font-label-md">
+<span class="text-on-surface-variant">45 membres à jour (75 %)</span>
+<span class="text-error font-body-bold">15 cotisants en attente</span>
+</div>
+<div class="w-full h-3 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 75%"></div>
+</div>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+<div class="flex items-center gap-2">
+<div class="flex -space-x-2">
+<div class="w-7 h-7 rounded-full bg-primary text-on-primary text-xs flex items-center justify-center font-body-bold ring-2 ring-white">BC</div>
+<div class="w-7 h-7 rounded-full bg-secondary text-on-secondary text-xs flex items-center justify-center font-body-bold ring-2 ring-white">SD</div>
+<div class="w-7 h-7 rounded-full bg-tertiary-container text-on-tertiary text-xs flex items-center justify-center font-body-bold ring-2 ring-white">MS</div>
+</div>
+<span class="text-xs text-on-surface-variant">Dernier versement enregistré il y a 2h</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="h-10 px-3.5 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors font-label-md text-label-md flex items-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[18px]">sms</span>
+<span>Relancer par SMS (15)</span>
+</button>
+<button class="h-10 px-4 rounded-lg bg-surface-container-lowest text-primary font-body-bold hover:bg-surface-container transition-colors font-label-md text-label-md flex items-center gap-1 shadow-sm" type="button">
+<span>Voir détail</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Campagne 2 -->
+<div class="p-5 rounded-xl bg-surface-container-low flex flex-col gap-4">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">Solidarité Rapatriement Mali 2025</span>
+<span class="px-2.5 py-0.5 rounded-full text-xs font-body-bold bg-primary-fixed text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+                      Soldé &amp; Scellé
+                    </span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Fonds de prévoyance communautaire • 18,00 € par membre</span>
+</div>
+<div class="flex items-baseline gap-2 shrink-0">
+<span class="font-headline-sm text-headline-sm text-primary">1 080,00 €</span>
+<span class="text-sm text-on-surface-variant">/ 1 080,00 €</span>
+</div>
+</div>
+<!-- Progression bar full -->
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between text-xs font-label-md">
+<span class="text-primary font-body-bold">100 % Collecté (60 / 60 membres à jour)</span>
+<span class="text-on-surface-variant">0 retard</span>
+</div>
+<div class="w-full h-3 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 100%"></div>
+</div>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+<div class="flex items-center gap-2 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] text-primary">verified</span>
+<span>Fonds virés sur compte séquestre bancaire Niogoméra</span>
+</div>
+<button class="h-10 px-4 rounded-lg bg-surface-container-lowest text-on-surface font-body-bold hover:bg-surface-container transition-colors font-label-md text-label-md flex items-center gap-1 shadow-sm" type="button">
+<span>Certificat de Clôture</span>
+<span class="material-symbols-outlined text-[16px]">receipt_long</span>
+</button>
+</div>
+</div>
+<!-- Campagne 3 -->
+<div class="p-4 rounded-xl bg-surface-container-low/70 flex items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">archive</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-bold text-body-bold text-on-surface">Urgence Inondation Hivernage 2024</span>
+<span class="text-xs text-on-surface-variant">450,00 € collectés • Bilan certifié et distribué au village</span>
+</div>
+</div>
+<span class="text-xs font-label-md px-3 py-1 rounded-full bg-surface-container text-on-surface-variant">Clôturée &amp; Archivée</span>
+</div>
+</div>
+</div>
+<!-- Section: État des Caisses Locales (Table) -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col gap-6">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex flex-col">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">État des Caisses Locales</h2>
+<span class="font-body-md text-body-md text-on-surface-variant">Réseau décentralisé des antennes de collecte de l'association</span>
+</div>
+<span class="text-xs font-label-md px-3 py-1.5 rounded-lg bg-surface-container text-primary font-body-bold">
+              3 Sections rattachées
+            </span>
+</div>
+<!-- Responsive Table Container -->
+<div class="overflow-x-auto -mx-6 px-6">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-md text-label-md">
+<th class="py-3 px-4 rounded-l-lg">Caisse &amp; Emplacement</th>
+<th class="py-3 px-4">Trésorier désigné</th>
+<th class="py-3 px-4 text-center">Cotisants</th>
+<th class="py-3 px-4 text-right">Espèces Détenues</th>
+<th class="py-3 px-4 text-center">Taux</th>
+<th class="py-3 px-4 text-center">Statut</th>
+<th class="py-3 px-4 rounded-r-lg text-right">Action</th>
+</tr>
+</thead>
+<tbody class="text-on-surface font-body-md text-body-md">
+<!-- Caisse 1 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-4 px-4 font-body-bold">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary text-[20px]">domain</span>
+<div>
+<div class="text-on-surface font-body-bold">Foyer Saint-Denis</div>
+<div class="text-xs font-normal text-on-surface-variant">Section Rue du Landy</div>
+</div>
+</div>
+</td>
+<td class="py-4 px-4">
+<div class="text-xs font-body-bold text-on-surface">Mamadou Sissoko</div>
+<div class="text-xs text-on-surface-variant">06 55 44 33 22</div>
+</td>
+<td class="py-4 px-4 text-center">
+<span class="font-body-bold">34</span>
+<span class="text-xs text-on-surface-variant">membres</span>
+</td>
+<td class="py-4 px-4 text-right">
+<span class="font-body-bold text-on-surface">190,00 €</span>
+</td>
+<td class="py-4 px-4 text-center">
+<span class="px-2 py-1 rounded bg-surface-container font-label-md text-xs text-primary">82 %</span>
+</td>
+<td class="py-4 px-4 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-body-bold bg-primary/10 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                      En règle
+                    </span>
+</td>
+<td class="py-4 px-4 text-right">
+<button class="h-9 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors font-label-md text-xs text-on-surface" type="button">
+                      Détail caisse
+                    </button>
+</td>
+</tr>
+<!-- Caisse 2 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-4 px-4 font-body-bold">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-secondary text-[20px]">apartment</span>
+<div>
+<div class="text-on-surface font-body-bold">Foyer Montreuil</div>
+<div class="text-xs font-normal text-on-surface-variant">Section Rue des Sorins</div>
+</div>
+</div>
+</td>
+<td class="py-4 px-4">
+<div class="text-xs font-body-bold text-on-surface">Fatoumata Traoré</div>
+<div class="text-xs text-on-surface-variant">06 23 45 67 89</div>
+</td>
+<td class="py-4 px-4 text-center">
+<span class="font-body-bold">26</span>
+<span class="text-xs text-on-surface-variant">membres</span>
+</td>
+<td class="py-4 px-4 text-right">
+<span class="font-body-bold text-tertiary-container">90,00 €</span>
+</td>
+<td class="py-4 px-4 text-center">
+<span class="px-2 py-1 rounded bg-surface-container font-label-md text-xs text-tertiary-container">65 %</span>
+</td>
+<td class="py-4 px-4 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-body-bold bg-tertiary-container/10 text-tertiary-container">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary-container"></span>
+                      Remise attendue
+                    </span>
+</td>
+<td class="py-4 px-4 text-right">
+<button class="h-9 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors font-label-md text-xs text-on-surface" type="button">
+                      Détail caisse
+                    </button>
+</td>
+</tr>
+<!-- Caisse 3 -->
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="py-4 px-4 font-body-bold">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-outline text-[20px]">store</span>
+<div>
+<div class="text-on-surface font-body-bold">Caisse Paris Nord</div>
+<div class="text-xs font-normal text-on-surface-variant">Section en démarrage</div>
+</div>
+</div>
+</td>
+<td class="py-4 px-4">
+<div class="text-xs font-body-bold text-on-surface">Samba Diakité</div>
+<div class="text-xs text-on-surface-variant">Direction Centrale</div>
+</td>
+<td class="py-4 px-4 text-center">
+<span class="font-body-bold text-on-surface-variant">0</span>
+<span class="text-xs text-on-surface-variant">cotisant</span>
+</td>
+<td class="py-4 px-4 text-right">
+<span class="font-body-bold text-on-surface-variant">0,00 €</span>
+</td>
+<td class="py-4 px-4 text-center">
+<span class="px-2 py-1 rounded bg-surface-container font-label-md text-xs text-on-surface-variant">-</span>
+</td>
+<td class="py-4 px-4 text-center">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-body-bold bg-surface-container text-on-surface-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                      Initialisée
+                    </span>
+</td>
+<td class="py-4 px-4 text-right">
+<button class="h-9 px-3 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors font-label-md text-xs text-on-surface" type="button">
+                      Paramétrer
+                    </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="flex justify-center pt-2">
+<button class="h-[52px] px-6 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface transition-colors font-label-lg text-label-lg flex items-center gap-2" type="button">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+<span>Gérer les sections &amp; affectations des caisses</span>
+</button>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN (4 cols / 12) -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<!-- Alerts and Urgent Operations -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col gap-5">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Actions &amp; Vigilance</h2>
+<span class="w-6 h-6 rounded-full bg-error/10 text-error flex items-center justify-center font-body-bold text-xs">2</span>
+</div>
+<div class="flex flex-col gap-3.5">
+<!-- Alert 1 : Remise physique d'espèces -->
+<div class="p-4 rounded-xl bg-surface-container-high/60 flex flex-col gap-3">
+<div class="flex items-start gap-3">
+<div class="w-9 h-9 rounded-lg bg-tertiary-container text-on-tertiary flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">receipt</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-bold text-body-bold text-on-surface leading-tight">Remise d'espèces en attente</span>
+<span class="text-xs text-on-surface-variant mt-0.5">Mamadou Sissoko déclare <strong>190,00 €</strong> en liquide à Saint-Denis.</span>
+</div>
+</div>
+<div class="flex items-center gap-2 pt-1">
+<button class="h-10 px-4 w-full rounded-lg bg-primary-container text-on-primary font-label-md text-label-md flex items-center justify-center gap-1.5 shadow-sm hover:opacity-95 transition-opacity" type="button">
+<span class="material-symbols-outlined text-[18px]">done_all</span>
+<span>Contre-signer la remise</span>
+</button>
+</div>
+</div>
+<!-- Alert 2 : Relance SMS -->
+<div class="p-4 rounded-xl bg-surface-container-low flex flex-col gap-3">
+<div class="flex items-start gap-3">
+<div class="w-9 h-9 rounded-lg bg-secondary-fixed text-secondary flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">schedule_send</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-bold text-body-bold text-on-surface leading-tight">12 relances SMS suggérées</span>
+<span class="text-xs text-on-surface-variant mt-0.5">Échéance de cotisation annuelle fixée au 31 Mars (J-7).</span>
+</div>
+</div>
+<button class="h-10 px-4 w-full rounded-lg bg-surface-container text-secondary font-label-md text-label-md flex items-center justify-center gap-1.5 hover:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">send</span>
+<span>Envoyer les rappels</span>
+</button>
+</div>
+<!-- Alert 3 : Succès / Clôture -->
+<div class="p-3.5 rounded-xl bg-primary-fixed/30 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-[22px] shrink-0">task_alt</span>
+<div class="flex flex-col">
+<span class="font-body-bold text-xs text-primary leading-tight">Clôture mensuelle validée</span>
+<span class="text-xs text-on-surface-variant">Foyer Montreuil certifié sans écart arithmétique.</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Real-Time Audit Log (Grand Livre) -->
+<div class="bg-surface-container-lowest rounded-xl p-6 shadow-sm flex flex-col gap-5">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Journal d'Audit</h2>
+<span class="text-xs text-on-surface-variant">Grand Livre immuable en temps réel</span>
+</div>
+<div class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse" title="Flux temps réel actif"></div>
+</div>
+<!-- Log items -->
+<div class="flex flex-col gap-4">
+<!-- Log 1 -->
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-primary shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-body-bold text-xs text-on-surface truncate">Bakary Camara</span>
+<span class="font-body-bold text-xs text-primary shrink-0">+30,00 €</span>
+</div>
+<div class="flex items-center justify-between text-xs text-on-surface-variant">
+<span>Saint-Denis • Espèces</span>
+<span>14:32 UTC</span>
+</div>
+<span class="text-[10px] text-outline truncate font-mono mt-0.5">Hash #8f2a...c014</span>
+</div>
+</div>
+<!-- Log 2 -->
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-secondary shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">sync_alt</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-body-bold text-xs text-on-surface truncate">Mamadou Sissoko</span>
+<span class="font-body-bold text-xs text-on-surface shrink-0">450,00 €</span>
+</div>
+<div class="flex items-center justify-between text-xs text-on-surface-variant">
+<span>Remise vers Centrale</span>
+<span>11:15 UTC</span>
+</div>
+<span class="text-[10px] text-outline truncate font-mono mt-0.5">Hash #e47b...9902</span>
+</div>
+</div>
+<!-- Log 3 -->
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-tertiary-container shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">menu_book</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-body-bold text-xs text-on-surface truncate">Import Cahier Caisse</span>
+<span class="font-body-bold text-xs text-primary shrink-0">+105,00 €</span>
+</div>
+<div class="flex items-center justify-between text-xs text-on-surface-variant">
+<span>4 lignes validées (Montreuil)</span>
+<span>Hier, 19:40</span>
+</div>
+<span class="text-[10px] text-outline truncate font-mono mt-0.5">Hash #12cd...ff34</span>
+</div>
+</div>
+<!-- Log 4 -->
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-outline shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<div class="flex items-center justify-between gap-1">
+<span class="font-body-bold text-xs text-on-surface truncate">Abdoulaye Touré</span>
+<span class="text-xs px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant shrink-0">Nouveau</span>
+</div>
+<div class="flex items-center justify-between text-xs text-on-surface-variant">
+<span>Adhésion enregistrée</span>
+<span>Hier, 16:12</span>
+</div>
+<span class="text-[10px] text-outline truncate font-mono mt-0.5">Hash #44aa...bc87</span>
+</div>
+</div>
+</div>
+<a class="pt-2 text-center text-xs font-body-bold text-primary hover:text-primary-container transition-colors flex items-center justify-center gap-1" href="#">
+<span>Consulter l'ensemble du Journal d'Audit</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</a>
+</div>
+<!-- Community Transparency Widget -->
+<div class="bg-surface-container-low rounded-xl p-5 flex flex-col gap-3">
+<div class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-primary text-[20px]">shield_with_heart</span>
+<span class="font-body-bold text-xs">Pacte de Confiance Bereta</span>
+</div>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+            Chaque transaction validée par les responsables de Niogoméra génère un récépissé numérique immuable. Les membres reçoivent une attestation SMS instantanée.
+          </p>
+<div class="flex items-center justify-between pt-1 border-t border-surface-container text-[11px] text-on-surface-variant">
+<span>Dernier contrôle d'intégrité</span>
+<span class="font-body-bold text-primary">Aujourd'hui, 04:00</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

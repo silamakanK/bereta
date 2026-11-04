@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+
+<html lang="fr"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"surface-container":"#eaedff","on-primary-fixed":"#00210b","surface-bright":"#faf8ff","inverse-surface":"#283044","tertiary-fixed":"#ffdcc3","secondary-fixed-dim":"#b4c5ff","surface-container-high":"#e2e7ff","on-primary":"#ffffff","on-tertiary-fixed-variant":"#6e3900","surface-dim":"#d2d9f4","on-surface":"#131b2e","surface-container-low":"#f2f3ff","on-tertiary-container":"#ffc292","on-secondary-container":"#fefcff","error-container":"#ffdad6","on-secondary":"#ffffff","on-primary-container":"#93e0a2","primary-container":"#166534","primary":"#004c22","primary-fixed":"#a6f4b5","error":"#ba1a1a","surface-container-highest":"#dae2fd","on-secondary-fixed-variant":"#003ea8","on-secondary-fixed":"#00174b","surface":"#faf8ff","tertiary-fixed-dim":"#ffb77d","on-background":"#131b2e","on-error-container":"#93000a","surface-variant":"#dae2fd","on-surface-variant":"#404940","surface-tint":"#1f6c3a","background":"#faf8ff","inverse-primary":"#8bd79b","on-primary-fixed-variant":"#005226","on-tertiary":"#ffffff","tertiary":"#653400","surface-container-lowest":"#ffffff","outline-variant":"#bfc9bd","secondary-fixed":"#dbe1ff","secondary-container":"#316bf3","on-error":"#ffffff","secondary":"#0051d5","inverse-on-surface":"#eef0ff","primary-fixed-dim":"#8bd79b","outline":"#707a6f","on-tertiary-fixed":"#2f1500","tertiary-container":"#874700"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"gutter":"1rem","space-xs":"0.375rem","margin":"1rem","margin-desktop":"3rem","space-md":"1rem","space-sm":"0.75rem","space-lg":"1.5rem","gutter-tablet":"1.5rem","margin-tablet":"2rem","space-xl":"2.25rem","gutter-desktop":"2rem"},"fontFamily":{"amount-display":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"body-bold":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"]},"fontSize":{"amount-display":["36px",{"lineHeight":"44px","fontWeight":"800"}],"body-md":["16px",{"lineHeight":"26px","fontWeight":"400"}],"body-lg":["18px",{"lineHeight":"28px","fontWeight":"500"}],"headline-md":["24px",{"lineHeight":"32px","fontWeight":"700"}],"headline-lg":["32px",{"lineHeight":"40px","fontWeight":"700"}],"headline-lg-mobile":["26px",{"lineHeight":"34px","fontWeight":"700"}],"headline-sm":["20px",{"lineHeight":"28px","fontWeight":"600"}],"body-bold":["16px",{"lineHeight":"26px","fontWeight":"600"}],"label-lg":["16px",{"lineHeight":"24px","fontWeight":"600"}],"label-md":["14px",{"lineHeight":"20px","fontWeight":"600"}]}}}}</script></head><body class="bg-background font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-72 bg-primary text-on-primary z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.08)]"><div class="flex flex-col"><div class="h-20 px-space-lg flex items-center gap-space-sm bg-primary-container/30"><img alt="Brand logo. - Primary color: #166534 - Font: plusJakartaSans - Mode: light - Roundness: rounded-md" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VQIKpwXVoOA5VKNZPTCYn2JkXpoRSqsXUDDj9lU42mgNcOA6_vTlrkdajYpV3mDv93r9Z_0bn4t27xAyh5lPp25AeuYUAhp_iZdI56LEkh1NlJAt15xcqre2QWwsI7__l3EM-pxDhtzRLjLWfVULVEx-Joq58rLyS2-71PyXJZFIECPl5wgBO9QG_6cqRjaiigc2oNCSZLpR92k8SkwWQbsENa1R97kSh3jMphQjYt5a-LyPfGiZ9m4Nk"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-primary tracking-tight leading-tight">BERETA</span><span class="font-label-md text-label-md text-on-primary-container font-normal text-xs">Tontines &amp; Cotisations</span></div></div><div class="px-space-md py-space-sm"><div class="px-space-sm py-space-xs text-xs font-label-md text-on-primary-container/80 uppercase tracking-wider">Grand Livre Communautaire</div></div><nav class="flex flex-col gap-1 px-space-md" data-active-classes="bg-primary-container text-on-primary-container font-body-bold rounded-lg shadow-sm"><a class="flex items-center gap-space-sm px-space-sm py-space-sm rounded-lg font-body-md text-body-md text-on-primary/90 hover:bg-primary-container hover:text-on-primary-container transition-all" data-path="tableau-de-bord" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span>Tableau de bord</a><a class="flex items-center gap-space-sm px-space-sm py-space-sm rounded-lg font-body-md text-body-md text-on-primary/90 hover:bg-primary-container hover:text-on-primary-container transition-all" data-path="caisses-locales" href="#"><span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>Caisses Locales</a><a class="flex items-center gap-space-sm px-space-sm py-space-sm rounded-lg font-body-md text-body-md text-on-primary/90 hover:bg-primary-container hover:text-on-primary-container transition-all" data-path="campagnes-de-cotisation" href="#"><span class="material-symbols-outlined text-[20px]">event_repeat</span>Campagnes de Cotisation</a><a class="flex items-center gap-space-sm px-space-sm py-space-sm rounded-lg font-body-md text-body-md text-on-primary/90 hover:bg-primary-container hover:text-on-primary-container transition-all" data-path="membres-et-cotisants" href="#"><span class="material-symbols-outlined text-[20px]">groups</span>Membres &amp; Cotisants</a><a class="flex items-center gap-space-sm px-space-sm py-space-sm rounded-lg font-body-md text-body-md text-on-primary/90 hover:bg-primary-container hover:text-on-primary-container transition-all" data-path="imports-et-cahiers" href="#"><span class="material-symbols-outlined text-[20px]">menu_book</span>Imports &amp; Cahiers</a><a class="flex items-center gap-space-sm px-space-sm py-space-sm rounded-lg font-body-md text-body-md text-on-primary/90 hover:bg-primary-container hover:text-on-primary-container transition-all" data-path="rapports-et-grand-livre" href="#"><span class="material-symbols-outlined text-[20px]">menu_book</span>Rapports &amp; Grand Livre</a><a class="flex items-center gap-space-sm px-space-sm py-space-sm rounded-lg font-body-md text-body-md text-on-primary/90 hover:bg-primary-container hover:text-on-primary-container transition-all" data-path="parametres" href="#"><span class="material-symbols-outlined text-[20px]">settings</span>Paramètres</a></nav></div><div class="p-space-md"><div class="bg-primary-container/40 rounded-xl p-space-sm flex flex-col gap-1"><div class="flex items-center gap-space-xs text-on-primary-container"><span class="material-symbols-outlined text-[18px]">verified_user</span><span class="font-label-md text-label-md text-xs uppercase tracking-wide">Registre SHA-256</span></div><div class="flex items-center justify-between text-xs text-on-primary/90"><span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-primary-fixed"></span>Sécurisé &amp; Intègre</span><span class="font-mono text-[10px] text-on-primary/60">#3a9f8c</span></div></div></div></aside><div class="pl-72 flex flex-col min-h-screen"><header class="fixed top-0 left-72 right-0 h-20 bg-surface/90 backdrop-blur-xl z-40 shadow-[0_1px_8px_rgba(0,0,0,0.04)] flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md"><img alt="Brand logo. - Primary color: #166534 - Font: plusJakartaSans - Mode: light - Roundness: rounded-md" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VQIKpwXVoOA5VKNZPTCYn2JkXpoRSqsXUDDj9lU42mgNcOA6_vTlrkdajYpV3mDv93r9Z_0bn4t27xAyh5lPp25AeuYUAhp_iZdI56LEkh1NlJAt15xcqre2QWwsI7__l3EM-pxDhtzRLjLWfVULVEx-Joq58rLyS2-71PyXJZFIECPl5wgBO9QG_6cqRjaiigc2oNCSZLpR92k8SkwWQbsENa1R97kSh3jMphQjYt5a-LyPfGiZ9m4Nk"/><div class="flex items-center bg-surface-container-low rounded-lg px-space-sm py-1.5 gap-space-xs"><span class="material-symbols-outlined text-primary text-[20px]">apartment</span><span class="font-label-md text-label-md text-on-surface">Assoc. Développement Niogoméra</span></div><div class="flex items-center bg-surface-container-low rounded-lg px-space-sm py-1.5 gap-space-xs"><span class="material-symbols-outlined text-outline text-[18px]">calendar_today</span><span class="font-label-md text-label-md text-on-surface">Exercice 2025</span></div></div><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs px-space-sm py-1 rounded-full bg-primary-fixed/30 text-primary font-label-md text-label-md text-xs"><span class="material-symbols-outlined text-[16px]">lock</span>Scellement SHA-256 Actif</div><button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors relative" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-error"></span></button><div class="flex items-center gap-space-sm"><div class="flex flex-col text-right"><span class="font-body-bold text-body-bold text-sm text-on-surface leading-tight">Samba Diakité</span><span class="font-body-md text-body-md text-xs text-on-surface-variant leading-tight">Responsable Général</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-20 px-gutter-desktop flex-1 bg-background"><div class="flex flex-col w-full gap-space-lg pb-space-xl">
+<!-- Entête de Navigation / Sub-Tabs Module Comptable -->
+<div class="flex items-center justify-between border-b border-surface-container-high pb-space-sm">
+<div class="flex items-center gap-space-md">
+<nav class="flex items-center gap-2">
+<a class="px-space-md py-2 text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">
+          Grand Livre Chronologique
+        </a>
+<a class="px-space-md py-2 text-label-md font-label-md text-primary bg-primary-fixed/30 rounded-lg flex items-center gap-2" href="#">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+          Balance Générale des Caisses
+        </a>
+<a class="px-space-md py-2 text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">
+          Rapprochement Bancaire
+        </a>
+<a class="px-space-md py-2 text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">
+          Rapports d'Activité &amp; Fiscaux
+        </a>
+</nav>
+</div>
+<div class="flex items-center gap-2 text-xs font-label-md text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-primary">history_edu</span>
+      Arrêté mensuel : <span class="font-body-bold text-on-surface">Février 2025</span>
+</div>
+</div>
+<!-- Header de Page & Actions Haut-Niveau -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex flex-col gap-1 max-w-3xl">
+<div class="flex items-center gap-space-sm">
+<span class="px-2.5 py-0.5 rounded-full text-xs font-label-md bg-surface-container-highest text-on-surface-variant uppercase tracking-wider">
+          Comptabilité Générale • Plan 531/512
+        </span>
+<span class="inline-flex items-center gap-1 text-xs font-label-md text-primary bg-primary-fixed/25 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+          Registre Conforme
+        </span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">
+        Balance Générale &amp; Rapprochement des Caisses Locales
+      </h1>
+<p class="font-body-md text-body-md text-on-surface-variant">
+        Situation arrêtée au 28 Février 2025. Comparatif consolidé des soldes initiaux, flux d'encaissements d'espèces, remises bancaires décaissées et soldes de clôture certifiés par section locale.
+      </p>
+</div>
+<!-- Actions Bar -->
+<div class="flex items-center gap-space-sm flex-wrap">
+<button class="h-[52px] px-space-md rounded-lg bg-surface-container-lowest text-on-surface font-label-lg text-label-lg flex items-center gap-2 hover:bg-surface-container transition-all shadow-sm" type="button">
+<span class="material-symbols-outlined text-primary text-[20px]">picture_as_pdf</span>
+        Exporter Balance (.PDF)
+      </button>
+<button class="h-[52px] px-space-md rounded-lg bg-surface-container-lowest text-on-surface font-label-lg text-label-lg flex items-center gap-2 hover:bg-surface-container transition-all shadow-sm" type="button">
+<span class="material-symbols-outlined text-primary text-[20px]">table_view</span>
+        Grand Livre (.CSV)
+      </button>
+<button class="h-[52px] px-space-lg rounded-lg bg-primary-container text-on-primary font-label-lg text-label-lg flex items-center gap-2 hover:bg-primary transition-all shadow-md" type="button">
+<span class="material-symbols-outlined text-[20px]">lock_clock</span>
+        Arrêter la Balance Périodique
+      </button>
+</div>
+</div>
+<!-- Cartes d'Indicateurs de Trésorerie Consolidée (4 KPIs) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">
+<!-- KPI 1 : Total Débits -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-xs">Total Débits / Flux Entrants</span>
+<div class="w-10 h-10 rounded-lg bg-primary-fixed/30 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[22px]">arrow_downward_alt</span>
+</div>
+</div>
+<div class="my-space-sm">
+<div class="font-amount-display text-amount-display text-on-surface tracking-tight">3 070,00 €</div>
+<p class="font-body-md text-body-md text-xs text-on-surface-variant mt-1">Cotisations physiques + reports N-1</p>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-primary font-label-md">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span>100% rattaché aux cotisants</span>
+</div>
+</div>
+<!-- KPI 2 : Total Crédits -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-xs">Total Crédits / Remises BDM</span>
+<div class="w-10 h-10 rounded-lg bg-secondary-fixed flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[22px]">account_balance</span>
+</div>
+</div>
+<div class="my-space-sm">
+<div class="font-amount-display text-amount-display text-on-surface tracking-tight">2 790,00 €</div>
+<p class="font-body-md text-body-md text-xs text-on-surface-variant mt-1">Versements effectués vers BDM Solidarité</p>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-secondary font-label-md">
+<span class="material-symbols-outlined text-[16px]">sync_saved_locally</span>
+<span>Bordereaux bancaires validés</span>
+</div>
+</div>
+<!-- KPI 3 : Espèces Physiques en Caisse -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-xs">Espèces Physiques en Caisse</span>
+<div class="w-10 h-10 rounded-lg bg-tertiary-fixed flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[22px]">payments</span>
+</div>
+</div>
+<div class="my-space-sm">
+<div class="font-amount-display text-amount-display text-tertiary tracking-tight">280,00 €</div>
+<p class="font-body-md text-body-md text-xs text-on-surface-variant mt-1">Détenus par 2 trésoriers de foyers</p>
+</div>
+<div class="flex items-center gap-1.5 text-xs text-on-tertiary-fixed-variant font-label-md">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span>En attente de versement bancaire</span>
+</div>
+</div>
+<!-- KPI 4 : Écart d'Équilibre Global -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-xs">Écart d'Équilibre Global</span>
+<div class="w-10 h-10 rounded-lg bg-primary-fixed/40 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[22px]">balance</span>
+</div>
+</div>
+<div class="my-space-sm">
+<div class="font-amount-display text-amount-display text-primary tracking-tight">0,00 €</div>
+<p class="font-body-md text-body-md text-xs text-on-surface-variant mt-1">Débits = Crédits + Clôture exacte</p>
+</div>
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-fixed/30 text-primary font-label-md text-xs">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span>Balance Équilibrée &amp; SHA-256</span>
+</div>
+</div>
+</div>
+<!-- Barre de Filtres et Outils de Recherche Comptable -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm flex-1 flex-wrap">
+<!-- Sélecteur Période -->
+<div class="flex items-center bg-surface-container-low rounded-lg px-space-md h-[48px] gap-space-xs min-w-[220px]">
+<span class="material-symbols-outlined text-outline text-[20px]">calendar_month</span>
+<div class="flex flex-col">
+<span class="text-[10px] font-label-md text-on-surface-variant uppercase leading-none">Période d'arrêt</span>
+<span class="font-body-bold text-sm text-on-surface leading-tight">Février 2025 (Clôture)</span>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px] ml-auto">expand_more</span>
+</div>
+<!-- Sélecteur Sections Locales -->
+<div class="flex items-center bg-surface-container-low rounded-lg px-space-md h-[48px] gap-space-xs min-w-[200px]">
+<span class="material-symbols-outlined text-outline text-[20px]">location_city</span>
+<div class="flex flex-col">
+<span class="text-[10px] font-label-md text-on-surface-variant uppercase leading-none">Périmètre</span>
+<span class="font-body-bold text-sm text-on-surface leading-tight">Toutes les caisses (4)</span>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px] ml-auto">expand_more</span>
+</div>
+<!-- Filtre d'état -->
+<div class="flex items-center bg-surface-container-low rounded-lg px-space-md h-[48px] gap-space-xs min-w-[180px]">
+<span class="material-symbols-outlined text-outline text-[20px]">filter_list</span>
+<div class="flex flex-col">
+<span class="text-[10px] font-label-md text-on-surface-variant uppercase leading-none">Statut du solde</span>
+<span class="font-body-bold text-sm text-on-surface leading-tight">Tous les comptes</span>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px] ml-auto">expand_more</span>
+</div>
+</div>
+<!-- Recherche Rapide -->
+<div class="relative w-full md:w-80">
+<input class="w-full h-[48px] pl-10 pr-4 rounded-lg bg-surface-container-low text-on-surface text-sm font-body-md focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary outline-none transition-all placeholder:text-on-surface-variant" placeholder="Rechercher caisse, compte (531...), trésorier..." type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+</div>
+</div>
+<!-- Layout Principal : Grille Split (Tableau Comptable à Gauche + Panneau Inspection à Droite) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- Grand Tableau de la Balance Générale (8 colonnes ou Col-span-8) -->
+<div class="lg:col-span-8 flex flex-col bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<!-- En-tête du Tableau Comptable -->
+<div class="p-space-md bg-surface-container-lowest flex items-center justify-between border-b border-surface-container-high">
+<div class="flex items-center gap-space-sm">
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Grand Livre des Soldes de Caisse</h2>
+<span class="text-xs px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-mono">4 comptes audités</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs text-on-surface-variant font-body-md">Étalonnage certifié au :</span>
+<span class="text-xs font-mono font-label-md text-on-surface">28/02/2025 23:59:59</span>
+</div>
+</div>
+<!-- Table responsive container -->
+<div class="overflow-x-auto w-full">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant text-[12px] font-label-md uppercase tracking-wider">
+<th class="py-space-sm px-space-md">Compte &amp; Intitulé</th>
+<th class="py-space-sm px-space-md">Trésorier Délégué</th>
+<th class="py-space-sm px-space-md text-right">Report Initial</th>
+<th class="py-space-sm px-space-md text-right">Mouvements (D / C)</th>
+<th class="py-space-sm px-space-md text-right">Solde Final Arrêté</th>
+<th class="py-space-sm px-space-md text-center">Écart Espèces</th>
+<th class="py-space-sm px-space-md">Certification</th>
+<th class="py-space-sm px-space-md text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-high text-sm font-body-md text-on-surface">
+<!-- Ligne 1 : Caisse Foyer Saint-Denis (Sélectionnée activement) -->
+<tr class="bg-primary-fixed/10 hover:bg-primary-fixed/20 transition-colors group cursor-pointer">
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-xs">
+<div class="w-2.5 h-2.5 rounded-full bg-primary" title="Caisse sélectionnée"></div>
+<div class="flex flex-col">
+<span class="font-body-bold text-on-surface">531100 - Foyer Saint-Denis</span>
+<span class="text-xs text-on-surface-variant">Section Seine-Saint-Denis (93)</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-xs">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-bold text-xs">
+                    MS
+                  </div>
+<div class="flex flex-col">
+<span class="font-body-bold text-xs text-on-surface">Mamadou Sissoko</span>
+<span class="text-[11px] text-primary flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">verified</span>
+                      Certifié A+
+                    </span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right font-mono text-xs text-on-surface-variant">
+                0,00 €
+              </td>
+<td class="py-space-md px-space-md text-right font-mono text-xs">
+<div class="text-primary font-body-bold">+ 1 090,00 € (D)</div>
+<div class="text-on-surface-variant">- 900,00 € (C)</div>
+</td>
+<td class="py-space-md px-space-md text-right font-mono font-body-bold text-primary">
+                190,00 € D
+              </td>
+<td class="py-space-md px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-primary-fixed/30 text-primary font-bold">
+                  0,00 €
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="inline-flex items-center gap-1 text-[11px] font-label-md text-tertiary">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                    Remise 190€ en visa
+                  </span>
+<span class="font-mono text-[9px] text-on-surface-variant">SHA #e8f9a2</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right">
+<button class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-on-surface hover:bg-primary hover:text-on-primary transition-all inline-flex" title="Pointer et inspecter" type="button">
+<span class="material-symbols-outlined text-[18px]">manage_search</span>
+</button>
+</td>
+</tr>
+<!-- Ligne 2 : Caisse Foyer Montreuil -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-xs">
+<div class="w-2.5 h-2.5 rounded-full bg-surface-dim"></div>
+<div class="flex flex-col">
+<span class="font-body-bold text-on-surface">531200 - Foyer Montreuil</span>
+<span class="text-xs text-on-surface-variant">Section Montreuil / Bagnolet</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-xs">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center font-bold text-xs">
+                    FT
+                  </div>
+<div class="flex flex-col">
+<span class="font-body-bold text-xs text-on-surface">Fatoumata Traoré</span>
+<span class="text-[11px] text-primary flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">verified</span>
+                      Certifiée A
+                    </span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right font-mono text-xs text-on-surface-variant">
+                0,00 €
+              </td>
+<td class="py-space-md px-space-md text-right font-mono text-xs">
+<div class="text-primary font-body-bold">+ 540,00 € (D)</div>
+<div class="text-on-surface-variant">- 450,00 € (C)</div>
+</td>
+<td class="py-space-md px-space-md text-right font-mono font-body-bold text-primary">
+                90,00 € D
+              </td>
+<td class="py-space-md px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-primary-fixed/30 text-primary font-bold">
+                  0,00 €
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="inline-flex items-center gap-1 text-[11px] font-label-md text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    Certifié Conforme
+                  </span>
+<span class="font-mono text-[9px] text-on-surface-variant">SHA #4b11f0</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right">
+<button class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-on-surface hover:bg-primary hover:text-on-primary transition-all inline-flex" title="Pointer et inspecter" type="button">
+<span class="material-symbols-outlined text-[18px]">manage_search</span>
+</button>
+</td>
+</tr>
+<!-- Ligne 3 : Caisse Paris Nord -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-xs">
+<div class="w-2.5 h-2.5 rounded-full bg-surface-dim"></div>
+<div class="flex flex-col">
+<span class="font-body-bold text-on-surface">531300 - Caisse Paris Nord</span>
+<span class="text-xs text-on-surface-variant">Section Goutte d'Or / Barbès</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-xs">
+<div class="w-8 h-8 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center font-bold text-xs">
+                    SD
+                  </div>
+<div class="flex flex-col">
+<span class="font-body-bold text-xs text-on-surface">Samba Diakité (prov.)</span>
+<span class="text-[11px] text-on-surface-variant">Par intérim</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right font-mono text-xs text-on-surface-variant">
+                0,00 €
+              </td>
+<td class="py-space-md px-space-md text-right font-mono text-xs">
+<div class="text-on-surface-variant">0,00 € (D)</div>
+<div class="text-on-surface-variant">0,00 € (C)</div>
+</td>
+<td class="py-space-md px-space-md text-right font-mono font-body-bold text-on-surface-variant">
+                0,00 €
+              </td>
+<td class="py-space-md px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-surface-container text-on-surface-variant">
+                  -
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 text-[11px] font-label-md text-on-surface-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                  En cours d'ouverture
+                </span>
+</td>
+<td class="py-space-md px-space-md text-right">
+<button class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-all inline-flex" title="Consulter compte" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Ligne 4 : Compte Bancaire Central BDM -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-xs">
+<div class="w-2.5 h-2.5 rounded-full bg-secondary"></div>
+<div class="flex flex-col">
+<span class="font-body-bold text-on-surface">512000 - Banque Centrale BDM</span>
+<span class="text-xs text-on-surface-variant">Compte courant Niogoméra Dével.</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-xs">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary flex items-center justify-center font-bold text-xs">
+                    BDM
+                  </div>
+<div class="flex flex-col">
+<span class="font-body-bold text-xs text-on-surface">Banque de Développement</span>
+<span class="text-[11px] text-secondary flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">account_balance</span>
+                      Relevé N° 2025-02
+                    </span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right font-mono text-xs text-on-surface-variant">
+                1 160,00 €
+              </td>
+<td class="py-space-md px-space-md text-right font-mono text-xs">
+<div class="text-primary font-body-bold">+ 1 440,00 € (D)</div>
+<div class="text-on-surface-variant">0,00 € (C)</div>
+</td>
+<td class="py-space-md px-space-md text-right font-mono font-body-bold text-secondary">
+                2 600,00 € D
+              </td>
+<td class="py-space-md px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-secondary-fixed text-secondary font-bold">
+                  Conforme
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="inline-flex items-center gap-1 text-[11px] font-label-md text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                    Réconcilié Relevé BDM
+                  </span>
+<span class="font-mono text-[9px] text-on-surface-variant">Banque Clôturée</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right">
+<button class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-on-surface hover:bg-secondary hover:text-on-secondary transition-all inline-flex" title="Télécharger extrait bancaire" type="button">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+</button>
+</td>
+</tr>
+</tbody>
+<!-- Ligne de TOTAL GÉNÉRAL / ÉQUILIBRE COMPTABLE -->
+<tfoot>
+<tr class="bg-surface-container text-on-surface font-body-bold border-t-2 border-primary">
+<td class="py-space-md px-space-md" colspan="2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">check_circle</span>
+<span class="uppercase tracking-wider text-xs">Totaux Généraux de la Balance Périodique</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right font-mono text-sm">
+                1 160,00 €
+              </td>
+<td class="py-space-md px-space-md text-right font-mono text-sm">
+<div class="text-primary font-bold">3 070,00 € (D)</div>
+<div class="text-on-surface-variant font-bold">2 790,00 € (C)</div>
+</td>
+<td class="py-space-md px-space-md text-right font-mono text-base text-primary font-extrabold">
+                2 880,00 € D
+              </td>
+<td class="py-space-md px-space-md text-center">
+<span class="px-2.5 py-1 rounded-full text-xs font-mono bg-primary text-on-primary font-bold">
+                  0,00 € Écart
+                </span>
+</td>
+<td class="py-space-md px-space-md text-right" colspan="2">
+<span class="text-xs text-primary font-label-md flex items-center justify-end gap-1">
+<span class="material-symbols-outlined text-[16px]">verified_user</span>
+                  Équilibre Parfait Validé
+                </span>
+</td>
+</tr>
+</tfoot>
+</table>
+</div>
+<!-- Barre d'outils secondaire sous tableau -->
+<div class="p-space-md bg-surface-container-low flex items-center justify-between flex-wrap gap-space-sm text-xs text-on-surface-variant">
+<div class="flex items-center gap-space-md">
+<span class="flex items-center gap-1">
+<span class="w-2.5 h-2.5 rounded-full bg-primary"></span> Caisses physiques (Espèces)
+          </span>
+<span class="flex items-center gap-1">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span> Compte Bancaire Central BDM
+          </span>
+</div>
+<div class="flex items-center gap-1 font-mono">
+<span>Hash Global : </span>
+<span class="bg-surface-container px-2 py-0.5 rounded text-[11px] text-on-surface">sha256:88a7c2e01b39df4a56...9c7</span>
+</div>
+</div>
+</div>
+<!-- Volet Latéral d'Inspection & Rapprochement de Caisse (Col-span-4) -->
+<div class="lg:col-span-4 flex flex-col gap-space-md">
+<!-- Fiche d'Inspection Active -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between border-b border-surface-container-high pb-space-sm">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-primary-fixed/40 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">assignment_turned_in</span>
+</div>
+<div>
+<span class="text-[11px] font-label-md text-on-surface-variant uppercase tracking-wider">Pointage Caisse</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface leading-none">Caisse Foyer Saint-Denis</h3>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded bg-primary-fixed/30 text-primary font-mono text-xs font-bold">531100</span>
+</div>
+<!-- Informations Trésorier & Statistiques Cotisants -->
+<div class="bg-surface-container-low rounded-lg p-space-sm flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-bold text-sm">
+              MS
+            </div>
+<div class="flex flex-col">
+<span class="font-body-bold text-sm text-on-surface">Mamadou Sissoko</span>
+<span class="text-xs text-on-surface-variant">Trésorier de section • +33 6 45 .. .. 92</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-body-bold text-sm text-primary">34 Membres</span>
+<span class="block text-[11px] text-on-surface-variant">Actifs à jour</span>
+</div>
+</div>
+<!-- Contrôle du Procès-Verbal de Recomptage Physique -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="text-xs font-label-md text-on-surface uppercase tracking-wider">Dénombrement physique des Espèces</span>
+<span class="text-xs text-on-surface-variant">Arrêté le 28/02 20h30</span>
+</div>
+<!-- Grille des billets recomptés -->
+<div class="space-y-1.5 font-mono text-xs">
+<div class="flex items-center justify-between p-2 rounded bg-surface-container-low">
+<span class="text-on-surface">3 x Billets de 50 €</span>
+<span class="font-bold text-on-surface">150,00 €</span>
+</div>
+<div class="flex items-center justify-between p-2 rounded bg-surface-container-low">
+<span class="text-on-surface">1 x Billet de 20 €</span>
+<span class="font-bold text-on-surface">20,00 €</span>
+</div>
+<div class="flex items-center justify-between p-2 rounded bg-surface-container-low">
+<span class="text-on-surface">2 x Billets de 10 €</span>
+<span class="font-bold text-on-surface">20,00 €</span>
+</div>
+</div>
+<!-- Total Physique vs Théorique -->
+<div class="mt-2 p-space-sm rounded-lg bg-primary-fixed/20 flex items-center justify-between">
+<div>
+<span class="text-xs font-label-md text-primary block">Total Décompté Physiquement</span>
+<span class="text-xs text-on-surface-variant">Concordance registre : 100%</span>
+</div>
+<div class="text-right">
+<span class="font-amount-display text-headline-md text-primary">190,00 €</span>
+</div>
+</div>
+</div>
+<!-- Témoins & Bordereau de remise -->
+<div class="border-t border-surface-container-high pt-space-sm flex flex-col gap-2">
+<span class="text-xs font-label-md text-on-surface uppercase tracking-wider">Contre-Signature &amp; Témoins</span>
+<div class="flex items-center justify-between text-xs bg-surface-container-lowest p-2 rounded border border-surface-container-high">
+<span class="text-on-surface-variant">Témoin 1 (Membre #55)</span>
+<span class="font-body-bold text-on-surface">Ousmane Cissé</span>
+</div>
+<div class="flex items-center justify-between text-xs bg-surface-container-lowest p-2 rounded border border-surface-container-high">
+<span class="text-on-surface-variant">Témoin 2 (Membre #42)</span>
+<span class="font-body-bold text-on-surface">Bakary Camara</span>
+</div>
+<div class="flex items-center justify-between p-2 rounded bg-surface-container-low text-xs mt-1">
+<div class="flex items-center gap-1.5 text-primary">
+<span class="material-symbols-outlined text-[16px]">qr_code_2</span>
+<span class="font-mono font-bold">#REM-2025-02</span>
+</div>
+<span class="text-on-surface-variant font-mono">Bordereau Scellé SHA-256</span>
+</div>
+</div>
+<!-- Boutons d'Action du Panneau d'Inspection -->
+<div class="flex flex-col gap-2 pt-space-xs">
+<button class="w-full h-[52px] rounded-lg bg-primary-container text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-2 hover:bg-primary transition-all shadow-sm" type="button">
+<span class="material-symbols-outlined text-[20px]">check_box</span>
+            Valider le Pointage de Caisse
+          </button>
+<button class="w-full h-[52px] rounded-lg bg-surface-container-lowest text-on-surface font-label-lg text-label-lg flex items-center justify-center gap-2 hover:bg-surface-container transition-all shadow-sm border border-surface-container-high" type="button">
+<span class="material-symbols-outlined text-primary text-[20px]">verified</span>
+            Arrêté Périodique Certifié (.PDF)
+          </button>
+<button class="w-full h-[52px] rounded-lg bg-surface-container-low text-on-surface font-label-lg text-label-lg flex items-center justify-center gap-2 hover:bg-surface-container transition-all" type="button">
+<span class="material-symbols-outlined text-primary text-[20px]">send</span>
+            Transmettre Récapitulatif (WhatsApp)
+          </button>
+</div>
+</div>
+<!-- Bloc Rappel Réglementaire & Sécurité Associative -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-start gap-space-sm border-l-4 border-primary">
+<span class="material-symbols-outlined text-primary text-[24px]">gavel</span>
+<div class="flex flex-col gap-1">
+<span class="text-xs font-label-md text-on-surface uppercase tracking-wide">Règle des Espèces Maximale</span>
+<p class="text-xs font-body-md text-on-surface-variant leading-relaxed">
+            Conformément aux statuts de l'Association Niogoméra, le plafond d'espèces autorisé en coffre local de foyer est de <strong>500,00 €</strong>. Le solde actuel (190,00 €) est conforme aux normes de sécurité.
+          </p>
+</div>
+</div>
+</div>
+</div>
+<!-- Pied de Page / Cartouche Légal de Certification -->
+<div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col md:flex-row items-center justify-between gap-space-md border-t border-surface-container-high">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-full bg-primary-fixed/40 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[28px]">shield</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-bold text-sm text-on-surface">Certification Probatoire des Écritures de Caisse</span>
+<p class="font-body-md text-xs text-on-surface-variant max-w-2xl">
+          Attestation de double contrôle conforme aux statuts de l'Assoc. Développement Niogoméra et à la réglementation Loi 1901. La présente balance générale a été vérifiée par le trésorier général et le commissaire aux comptes associatif.
+        </p>
+</div>
+</div>
+<div class="flex flex-col text-right font-mono text-xs">
+<span class="text-primary font-bold">Scellement Numérique Horodaté</span>
+<span class="text-on-surface-variant">2025-02-28T23:59:59Z • UTC+1</span>
+<span class="text-[10px] text-on-surface-variant/80 mt-0.5">Hash racine : c748e02d...f108b3</span>
+</div>
+</div>
+</div></main></div></body></html>

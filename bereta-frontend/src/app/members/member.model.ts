@@ -10,6 +10,7 @@ export interface CreateMemberRequest {
   firstName: string;
   lastName: string;
   phone?: string | null;
+  localFundId?: string;
 }
 
 export interface MemberCampaign {

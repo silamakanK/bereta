@@ -60,39 +60,90 @@ Le contrôle est désactivé par défaut. Pour le refaire, laisser cette variabl
 
 La stratégie Hibernate est configurée sur `spring.jpa.hibernate.ddl-auto=none` : Hibernate ne crée ni ne met à jour le schéma.
 
-Les évolutions de schéma sont gérées par Flyway. Au prochain démarrage du backend, Flyway applique les migrations manquantes : `V1` crée les membres, `V2` crée les caisses principales, caisses locales et campagnes, `V3` crée les inscriptions des membres aux campagnes et `V4` crée les comptes utilisateurs. Elles ajoutent ces nouvelles tables sans altérer les tables existantes. `ddl-auto=none` reste actif : Hibernate ne gère pas le schéma.
+Les évolutions de schéma sont gérées par Flyway. `V12__add_association_scope.sql` crée les associations et leurs accès responsables, puis ajoute un périmètre d’association aux caisses, membres, inscriptions, paiements, remises, accès trésoriers et invitations. Les clés étrangères composites empêchent d’associer les opérations et inscriptions à des associations différentes. Cette migration suppose que les tables métier sont vides, conformément à la remise à zéro réalisée avant son déploiement. Elle ne modifie aucune migration antérieure ni l’historique Flyway. `ddl-auto=none` reste actif : Hibernate ne gère pas le schéma.
+
+## Associations et périmètre des données
+
+- `GET /api/associations` liste les associations auxquelles le compte connecté a accès.
+- `POST /api/associations` crée une association et ajoute automatiquement son créateur comme responsable.
+- `GET, POST /api/associations/{id}/responsables` permet aux responsables de consulter les responsables et d’en ajouter à partir d’un compte BERETA existant.
+- Les responsables peuvent gérer plusieurs associations ; plusieurs responsables peuvent gérer une même association.
+- Toute requête métier exige le contexte `X-Association-Id`. Le backend vérifie que le compte est responsable de cette association ou trésorier d’au moins une caisse locale qui en dépend.
+- Les listes de caisses, membres, campagnes, paiements et remises sont filtrées par l’association active. Un responsable voit toutes les fiches de son association ; un trésorier voit uniquement les fiches et opérations qui touchent ses caisses locales attribuées.
+- Une fiche membre est séparée par association. Aucun rapprochement automatique n’est fait sur le nom. Dans une association, la même fiche peut être inscrite à des campagnes de plusieurs caisses principales.
+- Les trésoriers peuvent avoir plusieurs caisses locales attribuées. Une association commune ne donne pas accès aux autres caisses.
+
+Après connexion, un compte sans association est invité à en créer une. S’il en gère ou rejoint plusieurs, il choisit son association active. Il peut en créer une autre depuis le sélecteur du tableau de bord.
 
 ## Membres — première API
 
 - `GET /api/membres` : liste les membres par nom puis prénom.
 - `GET /api/membres/{id}` : consulte un membre.
-- `POST /api/membres` : crée un membre. Le prénom et le nom sont obligatoires ; le téléphone est facultatif.
+- `POST /api/membres` : crée un membre dans une caisse locale accessible. Le prénom, le nom et `localFundId` sont obligatoires ; le téléphone est facultatif.
 - `PUT /api/membres/{id}` : modifie le prénom, le nom ou le téléphone d'un membre.
 - `GET, POST /api/caisses-principales` : consulte et crée des caisses principales.
 - `GET, POST /api/caisses-principales/{id}/caisses-locales` : consulte et crée leurs caisses locales.
 - `GET /api/campagnes` : liste les campagnes (filtrage possible avec `caissePrincipaleId`).
 - `POST /api/campagnes` : crée une campagne annuelle ou événementielle.
 - `GET, POST /api/membres/{id}/inscriptions` : consulte et inscrit un membre à une campagne et à une caisse locale.
+- `GET /api/paiements/inscriptions-a-payer` : inscriptions accessibles qui ont encore un solde à régler.
+- `POST /api/paiements/inscriptions/{inscriptionId}` : enregistre un versement partiel ou total avec sa date, son mode, une note facultative et l’auteur connecté.
+- `GET /api/paiements` et `GET /api/paiements/membres/{id}` : consultent l’historique accessible.
+- `GET /api/paiements/synthese` : calcule les montants attendus, reçus et restants à partir des inscriptions et versements accessibles.
+- `POST /api/caisses-locales/{id}/remises` : le trésorier déclaré de la caisse locale déclare une remise d’un montant disponible, avec sa date, son mode et une note facultative.
+- `GET /api/caisses-locales/{id}/remises/solde` : consulte les cotisations encaissées, le disponible local et les remises en transit de cette caisse.
+- `GET /api/caisses-principales/{id}/remises` : consulte les remises accessibles et leur historique d’auteurs et de statuts.
+- `GET /api/caisses-principales/{id}/remises/synthese` : le responsable voit les soldes locaux, le total en transit, le solde central et le total global. Un trésorier reçoit uniquement les montants de sa caisse locale.
+- `POST /api/caisses-principales/{id}/remises/{remiseId}/confirmer` : le responsable confirme une remise encore en attente.
+- `POST /api/caisses-principales/{id}/remises/{remiseId}/annuler` : le responsable annule une remise en attente avec un motif obligatoire.
 
 Les montants attendus sont stockés en décimal exact. Une campagne événementielle peut ne pas encore avoir de montant ni d'échéance. Une inscription conserve une copie du montant attendu au moment de sa création. Les homonymes restent autorisés.
 
 ## Connexion
 
-L'application utilise une session serveur et un cookie de session `HttpOnly`. Le mot de passe est haché avec BCrypt ; le navigateur ne le conserve pas. Les routes `/api/auth/csrf` et `/api/auth/login` sont publiques ; les autres routes API demandent une session connectée. La protection CSRF est activée pour les requêtes qui modifient les données.
+L'application utilise une session serveur et un cookie de session `HttpOnly`. Le mot de passe est haché avec BCrypt ; le navigateur ne le conserve pas. Les routes `/api/auth/csrf`, `/api/auth/login`, `/api/auth/register`, `/api/auth/invitations/accept`, `/api/auth/password/forgot` et `/api/auth/password/reset` sont publiques ; les autres routes API demandent une session connectée. La protection CSRF est activée pour les requêtes qui modifient les données.
 
-Pour créer le premier compte responsable, ajouter ces variables au fichier local `bereta-backend/.env` (ou à l'environnement de lancement IntelliJ) :
+La page `/inscription` crée un compte utilisateur sans rôle de caisse ni accès existant. Après connexion, l’utilisateur crée une association dont il devient responsable, puis ses caisses principales. Pour rejoindre une association existante comme trésorier, il doit utiliser une invitation valide à une caisse locale. Le mot de passe doit contenir au moins 6 caractères et ne pas dépasser la limite de 72 octets UTF-8 de BCrypt. L’adresse e-mail est normalisée en minuscules et son unicité est également imposée par PostgreSQL.
+
+### Réinitialisation du mot de passe
+
+Le lien **Mot de passe oublié ?** mène à un parcours qui envoie un jeton aléatoire à usage unique, stocké sous forme hachée et valable 30 minutes. L’envoi réel est désactivé par défaut (`BERETA_MAIL_ENABLED=false`) : tant qu’un SMTP n’est pas configuré, l’API répond `503 Service Unavailable` et l’interface indique qu’aucun e-mail n’a été envoyé.
+
+Pour activer l’envoi, définir dans l’environnement local du backend ou dans IntelliJ :
+
+```dotenv
+BERETA_MAIL_ENABLED=true
+BERETA_PASSWORD_RESET_BASE_URL=https://votre-frontend.example
+MAIL_HOST=smtp.example.com
+MAIL_PORT=587
+MAIL_USERNAME=<compte-smtp>
+MAIL_PASSWORD=<secret-smtp-local>
+MAIL_SMTP_AUTH=true
+MAIL_SMTP_STARTTLS=true
+MAIL_FROM=Bereta <no-reply@example.com>
+```
+
+Remplacer ces valeurs par celles du fournisseur e-mail. Ne pas committer `MAIL_PASSWORD`. Sans cette configuration, aucune simulation d’envoi n’est faite.
+
+Pour créer un compte initial avec lequel se connecter, ajouter ces variables au fichier local `bereta-backend/.env` (ou à l'environnement de lancement IntelliJ) :
 
 ```dotenv
 BOOTSTRAP_USER_EMAIL=responsable@example.com
-BOOTSTRAP_USER_PASSWORD=<mot-de-passe-local-de-12-caracteres-minimum>
+BOOTSTRAP_USER_PASSWORD=<mot-de-passe-local-de-6-caracteres-minimum>
 BOOTSTRAP_USER_NAME=Nom du responsable
 ```
 
-Le compte est créé au premier démarrage seulement si son adresse n'existe pas déjà. Le mot de passe n'est jamais journalisé ni inclus dans Angular. Pour le réinitialiser, une procédure dédiée sera nécessaire ; modifier la variable après la création ne change pas le compte existant.
+Le compte est créé au premier démarrage seulement si son adresse n'existe pas déjà. Le mot de passe n'est jamais journalisé ni inclus dans Angular. Modifier la variable après la création ne change pas le compte existant ; pour le réinitialiser, utiliser le parcours e-mail après avoir configuré SMTP ou définir le nouveau mot de passe par une procédure locale sécurisée.
 
-Routes d'authentification : `GET /api/auth/csrf` prépare le jeton CSRF, `POST /api/auth/login` prend `username` et `password` en formulaire, `GET /api/auth/me` renvoie le compte courant et `POST /api/auth/logout` ferme la session. L'interface Angular appelle ces routes et envoie automatiquement le jeton CSRF.
+Le responsable est défini par association et voit toutes ses caisses principales, locales et fiches membres. Le trésorier conserve un accès précis aux caisses locales qui lui sont attribuées ; il ne voit que les membres créés dans ses caisses ou inscrits à une campagne suivie dans celles-ci, avec leurs inscriptions et opérations autorisées. Les créations de caisses locales et de campagnes ainsi que la gestion des accès sont réservées aux responsables de l’association. Les contrôles sont faits dans les services backend, même si un identifiant d’une autre association ou caisse est fourni dans une URL.
 
-Les rôles sont enregistrés sur le compte, mais la restriction des données selon la caisse et les permissions spécifiques par rôle restent à implémenter. Les chiffres financiers du tableau de bord restent des exemples ; les paiements et l'historique des réaffectations restent à développer.
+Dans **Configuration → Accès des trésoriers**, le responsable crée un lien d’invitation à usage unique, valable 7 jours, pour une caisse locale. Il doit transmettre le lien en privé ; aucun e-mail n’est envoyé automatiquement. Le trésorier crée alors son compte et son mot de passe. Les comptes existants peuvent être ajoutés par `POST /api/caisses-principales/{id}/acces` ; les accès peuvent être désactivés avec `DELETE /api/caisses-principales/{id}/acces/{membershipId}`.
+
+Routes d'authentification : `GET /api/auth/csrf` prépare le jeton CSRF, `POST /api/auth/login` prend `username` et `password` en formulaire, `POST /api/auth/register` crée un compte, `GET /api/auth/me` renvoie le compte courant, `POST /api/auth/invitations/accept` accepte une invitation et `POST /api/auth/logout` ferme la session. La récupération utilise `POST /api/auth/password/forgot` puis `POST /api/auth/password/reset`. L'interface Angular appelle ces routes et envoie automatiquement le jeton CSRF.
+
+Les versements sont enregistrés de façon immuable, avec le compte auteur et la caisse locale, et leur montant ne peut pas dépasser le reste dû. Le tableau de bord calcule les montants depuis les inscriptions et paiements accessibles ; les montants attendus non définis sont exclus du calcul du reste dû.
+
+Une remise en attente est déduite du disponible local et ajoutée aux fonds en transit ; elle n’est pas encore incluse dans le solde central. À confirmation par le responsable, elle quitte les fonds en transit et rejoint le solde central. Une annulation par le responsable exige un motif et libère le montant dans la caisse locale. Le total détenu est calculé ainsi : disponible local + fonds en transit + solde central. Une remise ne change ni les cotisations encaissées ni ce total global. Les montants de fonds détenus sont provisoires tant que les dépenses ne sont pas suivies. Les corrections traçables de paiements, dépenses, reprise de soldes, historique des réaffectations et imports restent à développer.
 
 ## Lancer le backend
 
@@ -102,7 +153,7 @@ Depuis ce dossier, après avoir renseigné les variables d'environnement dans le
 ./gradlew bootRun
 ```
 
-Après avoir créé le compte initial, ouvrir l'interface Angular et se connecter. `GET /api/bonjour` demande désormais lui aussi une session ; un appel `curl` sans session reçoit `401 Unauthorized`.
+Après avoir créé ou configuré un compte, ouvrir l'interface Angular et se connecter. `GET /api/bonjour` reste protégé par session et sert uniquement d'endpoint de test sans données métier.
 
 Le backend écoute sur `http://localhost:8081`.
 

@@ -1,6 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, inject, signal } from '@angular/core';
-import { CurrencyPipe, DatePipe, UpperCasePipe } from '@angular/common';
+import { Component, computed, effect, inject, signal } from '@angular/core';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { filter, map } from 'rxjs';
+import { CurrencyPipe, DatePipe, LowerCasePipe, UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MemberService } from './members/member.service';
 import { CreateMemberRequest, Member, MemberCampaign } from './members/member.model';
@@ -9,12 +12,15 @@ import { FundService } from './funds/fund.service';
 import { Campaign, LocalFund } from './funds/fund.model';
 import { forkJoin } from 'rxjs';
 import { AuthService } from './auth/auth.service';
-import { AuthUser } from './auth/auth.model';
-import { LoginComponent } from './auth/login.component';
+import { FirstLoginComponent } from './auth/first-login.component';
+import { EmailVerificationComponent } from './auth/email-verification.component';
+import { PaymentService } from './payments/payment.service';
+import { AssociationService } from './associations/association.service';
+import { CreatePaymentRequest, Payment, PaymentEnrollment, PaymentMethod, PaymentSummary } from './payments/payment.model';
 
 @Component({
   selector: 'app-root',
-  imports: [CurrencyPipe, DatePipe, FormsModule, UpperCasePipe, FundSetupComponent, LoginComponent],
+  imports: [CurrencyPipe, DatePipe, FormsModule, LowerCasePipe, UpperCasePipe, FundSetupComponent, RouterLink, RouterOutlet, FirstLoginComponent, EmailVerificationComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
@@ -22,12 +28,37 @@ export class App {
   private readonly memberService = inject(MemberService);
   private readonly fundService = inject(FundService);
   private readonly authService = inject(AuthService);
+  private readonly paymentService = inject(PaymentService);
+  private readonly associationService = inject(AssociationService);
   protected readonly today = new Date();
   protected readonly isCheckingSession = signal(true);
-  protected readonly currentUser = signal<AuthUser | null>(null);
+  protected readonly currentUser = this.authService.currentUser;
+  protected readonly pendingEmailVerification = this.authService.pendingEmailVerification;
+  private readonly router = inject(Router);
+  private readonly currentUrl = toSignal(this.router.events.pipe(
+    filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+    map((event) => event.urlAfterRedirects)), { initialValue: this.router.url });
+  protected readonly isAdminRoute = computed(() => this.currentUrl().startsWith('/admin'));
+  protected readonly associations = this.associationService.associations;
+  protected readonly activeAssociation = this.associationService.activeAssociation;
+  protected readonly activeAssociationId = this.associationService.activeAssociationId;
+  protected readonly isCheckingAssociations = signal(true);
+  protected readonly associationLoadError = signal(false);
+  protected readonly associationCreateError = signal<string | null>(null);
+  protected readonly isCreatingAssociation = signal(false);
+  protected readonly showAssociationForm = signal(false);
+  protected associationName = '';
+  protected associationDescription = '';
+  protected associationEmail = '';
+  protected associationPhone = '';
+  protected associationAddress = '';
+  protected readonly hasPrimaryFunds = signal(false);
+  protected readonly isCheckingFunds = signal(false);
+  protected readonly fundLoadError = signal(false);
   protected readonly selectedFund = signal('Développement de Niogoméra');
   protected readonly searchTerm = signal('');
   protected readonly members = signal<Member[]>([]);
+  protected readonly accessibleLocalFunds = signal<LocalFund[]>([]);
   protected readonly isLoading = signal(true);
   protected readonly isSaving = signal(false);
   protected readonly showMemberForm = signal(false);
@@ -44,10 +75,26 @@ export class App {
   protected readonly isSavingEnrollment = signal(false);
   protected readonly enrollmentErrorMessage = signal<string | null>(null);
   protected readonly enrollmentSuccessMessage = signal<string | null>(null);
+  protected readonly paymentSummary = signal<PaymentSummary | null>(null);
+  protected readonly recentPayments = signal<Payment[]>([]);
+  protected readonly memberPayments = signal<Payment[]>([]);
+  protected readonly paymentTargets = signal<PaymentEnrollment[]>([]);
+  protected readonly showPaymentForm = signal(false);
+  protected readonly isLoadingPaymentTargets = signal(false);
+  protected readonly isSavingPayment = signal(false);
+  protected readonly isReviewingPayment = signal(false);
+  protected readonly paymentErrorMessage = signal<string | null>(null);
+  protected readonly paymentSuccessMessage = signal<string | null>(null);
+  protected selectedPaymentEnrollmentId = '';
+  protected paymentAmount = 0;
+  protected paymentDate = this.localDateToday();
+  protected paymentMethod: PaymentMethod = 'ESPECES';
+  protected paymentNote = '';
   protected firstName = '';
   protected lastName = '';
   protected phone = '';
   protected selectedCampaignId = '';
+  protected selectedCreateLocalFundId = '';
   protected selectedEnrollmentLocalFundId = '';
   protected readonly filteredMembers = computed(() => {
     const query = this.searchTerm().trim().toLocaleLowerCase('fr');
@@ -59,22 +106,92 @@ export class App {
   });
 
   constructor() {
-    this.authService.me().subscribe({
-      next: (user) => {
-        this.currentUser.set(user);
-        this.isCheckingSession.set(false);
-        this.loadMembers();
-      },
+    effect(() => {
+      const user = this.currentUser();
+      if (this.isCheckingSession() || !user || user.mustChangePassword) return;
+      this.loadAssociations();
+    });
+    effect(() => {
+      if (!this.currentUser()) return;
+      if (this.isCheckingAssociations()) return;
+      if (!this.activeAssociationId()) return;
+      this.isCheckingFunds.set(true);
+      this.fundLoadError.set(false);
+      this.loadAccessibleLocalFunds();
+      this.loadMembers();
+      this.loadPaymentData();
+    });
+    // Au chargement, l'access token (gardé en mémoire) est perdu : on le redemande grâce au cookie.
+    this.authService.restoreSession().subscribe({
+      next: () => this.isCheckingSession.set(false),
+      error: () => this.isCheckingSession.set(false),
+    });
+  }
+
+  protected loadAssociations(): void {
+    this.isCheckingAssociations.set(true);
+    this.associationLoadError.set(false);
+    this.associationService.list().subscribe({
+      next: () => this.isCheckingAssociations.set(false),
       error: () => {
-        this.currentUser.set(null);
-        this.isCheckingSession.set(false);
+        this.associationLoadError.set(true);
+        this.isCheckingAssociations.set(false);
       },
     });
   }
 
-  protected onAuthenticated(user: AuthUser): void {
-    this.currentUser.set(user);
+  protected selectAssociation(id: string): void {
+    this.associationService.select(id || null);
+    this.members.set([]);
+    this.recentPayments.set([]);
+    this.paymentSummary.set(null);
+    this.hasPrimaryFunds.set(false);
+    this.showFundSetup.set(false);
+    this.closeMemberForm();
+    this.closeEnrollment();
+    this.closePaymentForm();
+  }
+
+  protected createAssociation(): void {
+    if (this.isCreatingAssociation() || !this.associationName.trim()) return;
+    this.isCreatingAssociation.set(true);
+    this.associationCreateError.set(null);
+    this.associationService.create({
+      name: this.associationName.trim(),
+      description: this.associationDescription.trim() || undefined,
+      contactEmail: this.associationEmail.trim() || undefined,
+      contactPhone: this.associationPhone.trim() || undefined,
+      address: this.associationAddress.trim() || undefined,
+    }).subscribe({
+      next: () => {
+        this.associationName = '';
+        this.associationDescription = '';
+        this.associationEmail = '';
+        this.associationPhone = '';
+        this.associationAddress = '';
+        this.showAssociationForm.set(false);
+        this.isCreatingAssociation.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.associationCreateError.set(this.describeApiError(error));
+        this.isCreatingAssociation.set(false);
+      },
+    });
+  }
+
+  protected onFundSetupClosed(): void {
+    this.showFundSetup.set(false);
+    this.loadAccessibleLocalFunds();
     this.loadMembers();
+    this.loadPaymentData();
+  }
+
+  protected retryLoadFunds(): void {
+    this.fundLoadError.set(false);
+    this.isCheckingFunds.set(true);
+    this.loadAccessibleLocalFunds();
+    this.loadMembers();
+    this.loadPaymentData();
   }
 
   protected logout(): void {
@@ -94,18 +211,24 @@ export class App {
   }
 
   protected roleLabel(): string {
+    const active = this.activeAssociation();
+    if (active) return active.currentUserResponsible ? 'Responsable de l’association' : 'Trésorier local';
+    if (!this.hasPrimaryFunds()) return 'Compte BERETA';
     return this.currentUser()?.role === 'RESPONSABLE' ? 'Responsable de caisse' : 'Trésorier';
   }
 
   protected loadMembers(): void {
+    const associationId = this.activeAssociationId();
     this.isLoading.set(true);
     this.loadErrorMessage.set(null);
     this.memberService.list().subscribe({
       next: (members) => {
+        if (associationId !== this.activeAssociationId()) return;
         this.members.set(members);
         this.isLoading.set(false);
       },
       error: (error: HttpErrorResponse) => {
+        if (associationId !== this.activeAssociationId()) return;
         this.loadErrorMessage.set(this.describeApiError(error));
         this.isLoading.set(false);
       },
@@ -117,6 +240,9 @@ export class App {
     this.firstName = '';
     this.lastName = '';
     this.phone = '';
+    if (!this.accessibleLocalFunds().some((fund) => fund.id === this.selectedCreateLocalFundId)) {
+      this.selectedCreateLocalFundId = this.accessibleLocalFunds()[0]?.id ?? '';
+    }
     this.saveErrorMessage.set(null);
     this.showMemberForm.set(true);
   }
@@ -143,6 +269,7 @@ export class App {
       firstName: this.firstName.trim(),
       lastName: this.lastName.trim(),
       phone: this.phone.trim() || null,
+      localFundId: this.editingMemberId() ? undefined : this.selectedCreateLocalFundId,
     };
 
     this.isSaving.set(true);
@@ -190,6 +317,9 @@ export class App {
     if (error.status === 400) {
       return 'Vérifiez le prénom et le nom saisis, puis réessayez.';
     }
+    if (error.status === 403) {
+      return 'Vous n’avez pas accès à cette caisse ou à cette caisse locale.';
+    }
     if (error.status === 404) {
       return 'Cette route API est introuvable. Redémarrez le backend mis à jour sur le port 8081.';
     }
@@ -197,6 +327,46 @@ export class App {
       return 'Le backend a rencontré une erreur. Vérifiez ses logs et l’application de la migration de la table membres.';
     }
     return `La requête a échoué (HTTP ${error.status}). Réessayez.`;
+  }
+
+  private loadAccessibleLocalFunds(): void {
+    const associationId = this.activeAssociationId();
+    this.fundService.listPrimaryFunds().subscribe({
+      next: (funds) => {
+        if (associationId !== this.activeAssociationId()) return;
+        this.hasPrimaryFunds.set(funds.length > 0);
+        this.isCheckingFunds.set(false);
+        if (funds.length === 0) {
+          this.accessibleLocalFunds.set([]);
+          this.selectedCreateLocalFundId = '';
+          return;
+        }
+        forkJoin(funds.map((fund) => this.fundService.listLocalFunds(fund.id))).subscribe({
+          next: (groups) => {
+            if (associationId !== this.activeAssociationId()) return;
+            const localFunds = groups.flat().sort((a, b) =>
+              a.primaryFundName.localeCompare(b.primaryFundName, 'fr') || a.name.localeCompare(b.name, 'fr'),
+            );
+            this.accessibleLocalFunds.set(localFunds);
+            if (!localFunds.some((fund) => fund.id === this.selectedCreateLocalFundId)) {
+              this.selectedCreateLocalFundId = localFunds[0]?.id ?? '';
+            }
+          },
+          error: () => {
+            if (associationId !== this.activeAssociationId()) return;
+            this.accessibleLocalFunds.set([]);
+            this.selectedCreateLocalFundId = '';
+          },
+        });
+      },
+      error: () => {
+        this.accessibleLocalFunds.set([]);
+        this.selectedCreateLocalFundId = '';
+        this.hasPrimaryFunds.set(false);
+        this.fundLoadError.set(true);
+        this.isCheckingFunds.set(false);
+      },
+    });
   }
 
   protected updateSearch(event: Event): void {
@@ -211,10 +381,12 @@ export class App {
     forkJoin({
       campaigns: this.fundService.listCampaigns(),
       enrollments: this.memberService.listEnrollments(member.id),
+      payments: this.paymentService.historyForMember(member.id),
     }).subscribe({
-      next: ({ campaigns, enrollments }) => {
+      next: ({ campaigns, enrollments, payments }) => {
         this.enrollmentCampaigns.set(campaigns);
         this.memberEnrollments.set(enrollments);
+        this.memberPayments.set(payments);
         this.isLoadingEnrollments.set(false);
         this.onEnrollmentCampaignChange(campaigns[0]?.id ?? '');
       },
@@ -278,10 +450,122 @@ export class App {
     return `${campaign.name}${year} — ${campaign.primaryFundName} (${amount})`;
   }
 
+  protected openPaymentForm(): void {
+    this.showPaymentForm.set(true);
+    this.isReviewingPayment.set(false);
+    this.paymentErrorMessage.set(null);
+    this.paymentSuccessMessage.set(null);
+    this.paymentSuccessMessage.set(null);
+    this.isLoadingPaymentTargets.set(true);
+    this.paymentService.payableEnrollments().subscribe({
+      next: (targets) => {
+        this.paymentTargets.set(targets);
+        this.isLoadingPaymentTargets.set(false);
+        this.selectedPaymentEnrollmentId = targets[0]?.id ?? '';
+        this.paymentAmount = targets[0]?.remainingAmount ?? 0;
+      },
+      error: (error: HttpErrorResponse) => {
+        this.paymentErrorMessage.set(this.describeApiError(error));
+        this.isLoadingPaymentTargets.set(false);
+      },
+    });
+  }
+
+  protected closePaymentForm(): void {
+    this.showPaymentForm.set(false);
+    this.isReviewingPayment.set(false);
+    this.paymentErrorMessage.set(null);
+  }
+
+  protected selectedPaymentTarget(): PaymentEnrollment | undefined {
+    return this.paymentTargets().find((target) => target.id === this.selectedPaymentEnrollmentId);
+  }
+
+  protected onPaymentTargetChange(enrollmentId: string): void {
+    this.selectedPaymentEnrollmentId = enrollmentId;
+    this.paymentAmount = this.selectedPaymentTarget()?.remainingAmount ?? 0;
+    this.isReviewingPayment.set(false);
+  }
+
+  protected reviewPayment(): void {
+    const target = this.selectedPaymentTarget();
+    if (!target || this.paymentAmount <= 0 || this.paymentAmount > target.remainingAmount) return;
+    this.paymentErrorMessage.set(null);
+    this.isReviewingPayment.set(true);
+  }
+
+  protected savePayment(): void {
+    const target = this.selectedPaymentTarget();
+    if (!target || this.isSavingPayment() || this.paymentAmount <= 0 || this.paymentAmount > target.remainingAmount) return;
+    const request: CreatePaymentRequest = {
+      amount: this.paymentAmount,
+      paidOn: this.paymentDate,
+      paymentMethod: this.paymentMethod,
+      note: this.paymentNote.trim() || null,
+    };
+    this.isSavingPayment.set(true);
+    this.paymentErrorMessage.set(null);
+    this.paymentService.record(target.id, request).subscribe({
+      next: (payment) => {
+        this.recentPayments.update((payments) => [payment, ...payments].slice(0, 10));
+        if (this.selectedMemberForEnrollment()?.id === payment.memberId) {
+          this.memberPayments.update((payments) => [payment, ...payments]);
+        }
+        this.paymentSuccessMessage.set(`Paiement de ${payment.amount.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })} enregistré pour ${payment.memberName}.`);
+        this.paymentTargets.update((targets) => targets
+          .map((item) => item.id === target.id
+            ? { ...item, paidAmount: item.paidAmount + payment.amount, remainingAmount: item.remainingAmount - payment.amount,
+              status: item.remainingAmount - payment.amount <= 0 ? 'PAYE' as const : 'PARTIELLEMENT_PAYE' as const }
+            : item)
+          .filter((item) => item.remainingAmount > 0));
+        this.paymentSummary.update((summary) => summary ? {
+          ...summary,
+          collectedAmount: summary.collectedAmount + payment.amount,
+          remainingAmount: Math.max(0, summary.remainingAmount - payment.amount),
+          heldAmount: summary.heldAmount + payment.amount,
+        } : summary);
+        this.isSavingPayment.set(false);
+        this.closePaymentForm();
+        this.loadPaymentData();
+      },
+      error: (error: HttpErrorResponse) => {
+        this.paymentErrorMessage.set(error.status === 400
+          ? 'Le montant dépasse le reste à payer. Vérifiez le montant et réessayez.'
+          : this.describeApiError(error));
+        this.isSavingPayment.set(false);
+        this.isReviewingPayment.set(false);
+      },
+    });
+  }
+
+  protected paymentMethodLabel(method: PaymentMethod): string {
+    return ({ ESPECES: 'Espèces', VIREMENT: 'Virement', CHEQUE: 'Chèque', AUTRE: 'Autre' })[method];
+  }
+
+  private loadPaymentData(): void {
+    const associationId = this.activeAssociationId();
+    this.paymentService.summary().subscribe({ next: (summary) => {
+      if (associationId === this.activeAssociationId()) this.paymentSummary.set(summary);
+    } });
+    this.paymentService.history().subscribe({ next: (payments) => {
+      if (associationId === this.activeAssociationId()) this.recentPayments.set(payments.slice(0, 10));
+    } });
+  }
+
+  private localDateToday(): string {
+    const date = new Date();
+    const offset = date.getTimezoneOffset() * 60_000;
+    return new Date(date.getTime() - offset).toISOString().slice(0, 10);
+  }
+
   private finishLogout(): void {
-    this.currentUser.set(null);
+    this.authService.clearSession();
+    this.associationService.clear();
+    this.hasPrimaryFunds.set(false);
+    this.isCheckingFunds.set(false);
     this.members.set([]);
     this.closeMemberForm();
     this.closeEnrollment();
+    this.memberPayments.set([]);
   }
 }

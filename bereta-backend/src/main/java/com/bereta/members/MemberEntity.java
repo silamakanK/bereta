@@ -1,10 +1,17 @@
 package com.bereta.members;
 
+import com.bereta.associations.AssociationEntity;
+import com.bereta.auth.UserAccountEntity;
+import com.bereta.funds.PrimaryFundEntity;
+import com.bereta.funds.LocalFundEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -20,6 +27,10 @@ public class MemberEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "association_id", nullable = false)
+    private AssociationEntity association;
+
     @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;
 
@@ -28,6 +39,18 @@ public class MemberEntity {
 
     @Column(length = 30)
     private String phone;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by_user_id")
+    private UserAccountEntity createdBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_in_primary_fund_id")
+    private PrimaryFundEntity createdInPrimaryFund;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_in_local_fund_id")
+    private LocalFundEntity createdInLocalFund;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -38,10 +61,16 @@ public class MemberEntity {
     protected MemberEntity() {
     }
 
-    public MemberEntity(String firstName, String lastName, String phone) {
+    public MemberEntity(AssociationEntity association, String firstName, String lastName, String phone,
+                        UserAccountEntity createdBy,
+                        PrimaryFundEntity createdInPrimaryFund, LocalFundEntity createdInLocalFund) {
+        this.association = association;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phone = phone;
+        this.createdBy = createdBy;
+        this.createdInPrimaryFund = createdInPrimaryFund;
+        this.createdInLocalFund = createdInLocalFund;
     }
 
     @PrePersist
@@ -60,6 +89,8 @@ public class MemberEntity {
         return id;
     }
 
+    public AssociationEntity getAssociation() { return association; }
+
     public String getFirstName() {
         return firstName;
     }
@@ -71,6 +102,10 @@ public class MemberEntity {
     public String getPhone() {
         return phone;
     }
+
+    public UserAccountEntity getCreatedBy() { return createdBy; }
+    public PrimaryFundEntity getCreatedInPrimaryFund() { return createdInPrimaryFund; }
+    public LocalFundEntity getCreatedInLocalFund() { return createdInLocalFund; }
 
     public void updateDetails(String firstName, String lastName, String phone) {
         this.firstName = firstName;

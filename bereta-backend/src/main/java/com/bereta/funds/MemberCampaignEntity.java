@@ -1,5 +1,6 @@
 package com.bereta.funds;
 
+import com.bereta.associations.AssociationEntity;
 import com.bereta.members.MemberEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,6 +28,10 @@ public class MemberCampaignEntity {
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "association_id", nullable = false)
+    private AssociationEntity association;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "member_id", nullable = false)
     private MemberEntity member;
 
@@ -50,6 +55,7 @@ public class MemberCampaignEntity {
     public MemberCampaignEntity(MemberEntity member, CampaignEntity campaign,
                                 LocalFundEntity localFund, BigDecimal expectedAmount) {
         this.member = member;
+        this.association = member.getAssociation();
         this.campaign = campaign;
         this.localFund = localFund;
         this.expectedAmount = expectedAmount;
@@ -61,6 +67,7 @@ public class MemberCampaignEntity {
     }
 
     public UUID getId() { return id; }
+    public AssociationEntity getAssociation() { return association; }
     public MemberEntity getMember() { return member; }
     public CampaignEntity getCampaign() { return campaign; }
     public LocalFundEntity getLocalFund() { return localFund; }

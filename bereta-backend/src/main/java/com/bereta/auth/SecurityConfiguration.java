@@ -1,28 +1,38 @@
 package com.bereta.auth;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import com.bereta.auth.token.BeretaJwtAuthenticationConverter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.csrf.CsrfToken;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
-import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
-import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
-import org.springframework.util.StringUtils;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.io.IOException;
-import java.util.function.Supplier;
+import java.util.Arrays;
+import java.util.List;
 
+/**
+ * API sans état : access token JWT dans l'en-tête Authorization (pas de cookie de session,
+ * donc pas de CSRF à protéger), refresh token en cookie HttpOnly SameSite=Strict limité à
+ * /api/auth et protégé en plus par l'en-tête X-Bereta-Refresh.
+ */
 @Configuration
 public class SecurityConfiguration {
+
+    private static final String[] PUBLIC_AUTH_ROUTES = {
+            "/api/auth/register", "/api/auth/register/verify",
+            "/api/auth/login", "/api/auth/login/phone", "/api/auth/login/verify",
+            "/api/auth/otp/resend", "/api/auth/refresh", "/api/auth/logout",
+            "/api/auth/password/forgot", "/api/auth/password/reset", "/api/auth/password/reset/code"
+    };
 
     @Bean
     PasswordEncoder passwordEncoder() {
@@ -30,65 +40,40 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    CookieCsrfTokenRepository csrfTokenRepository() {
-        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
-        repository.setCookiePath("/");
-        return repository;
-    }
-
-    @Bean
-    SecurityFilterChain securityFilterChain(
-            HttpSecurity http,
-            CookieCsrfTokenRepository csrfTokenRepository,
-            ObjectMapper objectMapper
-    ) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http, BeretaJwtAuthenticationConverter jwtConverter)
+            throws Exception {
         http
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(csrfTokenRepository)
-                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> { })
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/auth/csrf", "/api/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, PUBLIC_AUTH_ROUTES).permitAll()
+                        .requestMatchers("/error").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
-                .exceptionHandling(exceptions -> exceptions
-                        .authenticationEntryPoint((request, response, exception) -> response.sendError(401)))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
-                .formLogin(form -> form
-                        .loginProcessingUrl("/api/auth/login")
-                        .usernameParameter("username")
-                        .passwordParameter("password")
-                        .successHandler((request, response, authentication) -> {
-                            response.setStatus(HttpServletResponse.SC_OK);
-                            response.setContentType("application/json");
-                            response.setCharacterEncoding("UTF-8");
-                            BeretaUserDetails user = (BeretaUserDetails) authentication.getPrincipal();
-                            objectMapper.writeValue(response.getWriter(), AuthUserResponse.from(user));
-                        })
-                        .failureHandler((request, response, exception) -> response.sendError(401, "Identifiants invalides"))
-                        .permitAll())
-                .logout(logout -> logout
-                        .logoutUrl("/api/auth/logout")
-                        .deleteCookies("JSESSIONID")
-                        .logoutSuccessHandler((request, response, authentication) -> response.setStatus(HttpServletResponse.SC_NO_CONTENT))
-                        .permitAll());
-
+                .oauth2ResourceServer(resourceServer -> resourceServer
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter)))
+                .addFilterAfter(new PasswordChangeRequiredFilter(), BearerTokenAuthenticationFilter.class);
         return http.build();
     }
 
-    private static final class SpaCsrfTokenRequestHandler implements CsrfTokenRequestHandler {
-        private final CsrfTokenRequestHandler plain = new CsrfTokenRequestAttributeHandler();
-        private final CsrfTokenRequestHandler xor = new XorCsrfTokenRequestAttributeHandler();
-
-        @Override
-        public void handle(HttpServletRequest request, HttpServletResponse response,
-                           Supplier<CsrfToken> csrfToken) {
-            xor.handle(request, response, csrfToken);
-            csrfToken.get();
-        }
-
-        @Override
-        public String resolveCsrfTokenValue(HttpServletRequest request, CsrfToken csrfToken) {
-            String header = request.getHeader(csrfToken.getHeaderName());
-            return (StringUtils.hasText(header) ? plain : xor).resolveCsrfTokenValue(request, csrfToken);
-        }
+    @Bean
+    CorsConfigurationSource corsConfigurationSource(
+            @Value("${bereta.cors.allowed-origins:http://localhost:4200}") String allowedOrigins) {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim).filter(origin -> !origin.isEmpty()).toList());
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Association-Id",
+                AuthController.REFRESH_HEADER));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**", configuration);
+        return source;
     }
 }

@@ -7,4 +7,6 @@ import java.util.UUID;
 
 public interface PrimaryFundRepository extends JpaRepository<PrimaryFundEntity, UUID> {
     List<PrimaryFundEntity> findAllByOrderByNameAsc();
+    List<PrimaryFundEntity> findAllByAssociationIdOrderByNameAsc(UUID associationId);
+    long countByAssociationId(UUID associationId);
 }

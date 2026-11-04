@@ -8,4 +8,5 @@ import java.util.UUID;
 public interface CampaignRepository extends JpaRepository<CampaignEntity, UUID> {
     List<CampaignEntity> findAllByOrderByCreatedAtDesc();
     List<CampaignEntity> findAllByPrimaryFundIdOrderByCreatedAtDesc(UUID primaryFundId);
+    List<CampaignEntity> findAllByPrimaryFundIdInOrderByCreatedAtDesc(List<UUID> primaryFundIds);
 }

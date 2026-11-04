@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+
+<html lang="fr"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100%;margin:0;padding:0;}body{overscroll-behavior-y:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-tertiary": "#ffffff",
+          "surface-container-low": "#f2f3ff",
+          "on-error-container": "#93000a",
+          "on-tertiary-fixed": "#2f1500",
+          "secondary-container": "#316bf3",
+          "on-secondary-fixed": "#00174b",
+          "inverse-on-surface": "#eef0ff",
+          "background": "#faf8ff",
+          "tertiary-fixed-dim": "#ffb77d",
+          "secondary-fixed-dim": "#b4c5ff",
+          "surface-bright": "#faf8ff",
+          "inverse-surface": "#283044",
+          "secondary-fixed": "#dbe1ff",
+          "primary-fixed": "#a6f4b5",
+          "surface-container": "#eaedff",
+          "outline": "#707a6f",
+          "on-primary-container": "#93e0a2",
+          "on-tertiary-container": "#ffc292",
+          "surface-tint": "#1f6c3a",
+          "tertiary-fixed": "#ffdcc3",
+          "on-background": "#131b2e",
+          "on-secondary-fixed-variant": "#003ea8",
+          "on-secondary-container": "#fefcff",
+          "on-primary-fixed": "#00210b",
+          "surface-container-lowest": "#ffffff",
+          "on-tertiary-fixed-variant": "#6e3900",
+          "tertiary-container": "#874700",
+          "surface-container-high": "#e2e7ff",
+          "surface-container-highest": "#dae2fd",
+          "on-primary-fixed-variant": "#005226",
+          "inverse-primary": "#8bd79b",
+          "primary-fixed-dim": "#8bd79b",
+          "on-primary": "#ffffff",
+          "outline-variant": "#bfc9bd",
+          "on-surface": "#131b2e",
+          "error": "#ba1a1a",
+          "secondary": "#0051d5",
+          "tertiary": "#653400",
+          "error-container": "#ffdad6",
+          "primary-container": "#166534",
+          "surface-variant": "#dae2fd",
+          "primary": "#004c22",
+          "surface": "#faf8ff",
+          "surface-dim": "#d2d9f4",
+          "on-surface-variant": "#404940",
+          "on-error": "#ffffff",
+          "on-secondary": "#ffffff"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px"
+        },
+        "spacing": {
+          "space-lg": "1.5rem",
+          "space-md": "1rem",
+          "gutter-desktop": "2rem",
+          "margin-desktop": "3rem",
+          "gutter-tablet": "1.5rem",
+          "space-xl": "2.25rem",
+          "space-sm": "0.75rem",
+          "margin-tablet": "2rem",
+          "space-xs": "0.375rem",
+          "gutter": "1rem",
+          "margin": "1rem"
+        },
+        "fontFamily": {
+          "body-md": ["Plus Jakarta Sans"],
+          "headline-md": ["Plus Jakarta Sans"],
+          "label-lg": ["Plus Jakarta Sans"],
+          "label-md": ["Plus Jakarta Sans"],
+          "headline-lg": ["Plus Jakarta Sans"],
+          "headline-sm": ["Plus Jakarta Sans"],
+          "amount-display": ["Plus Jakarta Sans"],
+          "body-lg": ["Plus Jakarta Sans"],
+          "body-bold": ["Plus Jakarta Sans"],
+          "headline-lg-mobile": ["Plus Jakarta Sans"]
+        },
+        "fontSize": {
+          "body-md": ["16px", {"lineHeight": "26px", "fontWeight": "400"}],
+          "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+          "label-lg": ["16px", {"lineHeight": "24px", "fontWeight": "600"}],
+          "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "600"}],
+          "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+          "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+          "amount-display": ["36px", {"lineHeight": "44px", "fontWeight": "800"}],
+          "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "500"}],
+          "body-bold": ["16px", {"lineHeight": "26px", "fontWeight": "600"}],
+          "headline-lg-mobile": ["26px", {"lineHeight": "34px", "fontWeight": "700"}]
+        }
+      }
+    }
+  }</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-xs min-w-0 flex-1"><button aria-label="Retour" class="w-11 h-11 -ml-2 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container-low transition-colors shrink-0" onclick="history.back()" type="button"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><img alt="Brand logo. - Primary color: #166534
+- Font: plusJakartaSans
+- Mode: light
+- Roundness: rounded-md
+" class="h-7 w-auto object-contain shrink-0" src="https://lh3.googleusercontent.com/aida/AEtjO1VQIKpwXVoOA5VKNZPTCYn2JkXpoRSqsXUDDj9lU42mgNcOA6_vTlrkdajYpV3mDv93r9Z_0bn4t27xAyh5lPp25AeuYUAhp_iZdI56LEkh1NlJAt15xcqre2QWwsI7__l3EM-pxDhtzRLjLWfVULVEx-Joq58rLyS2-71PyXJZFIECPl5wgBO9QG_6cqRjaiigc2oNCSZLpR92k8SkwWQbsENa1R97kSh3jMphQjYt5a-LyPfGiZ9m4Nk"/><h1 class="font-headline-sm text-headline-sm text-on-surface truncate">Créer Une Caisse</h1></div><div class="flex items-center gap-space-xs shrink-0"><button aria-label="Aide ou options" class="w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">more_vert</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-safe bg-surface min-h-screen"><div class="flex flex-col w-full px-margin pb-space-xl">
+<!-- Stepper Indicator -->
+<div class="py-space-md">
+<div class="flex items-center justify-between relative">
+<!-- Background Connecting Line -->
+<div class="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-1 bg-surface-container rounded-full z-0"></div>
+<!-- Active Progress Bar Segment -->
+<div class="absolute left-6 w-1/2 top-1/2 -translate-y-1/2 h-1 bg-primary rounded-full z-0"></div>
+<!-- Step 1 -->
+<div class="relative z-10 flex flex-col items-center gap-space-xs">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<span class="font-label-md text-label-md text-primary font-bold">1. Caisse</span>
+</div>
+<!-- Step 2 (Active) -->
+<div class="relative z-10 flex flex-col items-center gap-space-xs">
+<div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md ring-4 ring-primary-fixed/40">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">person</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-bold">2. Trésorier</span>
+</div>
+<!-- Step 3 -->
+<div class="relative z-10 flex flex-col items-center gap-space-xs">
+<div class="w-10 h-10 rounded-full bg-surface-container text-outline flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">verified</span>
+</div>
+<span class="font-label-md text-label-md text-outline">3. Validation</span>
+</div>
+</div>
+</div>
+<!-- Page Introduction -->
+<div class="mt-space-sm mb-space-md">
+<h2 class="font-headline-md text-headline-md text-on-surface">Désigner le trésorier</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+      Affectez le trésorier qui tiendra la caisse physique et enregistrera les cotisations de cette section.
+    </p>
+</div>
+<!-- Main Configuration Form Card -->
+<div class="flex flex-col gap-space-md">
+<!-- Phone Number Field -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
+<label class="block font-label-lg text-label-lg text-on-surface mb-2" for="treasurer-phone">
+        Numéro de téléphone portable <span class="text-error">*</span>
+</label>
+<div class="relative flex items-center">
+<div class="absolute left-3 flex items-center gap-1.5 text-on-surface-variant pointer-events-none">
+<span class="material-symbols-outlined text-[22px]">phone_iphone</span>
+<span class="font-label-md text-label-md font-bold text-on-surface">FR +33</span>
+</div>
+<input class="w-full h-[52px] pl-28 pr-11 bg-surface-container-low rounded-lg font-body-bold text-body-bold text-on-surface outline-none cursor-default" id="treasurer-phone" readonly="" type="tel" value="06 45 78 90 12"/>
+<div class="absolute right-3 flex items-center text-primary">
+<span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">info</span>
+        Identifiant unique utilisé pour l’authentification et les notifications SMS.
+      </p>
+</div>
+<!-- Alert / Existing Account Found Banner -->
+<div class="bg-surface-container-high rounded-xl p-space-md shadow-sm overflow-hidden relative">
+<!-- Ambient Visual Badge -->
+<div class="flex items-start gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+<span class="material-symbols-outlined text-[22px]">person_search</span>
+</div>
+<div class="min-w-0 flex-1">
+<div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-md text-label-md font-bold mb-1">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+            Compte Bereta existant détecté
+          </div>
+<p class="font-body-md text-body-md text-on-surface font-medium leading-relaxed">
+            Un profil au nom de <strong class="text-on-surface font-bold">Samba Soumaré</strong> (06 45 78 90 12) est déjà enregistré comme trésorier pour <span class="italic text-on-surface-variant font-semibold">« Solidarité Rapatriement Mali »</span>.
+          </p>
+</div>
+</div>
+<!-- Action Choice: Interactive Radio Group -->
+<div aria-label="Option d'attribution de compte" class="mt-space-md flex flex-col gap-space-sm" role="radiogroup">
+<!-- Option A: Link Existing (Selected) -->
+<label class="flex items-start gap-3 p-space-sm rounded-lg bg-surface-container-lowest shadow-sm cursor-pointer transition-all" id="label-opt-link" onclick="selectOption('link')">
+<div class="mt-1 flex items-center justify-center shrink-0">
+<div class="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-on-primary" id="radio-link-indicator">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</div>
+</div>
+<div class="min-w-0 flex-1">
+<div class="flex items-center gap-2 flex-wrap">
+<span class="font-label-lg text-label-lg text-on-surface font-bold">Rattacher le compte existant</span>
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-md text-label-md font-bold text-xs">Recommandé</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5">
+              Affecter <strong>Samba Soumaré</strong> à cette nouvelle caisse. Il utilisera ses identifiants actuels pour basculer facilement d’une caisse à l'autre.
+            </p>
+</div>
+</label>
+<!-- Option B: Create Separate Profile -->
+<label class="flex items-start gap-3 p-space-sm rounded-lg bg-surface-container-low cursor-pointer transition-all opacity-85 hover:opacity-100" id="label-opt-new" onclick="selectOption('new')">
+<div class="mt-1 flex items-center justify-center shrink-0">
+<div class="w-6 h-6 rounded-full bg-surface-container-highest flex items-center justify-center text-transparent" id="radio-new-indicator">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</div>
+</div>
+<div class="min-w-0 flex-1">
+<span class="font-label-lg text-label-lg text-on-surface font-bold">Créer un profil indépendant</span>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5">
+              Créer un nouvel accès distinct avec un mot de passe dédié, sans fusionner les historiques associatifs.
+            </p>
+</div>
+</label>
+</div>
+</div>
+<!-- Password Management Card -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm transition-all duration-200" id="password-container">
+<div class="flex items-center justify-between mb-2">
+<label class="font-label-lg text-label-lg text-on-surface font-bold" for="treasurer-password">
+          Mot de passe initial
+        </label>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md" id="pwd-status-pill">
+<span class="material-symbols-outlined text-[16px]">lock_reset</span>
+          Compte existant
+        </span>
+</div>
+<div class="relative flex items-center">
+<input class="w-full h-[52px] px-4 pr-12 bg-surface-container-low rounded-lg font-body-bold text-body-bold text-on-surface-variant tracking-wider outline-none cursor-not-allowed" disabled="" id="treasurer-password" type="text" value="••••••••••••"/>
+<button aria-label="Afficher ou masquer" class="absolute right-3 w-10 h-10 flex items-center justify-center text-outline cursor-not-allowed opacity-60" id="pwd-toggle-btn" tabindex="-1" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility_off</span>
+</button>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 flex items-center gap-1.5" id="pwd-hint-text">
+<span class="material-symbols-outlined text-[18px] text-primary shrink-0">verified_user</span>
+        Aucun mot de passe requis : le titulaire se connectera avec ses identifiants actuels.
+      </p>
+</div>
+<!-- Rights & Scope Notice Card -->
+<div class="bg-surface-container-low p-space-md rounded-xl flex items-start gap-3">
+<div class="w-9 h-9 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">admin_panel_settings</span>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="font-label-lg text-label-lg text-on-surface font-bold">Périmètre des droits conférés</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1 leading-normal">
+          Le trésorier aura un accès restreint et sécurisé uniquement aux cotisations, aux versements physiques et à la liste des membres de la <strong class="text-on-surface">Caisse Foyer Aubervilliers</strong>.
+        </p>
+</div>
+</div>
+<!-- Final Submission Buttons -->
+<div class="mt-space-sm flex flex-col gap-space-sm">
+<button class="w-full h-[56px] min-h-[52px] rounded-lg bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg font-bold flex items-center justify-center gap-2 shadow-md active:scale-[0.99] transition-all" id="btn-validate" onclick="confirmAndCreate()" type="button">
+<span class="material-symbols-outlined text-[22px]">check</span>
+        Valider et créer la caisse locale
+      </button>
+<button class="w-full h-[52px] min-h-[52px] rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md font-bold flex items-center justify-center gap-2 transition-colors" onclick="history.back()" type="button">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+        Retour à l'étape 1
+      </button>
+</div>
+</div>
+<!-- Interactive Feedback Drawer / Toast (Hidden by default) -->
+<div class="hidden mt-space-md p-space-md rounded-xl bg-primary-fixed text-on-primary-fixed flex items-start gap-3 shadow-lg" id="success-banner">
+<span class="material-symbols-outlined text-[24px] text-primary">task_alt</span>
+<div class="flex-1">
+<div class="font-label-lg text-label-lg font-bold text-on-primary-fixed">Caisse Foyer Aubervilliers créée !</div>
+<div class="font-body-md text-body-md text-on-primary-fixed mt-0.5">Samba Soumaré recevra une notification SMS confirmant sa désignation.</div>
+</div>
+</div>
+</div>
+<script>
+  let currentSelection = 'link';
+
+  function selectOption(option) {
+    currentSelection = option;
+    const radioLink = document.getElementById('radio-link-indicator');
+    const radioNew = document.getElementById('radio-new-indicator');
+    const labelLink = document.getElementById('label-opt-link');
+    const labelNew = document.getElementById('label-opt-new');
+    const pwdInput = document.getElementById('treasurer-password');
+    const pwdPill = document.getElementById('pwd-status-pill');
+    const pwdHint = document.getElementById('pwd-hint-text');
+
+    if (option === 'link') {
+      // Toggle Radios
+      radioLink.className = 'w-6 h-6 rounded-full bg-primary flex items-center justify-center text-on-primary';
+      radioNew.className = 'w-6 h-6 rounded-full bg-surface-container-highest flex items-center justify-center text-transparent';
+      labelLink.className = 'flex items-start gap-3 p-space-sm rounded-lg bg-surface-container-lowest shadow-sm cursor-pointer transition-all';
+      labelNew.className = 'flex items-start gap-3 p-space-sm rounded-lg bg-surface-container-low cursor-pointer transition-all opacity-85 hover:opacity-100';
+
+      // Password disabled state
+      pwdInput.value = '••••••••••••';
+      pwdInput.disabled = true;
+      pwdInput.className = 'w-full h-[52px] px-4 pr-12 bg-surface-container-low rounded-lg font-body-bold text-body-bold text-on-surface-variant tracking-wider outline-none cursor-not-allowed';
+      
+      pwdPill.innerHTML = '<span class="material-symbols-outlined text-[16px]">lock_reset</span> Compte existant';
+      pwdPill.className = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md';
+
+      pwdHint.innerHTML = '<span class="material-symbols-outlined text-[18px] text-primary shrink-0">verified_user</span> Aucun mot de passe requis : Samba utilisera ses identifiants actuels.';
+    } else {
+      // Toggle Radios
+      radioLink.className = 'w-6 h-6 rounded-full bg-surface-container-highest flex items-center justify-center text-transparent';
+      radioNew.className = 'w-6 h-6 rounded-full bg-primary flex items-center justify-center text-on-primary';
+      labelLink.className = 'flex items-start gap-3 p-space-sm rounded-lg bg-surface-container-low cursor-pointer transition-all opacity-85 hover:opacity-100';
+      labelNew.className = 'flex items-start gap-3 p-space-sm rounded-lg bg-surface-container-lowest shadow-sm cursor-pointer transition-all';
+
+      // Password editable/generated state
+      pwdInput.value = 'BERETA-2025-Aubervilliers';
+      pwdInput.disabled = false;
+      pwdInput.className = 'w-full h-[52px] px-4 pr-12 bg-surface-container-lowest rounded-lg font-body-bold text-body-bold text-on-surface outline-none ring-2 ring-primary';
+      
+      pwdPill.innerHTML = '<span class="material-symbols-outlined text-[16px]">sms</span> Envoi SMS';
+      pwdPill.className = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-md text-label-md';
+
+      pwdHint.innerHTML = '<span class="material-symbols-outlined text-[18px] text-secondary shrink-0">send_to_mobile</span> Mot de passe temporaire pré-généré qui lui sera transmis automatiquement par SMS.';
+    }
+  }
+
+  function confirmAndCreate() {
+    const btn = document.getElementById('btn-validate');
+    const toast = document.getElementById('success-banner');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[22px]">progress_activity</span> Création en cours...';
+
+    setTimeout(() => {
+      btn.className = 'w-full h-[56px] min-h-[52px] rounded-lg bg-primary text-on-primary font-label-lg text-label-lg font-bold flex items-center justify-center gap-2 shadow-md cursor-default';
+      btn.innerHTML = '<span class="material-symbols-outlined text-[22px]">check_circle</span> Caisse créée avec succès';
+      toast.classList.remove('hidden');
+      toast.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 700);
+  }
+</script></main></body></html>

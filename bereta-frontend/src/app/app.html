@@ -1,5 +1,38 @@
 @if (isCheckingSession()) {
   <main class="session-check" role="status"><span class="session-spinner"></span>Vérification de votre connexion…</main>
+} @else if (currentUser()?.mustChangePassword) {
+  <app-first-login />
+} @else if (currentUser() && pendingEmailVerification()) {
+  <app-email-verification />
+} @else if (currentUser()?.role === 'ADMIN' && isAdminRoute()) {
+  <router-outlet />
+} @else if (currentUser() && (isCheckingAssociations() || (activeAssociationId() && isCheckingFunds()))) {
+  <main class="session-check" role="status"><span class="session-spinner"></span>Vérification de votre connexion…</main>
+} @else if (currentUser() && associationLoadError()) {
+  <main class="onboarding-page"><section class="onboarding-card"><h1>Associations indisponibles</h1><p>Impossible de charger les espaces auxquels votre compte a accès.</p><button class="login-submit" type="button" (click)="loadAssociations()">Réessayer</button><button class="onboarding-link" type="button" (click)="logout()">Se déconnecter</button></section></main>
+} @else if (currentUser() && associations().length > 0 && !activeAssociationId()) {
+  <main class="onboarding-page"><section class="onboarding-card"><p class="login-eyebrow">VOTRE ESPACE ASSOCIATIF</p><h1>Choisir une association</h1><p>Les membres et les opérations restent séparés dans chaque association.</p>
+    <label class="association-choice-label">Association active<select [ngModel]="activeAssociationId() || ''" (ngModelChange)="selectAssociation($event)"><option value="" disabled>Choisir une association</option>@for (association of associations(); track association.id) { <option [value]="association.id">{{ association.name }}{{ association.currentUserResponsible ? ' · Responsable' : ' · Trésorier' }}</option> }</select></label>
+    <button class="onboarding-link" type="button" (click)="logout()">Se déconnecter</button></section></main>
+} @else if (currentUser() && fundLoadError()) {
+  <main class="onboarding-page"><section class="onboarding-card"><a class="login-brand" routerLink="/" aria-label="BERETA, accueil"><span class="login-mark">B</span><span>bereta<span class="brand-dot">.</span></span></a><h1>Connexion à vos caisses impossible</h1><p>Le serveur n’a pas pu charger vos accès. Réessayez dans un instant.</p><button class="login-submit" type="button" (click)="retryLoadFunds()">Réessayer</button><button class="onboarding-link" type="button" (click)="logout()">Se déconnecter</button></section></main>
+} @else if (currentUser() && activeAssociationId() && !hasPrimaryFunds()) {
+  <main class="onboarding-page">
+    <section class="onboarding-card" aria-labelledby="onboarding-title">
+      <a class="login-brand" routerLink="/" aria-label="BERETA, accueil"><span class="login-mark">B</span><span>bereta<span class="brand-dot">.</span></span></a>
+      @if (!showFundSetup()) {
+        <p class="login-eyebrow">VOTRE ESPACE ASSOCIATIF</p>
+        <h1 id="onboarding-title">Votre compte est prêt</h1>
+        <p>Créez votre première caisse pour commencer à organiser les cotisations. Vous en serez le responsable.</p>
+        <button class="login-submit" type="button" (click)="showFundSetup.set(true)">Créer ma première caisse</button>
+        <div class="onboarding-invitation"><strong>Vous rejoignez une caisse existante ?</strong><p>Demandez à son responsable de vous transmettre une invitation, puis ouvrez le lien reçu.</p></div>
+        <button class="onboarding-link" type="button" (click)="logout()">Se déconnecter</button>
+      } @else {
+        <button class="onboarding-link onboarding-back" type="button" (click)="showFundSetup.set(false)">← Retour à l’accueil</button>
+        <app-fund-setup (close)="onFundSetupClosed()" />
+      }
+    </section>
+  </main>
 } @else if (currentUser()) {
 <div class="app-shell">
   <aside class="sidebar" aria-label="Navigation principale">
@@ -8,14 +41,16 @@
       <span class="brand-name">bereta<span>.</span></span>
     </a>
 
-    <div class="workspace-label">ESPACE TRÉSORIER</div>
+    <div class="workspace-label">{{ associations().length === 0 ? 'ESPACE PERSONNEL' : activeAssociation()?.currentUserResponsible ? 'RESPONSABLE ASSOCIATION' : 'ESPACE TRÉSORIER' }}</div>
     <nav class="main-nav">
       <a class="nav-link is-active" href="#accueil" aria-current="page">
-        <span class="nav-icon" aria-hidden="true">⌂</span><span>Ma caisse</span>
+        <span class="nav-icon" aria-hidden="true">⌂</span><span>{{ associations().length === 0 ? 'Accueil' : 'Ma caisse' }}</span>
       </a>
+      @if (associations().length > 0) {
           <a class="nav-link" href="#membres"><span class="nav-icon" aria-hidden="true">♙</span><span>Membres</span></a>
       <a class="nav-link" href="#paiements"><span class="nav-icon" aria-hidden="true">↗</span><span>Paiements</span></a>
       <a class="nav-link" href="#bilans"><span class="nav-icon" aria-hidden="true">▤</span><span>Bilans</span></a>
+      }
     </nav>
 
     <div class="sidebar-bottom">
@@ -35,8 +70,12 @@
 
   <main class="main-content" id="accueil">
     <header class="topbar">
-      <div class="breadcrumb"><span>Mon espace</span><span aria-hidden="true">/</span><strong>Ma caisse</strong></div>
+      <div class="breadcrumb"><span>Mon espace</span><span aria-hidden="true">/</span><strong>{{ associations().length === 0 ? 'Accueil' : 'Ma caisse' }}</strong></div>
       <div class="topbar-right">
+        @if (associations().length > 0) {
+          <label class="active-association-picker"><span>Association active</span><select [ngModel]="activeAssociationId()" (ngModelChange)="selectAssociation($event)" aria-label="Association active">@for (association of associations(); track association.id) { <option [value]="association.id">{{ association.name }}</option> }</select></label>
+        }
+        <button class="association-add-button" type="button" (click)="showAssociationForm.set(!showAssociationForm())">＋ Association</button>
         <span class="demo-badge"><span></span> Démonstration</span>
         <button class="icon-button notification-button" type="button" aria-label="Notifications">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg>
@@ -47,13 +86,37 @@
     </header>
 
     <div class="page-content">
+      @if (showAssociationForm()) {
+        <form class="association-inline-form" (ngSubmit)="createAssociation()">
+          <div><strong>Nouvelle association</strong><p>Elle aura ses propres membres, caisses et bilans.</p></div>
+          <label>Nom *<input name="associationNameInline" [(ngModel)]="associationName" required maxlength="160" /></label>
+          <label>Description <input name="associationDescriptionInline" [(ngModel)]="associationDescription" maxlength="1000" /></label>
+          @if (associationCreateError()) { <p class="api-message api-error" role="alert">{{ associationCreateError() }}</p> }
+          <button class="primary-button" type="submit" [disabled]="isCreatingAssociation() || !associationName.trim()">{{ isCreatingAssociation() ? 'Création…' : 'Créer' }}</button>
+        </form>
+      }
+      @if (associations().length === 0) {
+        <section class="welcome-row" aria-labelledby="page-title">
+          <div>
+            <p class="eyebrow">{{ today | date:'EEEE d MMMM y':'':'fr-FR' | uppercase }}</p>
+            <h1 id="page-title">Bonjour {{ userDisplayName() }} <span aria-hidden="true">✳</span></h1>
+            <p class="welcome-subtitle">Bienvenue sur votre espace BERETA.</p>
+          </div>
+        </section>
+        <section class="panel empty-state" aria-labelledby="empty-association-title">
+          <span aria-hidden="true">⌂</span>
+          <strong id="empty-association-title">Votre tableau de bord est prêt</strong>
+          <p>Créez une association pour gérer ses caisses, ses membres et ses cotisations. Vous pouvez aussi ouvrir un lien d’invitation reçu de son responsable.</p>
+          <button class="primary-button" type="button" (click)="showAssociationForm.set(true)">＋ Créer mon association</button>
+        </section>
+      } @else {
       <section class="welcome-row" aria-labelledby="page-title">
         <div>
           <p class="eyebrow">{{ today | date:'EEEE d MMMM y':'':'fr-FR' | uppercase }}</p>
           <h1 id="page-title">Bonjour {{ userDisplayName() }} <span aria-hidden="true">✳</span></h1>
           <p class="welcome-subtitle">Voici la situation de votre caisse aujourd’hui.</p>
         </div>
-        <button class="primary-button" type="button">
+        <button class="primary-button" type="button" (click)="openPaymentForm()">
           <span class="button-plus" aria-hidden="true">＋</span> Enregistrer un paiement
         </button>
       </section>
@@ -73,7 +136,7 @@
         </button>
       </section>
 
-      @if (showFundSetup()) { <app-fund-setup (close)="showFundSetup.set(false)" /> }
+      @if (showFundSetup()) { <app-fund-setup (close)="onFundSetupClosed()" /> }
 
       <section class="stats-grid" aria-label="Résumé de la caisse">
         <article class="stat-card">
@@ -82,20 +145,19 @@
           <span class="stat-foot">dans votre caisse locale</span>
         </article>
         <article class="stat-card">
-          <div class="stat-top"><span class="stat-icon collected" aria-hidden="true">€</span><span class="stat-note">Campagne 2026</span></div>
-          <p class="stat-label">Cotisations encaissées</p><strong class="stat-value">{{ 960 | currency:'EUR':'symbol-narrow':'1.0-0':'fr-FR' }}</strong>
-          <div class="progress-track" role="progressbar" aria-label="Progression des cotisations encaissées" aria-valuenow="64" aria-valuemin="0" aria-valuemax="100"><span></span></div>
-          <span class="stat-foot">64 % de l’objectif de la campagne</span>
+          <div class="stat-top"><span class="stat-icon collected" aria-hidden="true">€</span><span class="stat-note">Toutes campagnes</span></div>
+          <p class="stat-label">Cotisations encaissées</p><strong class="stat-value">{{ paymentSummary()?.collectedAmount ?? 0 | currency:'EUR':'symbol-narrow':'1.0-0':'fr-FR' }}</strong>
+          <span class="stat-foot">sur les inscriptions de vos caisses</span>
         </article>
         <article class="stat-card">
-          <div class="stat-top"><span class="stat-icon due" aria-hidden="true">◷</span><span class="stat-note">32 membres concernés</span></div>
-          <p class="stat-label">Reste à collecter</p><strong class="stat-value">{{ 540 | currency:'EUR':'symbol-narrow':'1.0-0':'fr-FR' }}</strong>
-          <span class="stat-foot">sur les cotisations attendues</span>
+          <div class="stat-top"><span class="stat-icon due" aria-hidden="true">◷</span><span class="stat-note">{{ paymentSummary()?.memberCount ?? 0 }} membres</span></div>
+          <p class="stat-label">Reste à collecter</p><strong class="stat-value">{{ paymentSummary()?.remainingAmount ?? 0 | currency:'EUR':'symbol-narrow':'1.0-0':'fr-FR' }}</strong>
+          <span class="stat-foot">sur les montants définis</span>
         </article>
         <article class="stat-card held-card">
-          <div class="stat-top"><span class="stat-icon held" aria-hidden="true">▣</span><span class="held-status"><i></i> À jour</span></div>
-          <p class="stat-label">Argent détenu</p><strong class="stat-value">{{ 720 | currency:'EUR':'symbol-narrow':'1.0-0':'fr-FR' }}</strong>
-          <span class="stat-foot">dans votre caisse locale</span>
+          <div class="stat-top"><span class="stat-icon held" aria-hidden="true">▣</span><span class="stat-note">Montants enregistrés</span></div>
+          <p class="stat-label">Total des cotisations</p><strong class="stat-value">{{ paymentSummary()?.expectedAmount ?? 0 | currency:'EUR':'symbol-narrow':'1.0-0':'fr-FR' }}</strong>
+          <span class="stat-foot">pour les campagnes suivies</span>
         </article>
       </section>
 
@@ -120,8 +182,16 @@
                 <label>Prénom *<input name="firstName" [(ngModel)]="firstName" required maxlength="100" autocomplete="given-name" /></label>
                 <label>Nom *<input name="lastName" [(ngModel)]="lastName" required maxlength="100" autocomplete="family-name" /></label>
                 <label>Téléphone <span class="optional-label">(facultatif)</span><input name="phone" [(ngModel)]="phone" maxlength="30" autocomplete="tel" inputmode="tel" /></label>
+                @if (!editingMemberId()) {
+                  <label>Caisse locale *
+                    <select name="memberLocalFund" [(ngModel)]="selectedCreateLocalFundId" required [disabled]="accessibleLocalFunds().length === 0">
+                      @for (fund of accessibleLocalFunds(); track fund.id) { <option [value]="fund.id">{{ fund.name }} · {{ fund.primaryFundName }}</option> }
+                    </select>
+                  </label>
+                }
               </div>
-              <div class="form-actions"><button class="cancel-button" type="button" (click)="closeMemberForm()">Annuler</button><button class="primary-button form-submit" type="submit" [disabled]="isSaving()">{{ isSaving() ? 'Enregistrement…' : editingMemberId() ? 'Enregistrer les modifications' : 'Enregistrer le membre' }}</button></div>
+              @if (!editingMemberId() && accessibleLocalFunds().length === 0) { <p class="enrollment-hint">Créez ou rejoignez une caisse locale avant d’ajouter un membre.</p> }
+              <div class="form-actions"><button class="cancel-button" type="button" (click)="closeMemberForm()">Annuler</button><button class="primary-button form-submit" type="submit" [disabled]="isSaving() || (!editingMemberId() && !selectedCreateLocalFundId)">{{ isSaving() ? 'Enregistrement…' : editingMemberId() ? 'Enregistrer les modifications' : 'Enregistrer le membre' }}</button></div>
             </form>
           }
           @if (loadErrorMessage()) { <p class="api-message api-error" role="alert">{{ loadErrorMessage() }} <button type="button" (click)="loadMembers()">Réessayer</button></p> }
@@ -185,6 +255,12 @@
                     <p class="enrollment-empty">Aucune campagne pour ce membre.</p>
                   }
                 </div>
+                <div class="member-payment-history">
+                  <strong>Historique des paiements</strong>
+                  @for (payment of memberPayments(); track payment.id) {
+                    <div class="member-payment-history-row"><span>{{ payment.campaignName }} · {{ payment.paidOn | date:'d MMM y':'UTC':'fr-FR' }} · {{ paymentMethodLabel(payment.paymentMethod) }}</span><strong>{{ payment.amount | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</strong></div>
+                  } @empty { <p class="enrollment-empty">Aucun versement enregistré.</p> }
+                </div>
               }
             </section>
           }
@@ -194,8 +270,8 @@
         <aside class="side-panels">
           <article class="panel quick-panel">
             <div class="panel-heading compact-heading"><div><h2>Actions rapides</h2><p>Les tâches les plus courantes</p></div></div>
-            <button class="quick-action" type="button"><span class="quick-icon quick-search" aria-hidden="true">⌕</span><span><strong>Rechercher un membre</strong><small>Consulter son suivi</small></span><b aria-hidden="true">→</b></button>
-            <button class="quick-action" type="button"><span class="quick-icon quick-pay" aria-hidden="true">＋</span><span><strong>Enregistrer un paiement</strong><small>Saisir une cotisation reçue</small></span><b aria-hidden="true">→</b></button>
+            <a class="quick-action" href="#membres"><span class="quick-icon quick-search" aria-hidden="true">⌕</span><span><strong>Rechercher un membre</strong><small>Consulter son suivi</small></span><b aria-hidden="true">→</b></a>
+            <button class="quick-action" type="button" (click)="openPaymentForm()"><span class="quick-icon quick-pay" aria-hidden="true">＋</span><span><strong>Enregistrer un paiement</strong><small>Saisir une cotisation reçue</small></span><b aria-hidden="true">→</b></button>
             <button class="quick-action" type="button"><span class="quick-icon quick-import" aria-hidden="true">↑</span><span><strong>Importer mon cahier</strong><small>Photo, PDF, Excel ou CSV</small></span><b aria-hidden="true">→</b></button>
           </article>
 
@@ -205,17 +281,69 @@
           </article>
         </aside>
       </section>
-      <p class="demo-disclaimer">Les indicateurs financiers sont des exemples ; la liste des membres vient du backend.</p>
+      <section class="panel payments-panel" id="paiements" aria-labelledby="payments-title">
+        <div class="panel-heading"><div><h2 id="payments-title">Derniers paiements</h2><p>Les 10 versements les plus récents dans vos caisses.</p></div><button class="text-button" type="button" (click)="openPaymentForm()">＋ Enregistrer un paiement</button></div>
+        @if (paymentSuccessMessage()) { <p class="api-message api-success" role="status">{{ paymentSuccessMessage() }}</p> }
+        @for (payment of recentPayments(); track payment.id) {
+          <article class="payment-row">
+            <span class="payment-avatar" aria-hidden="true">€</span>
+            <div class="payment-copy"><strong>{{ payment.memberName }}</strong><span>{{ payment.campaignName }} · {{ payment.localFundName }}</span></div>
+            <div class="payment-date"><span>{{ payment.paidOn | date:'d MMM y':'UTC':'fr-FR' }}</span><small>{{ payment.paymentMethod | lowercase }}</small></div>
+            <strong class="payment-amount">+{{ payment.amount | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</strong>
+          </article>
+        } @empty {
+          <div class="payments-empty"><strong>Aucun paiement enregistré</strong><p>Les versements saisis apparaîtront ici.</p><button class="text-button" type="button" (click)="openPaymentForm()">Enregistrer le premier paiement</button></div>
+        }
+      </section>
+      }
     </div>
   </main>
 
+  @if (showPaymentForm()) {
+    <div class="payment-overlay" (click)="$event.target === $event.currentTarget && closePaymentForm()">
+      <section class="payment-dialog" role="dialog" aria-modal="true" aria-labelledby="payment-dialog-title">
+        <div class="payment-dialog-heading"><div><span class="eyebrow">COTISATION</span><h2 id="payment-dialog-title">Enregistrer un paiement</h2><p>Le versement sera conservé dans l’historique de la caisse.</p></div><button class="enrollment-close" type="button" (click)="closePaymentForm()" aria-label="Fermer">×</button></div>
+        @if (paymentErrorMessage()) { <p class="api-message api-error" role="alert">{{ paymentErrorMessage() }}</p> }
+        @if (paymentSuccessMessage()) { <p class="api-message api-success" role="status">{{ paymentSuccessMessage() }}</p> }
+        @if (isLoadingPaymentTargets()) {
+          <div class="member-state"><span class="loading-dot"></span>Chargement des cotisations à payer…</div>
+        } @else if (paymentTargets().length === 0) {
+          <div class="payments-empty"><strong>Aucune cotisation à encaisser</strong><p>Inscrivez d’abord un membre à une campagne avec un montant défini.</p></div>
+        } @else if (!isReviewingPayment()) {
+          <form class="payment-form" (ngSubmit)="reviewPayment()">
+            <label>Membre et campagne *
+              <select name="paymentEnrollment" [ngModel]="selectedPaymentEnrollmentId" (ngModelChange)="onPaymentTargetChange($event)" required>
+                @for (target of paymentTargets(); track target.id) { <option [value]="target.id">{{ target.memberName }} · {{ target.campaignName }}{{ target.campaignYear ? ' ' + target.campaignYear : '' }} — reste {{ target.remainingAmount | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</option> }
+              </select>
+            </label>
+            @if (selectedPaymentTarget(); as target) {
+              <div class="payment-balance"><span>Déjà reçu : <strong>{{ target.paidAmount | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</strong></span><span>Reste dû : <strong>{{ target.remainingAmount | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</strong></span></div>
+              <div class="payment-fields">
+                <label>Montant reçu *<span class="amount-input"><input name="paymentAmount" type="number" min="0.01" step="0.01" [max]="target.remainingAmount" [(ngModel)]="paymentAmount" required inputmode="decimal" /><span>€</span></span></label>
+                <label>Date du paiement *<input name="paymentDate" type="date" [(ngModel)]="paymentDate" required /></label>
+                <label>Mode de paiement *<select name="paymentMethod" [(ngModel)]="paymentMethod" required><option value="ESPECES">Espèces</option><option value="VIREMENT">Virement</option><option value="CHEQUE">Chèque</option><option value="AUTRE">Autre</option></select></label>
+                <label class="payment-note">Note <span class="optional-label">(facultative)</span><textarea name="paymentNote" [(ngModel)]="paymentNote" maxlength="500" rows="2"></textarea></label>
+              </div>
+            }
+            <div class="payment-dialog-actions"><button class="cancel-button" type="button" (click)="closePaymentForm()">Annuler</button><button class="primary-button" type="submit" [disabled]="!selectedPaymentTarget() || paymentAmount <= 0 || paymentAmount > (selectedPaymentTarget()?.remainingAmount ?? 0)">Vérifier le paiement</button></div>
+          </form>
+        } @else if (selectedPaymentTarget(); as target) {
+          <div class="payment-review"><h3>Confirmer le versement</h3><dl><div><dt>Membre</dt><dd>{{ target.memberName }}</dd></div><div><dt>Campagne</dt><dd>{{ target.campaignName }} · {{ target.localFundName }}</dd></div><div><dt>Montant</dt><dd>{{ paymentAmount | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</dd></div><div><dt>Date et mode</dt><dd>{{ paymentDate | date:'d MMM y':'UTC':'fr-FR' }} · {{ paymentMethodLabel(paymentMethod) }}</dd></div><div><dt>Reste après paiement</dt><dd>{{ target.remainingAmount - paymentAmount | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</dd></div></dl><p>Vérifiez les informations avant d’enregistrer. Le paiement apparaîtra dans l’historique.</p></div>
+          <div class="payment-dialog-actions"><button class="cancel-button" type="button" (click)="isReviewingPayment.set(false)">Modifier</button><button class="primary-button" type="button" (click)="savePayment()" [disabled]="isSavingPayment()">{{ isSavingPayment() ? 'Enregistrement…' : 'Confirmer le paiement' }}</button></div>
+        }
+      </section>
+    </div>
+  }
+
+  @if (associations().length > 0) {
   <nav class="mobile-nav" aria-label="Navigation mobile">
     <a class="mobile-nav-item is-active" href="#accueil" aria-current="page"><span aria-hidden="true">⌂</span>Ma caisse</a>
     <a class="mobile-nav-item" href="#membres"><span aria-hidden="true">♙</span>Membres</a>
     <a class="mobile-nav-item" href="#paiements"><span aria-hidden="true">↗</span>Paiements</a>
     <a class="mobile-nav-item" href="#bilans"><span aria-hidden="true">▤</span>Bilans</a>
   </nav>
+  }
 </div>
 } @else {
-  <app-login (signedIn)="onAuthenticated($event)" />
+  <router-outlet />
 }

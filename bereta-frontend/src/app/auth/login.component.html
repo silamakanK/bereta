@@ -1,24 +1,56 @@
 <main class="login-page">
   <section class="login-card" aria-labelledby="login-title">
-    <a class="login-brand" href="/" aria-label="BERETA, accueil"><span class="login-mark">B</span><span>bereta<span class="brand-dot">.</span></span></a>
-    <p class="login-eyebrow">VOTRE ESPACE ASSOCIATIF</p>
-    <h1 id="login-title">Ravi de vous revoir</h1>
-    <p class="login-intro">Connectez-vous pour gérer les membres et les cotisations de votre association.</p>
+    <a class="login-brand" routerLink="/" aria-label="BERETA, accueil"><span class="login-mark">B</span><span>bereta<span class="brand-dot">.</span></span></a>
 
-    @if (errorMessage()) { <p class="login-error" role="alert">{{ errorMessage() }}</p> }
+    @switch (step()) {
+      @case ('credentials') {
+        <p class="login-eyebrow">GESTION DES COTISATIONS ASSOCIATIVES</p>
+        <h1 id="login-title">Connexion à votre compte</h1>
+        <p class="login-intro">Accédez à vos caisses et cotisations en toute sérénité.</p>
+        @if (errorMessage()) { <p class="login-error" role="alert">{{ errorMessage() }}</p> }
+        <form novalidate (ngSubmit)="submitCredentials()">
+          <label for="login-identifier">Numéro de téléphone ou e-mail</label>
+          <input id="login-identifier" name="identifier" [(ngModel)]="identifier" autocomplete="username" inputmode="text" required autofocus maxlength="320" placeholder="Ex : 06 12 34 56 78" [attr.aria-invalid]="identifierError()" aria-describedby="login-identifier-help" />
+          <span class="field-help" id="login-identifier-help">Utilisez le numéro enregistré auprès de votre association.</span>
 
-    <form (ngSubmit)="submit()">
-      <label for="login-email">Adresse e-mail</label>
-      <input id="login-email" name="email" type="email" [(ngModel)]="email" autocomplete="username" required autofocus />
+          <div class="password-label"><label for="login-password">Mot de passe</label><a routerLink="/mot-de-passe-oublie">Mot de passe oublié ?</a></div>
+          <div class="login-password-control"><input id="login-password" name="password" [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="password" autocomplete="current-password" required [attr.aria-invalid]="passwordError()" /><button class="password-toggle" type="button" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [attr.aria-pressed]="showPassword()">{{ showPassword() ? 'Masquer' : 'Afficher' }}</button></div>
 
-      <div class="password-label"><label for="login-password">Mot de passe</label></div>
-      <input id="login-password" name="password" type="password" [(ngModel)]="password" autocomplete="current-password" required />
+          <button class="login-submit" type="submit" [disabled]="isSubmitting()">{{ isSubmitting() ? 'Vérification…' : 'Se connecter' }}</button>
+        </form>
+        <div class="login-divider"><span>ou</span></div>
+        <p class="login-help">Vous êtes responsable d’une association ?</p>
+        <a class="login-secondary" routerLink="/inscription">Créer un compte responsable</a>
+        <p class="login-help"><strong>Vous êtes trésorier ?</strong> Votre responsable crée votre compte et vous remet un mot de passe provisoire.</p>
+      }
 
-      <button class="login-submit" type="submit" [disabled]="isSubmitting()">{{ isSubmitting() ? 'Connexion…' : 'Se connecter' }}</button>
-    </form>
+      @case ('phone') {
+        <p class="login-eyebrow">SÉCURISATION DU COMPTE</p>
+        <h1 id="login-title">Ajoutez votre téléphone</h1>
+        <p class="login-intro">Votre compte n’a pas encore de numéro. À chaque connexion, un code vous sera envoyé par SMS.</p>
+        @if (errorMessage()) { <p class="login-error" role="alert">{{ errorMessage() }}</p> }
+        <form novalidate (ngSubmit)="submitPhone()">
+          <label for="login-phone">Numéro de téléphone portable</label>
+          <input id="login-phone" name="phone" type="tel" [(ngModel)]="phone" autocomplete="tel" inputmode="tel" required autofocus maxlength="30" placeholder="06 12 34 56 78" />
+          <button class="login-submit" type="submit" [disabled]="isSubmitting()">{{ isSubmitting() ? 'Envoi…' : 'Recevoir le code par SMS' }}</button>
+        </form>
+        <button class="login-secondary" type="button" (click)="backToCredentials()">← Retour</button>
+      }
 
-    <p class="login-help">Votre accès est créé par le responsable de l’association. Contactez-le si vous n’avez pas encore de compte.</p>
+      @case ('code') {
+        <p class="login-eyebrow">VÉRIFICATION EN 2 ÉTAPES</p>
+        <h1 id="login-title">Saisissez le code reçu par SMS</h1>
+        @if (errorMessage()) { <p class="login-error" role="alert">{{ errorMessage() }}</p> }
+        @if (challenge(); as current) {
+          <app-otp-step [challengeId]="current.challengeId!" [destination]="current.maskedPhone"
+                        [resendInSeconds]="current.resendAvailableInSeconds ?? 60" [busy]="isSubmitting()"
+                        [error]="errorMessage()" submitLabel="Se connecter"
+                        (verify)="submitCode($event)" (challengeRenewed)="renewChallenge($event)" />
+        }
+        <button class="login-secondary" type="button" (click)="backToCredentials()">← Changer d’identifiant</button>
+      }
+    }
     <p class="login-security"><span aria-hidden="true">▣</span> Connexion sécurisée</p>
   </section>
-  <p class="login-footer">BERETA · Gestion des cotisations associatives</p>
+  <p class="login-footer">BERETA · Rigueur, Transparence &amp; Solidarité</p>
 </main>

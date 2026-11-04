@@ -1,0 +1,106 @@
+<main class="admin-shell">
+  <header class="admin-header">
+    <a class="admin-brand" routerLink="/admin"><span class="admin-mark">B</span><strong>bereta<span>.</span></strong><small>ADMINISTRATION GÉNÉRALE</small></a>
+    <div class="admin-header-actions">
+      <label><span>Contexte métier actif</span><select [ngModel]="activeAssociationId() || ''" (ngModelChange)="selectAssociation($event)"><option value="">Aucune association sélectionnée</option>@for (association of associations(); track association.id) { <option [value]="association.id">{{ association.name }}</option> }</select></label>
+      <button class="admin-logout" type="button" (click)="logout()">Se déconnecter</button>
+    </div>
+  </header>
+
+  <div class="admin-layout">
+    <aside class="admin-sidebar" aria-label="Navigation administrateur">
+      <p>ADMINISTRATION</p>
+      <button [class.selected]="tab() === 'overview'" (click)="changeTab('overview')">Vue d’ensemble</button>
+      <button [class.selected]="tab() === 'users'" (click)="changeTab('users')">Utilisateurs</button>
+      <button [class.selected]="tab() === 'associations'" (click)="changeTab('associations')">Associations</button>
+      <button [class.selected]="tab() === 'audit'" (click)="changeTab('audit')">Historique des actions</button>
+      <div class="admin-scope-note"><strong>Accès global</strong><span>Les opérations métier restent présentées dans leur association.</span></div>
+    </aside>
+
+    <section class="admin-main">
+      <div class="admin-page-heading">
+        <div><p class="admin-eyebrow">ESPACE SÉCURISÉ · {{ currentUser()?.email }}</p>
+          <h1>{{ tab() === 'overview' ? 'Vue d’ensemble' : tab() === 'users' ? 'Utilisateurs' : tab() === 'associations' ? 'Associations' : 'Historique administratif' }}</h1>
+          <p>{{ tab() === 'overview' ? 'Indicateurs globaux, sans agrégation de soldes entre associations.' : tab() === 'users' ? 'Comptes, état et rôles globaux.' : tab() === 'associations' ? 'Fiches, responsables et cycle de vie des associations.' : 'Actions sensibles conservées pour audit.' }}</p>
+        </div>
+        @if (activeAssociationId()) { <button class="admin-primary" type="button" (click)="openBusinessWorkspace()">Ouvrir la gestion métier de l’association →</button> }
+      </div>
+
+      @if (error()) { <p class="admin-message error" role="alert">{{ error() }}</p> }
+      @if (success()) { <p class="admin-message success" role="status">{{ success() }}</p> }
+
+      @if (tab() === 'overview') {
+        <section class="admin-metrics" aria-label="Indicateurs globaux">
+          <article><span>Associations actives</span><strong>{{ overview()?.activeAssociations ?? '—' }}</strong><small>sur {{ overview()?.associations ?? 0 }} au total</small></article>
+          <article><span>Utilisateurs actifs</span><strong>{{ overview()?.activeUsers ?? '—' }}</strong><small>{{ overview()?.administrators ?? 0 }} administrateur(s) actif(s)</small></article>
+          <article><span>Caisses principales</span><strong>{{ overview()?.primaryFunds ?? '—' }}</strong><small>{{ overview()?.localFunds ?? 0 }} caisses locales</small></article>
+          <article><span>Membres</span><strong>{{ overview()?.members ?? '—' }}</strong><small>fiches indépendantes par association</small></article>
+        </section>
+        <section class="admin-panel workspace-panel">
+          <div><p class="admin-eyebrow">PÉRIMÈTRE MÉTIER</p><h2>Intervenir dans une association</h2><p>Choisissez une association en haut de page. Le tableau de bord métier existant s’ouvrira avec ce contexte affiché ; ses listes et ses montants restent limités à cette association.</p></div>
+          <button class="admin-primary" type="button" [disabled]="!activeAssociationId()" (click)="openBusinessWorkspace()">Ouvrir les caisses, membres et opérations</button>
+        </section>
+        <section class="admin-panel"><div class="panel-title"><div><h2>Actions récentes</h2><p>Les derniers changements sensibles.</p></div><button class="admin-link" type="button" (click)="changeTab('audit')">Tout l’historique</button></div>
+          @for (entry of auditRows().slice(0, 5); track entry.id) { <div class="audit-row"><time>{{ entry.createdAt | date:'d MMM y, HH:mm':'':'fr-FR' }}</time><strong>{{ entry.action }}</strong><span>{{ entry.actorEmail }} · {{ entry.targetType }} {{ entry.targetId }}</span></div> }
+          @empty { <p class="admin-empty">Aucune action administrative enregistrée.</p> }
+        </section>
+      }
+
+      @if (tab() === 'users') {
+        <section class="admin-panel">
+          <div class="panel-title"><div><h2>Comptes utilisateurs</h2><p>{{ userTotal() }} compte(s) · pagination de 10 lignes</p></div><button class="admin-primary" type="button" (click)="showCreateUser.set(!showCreateUser())">＋ Créer un compte</button></div>
+          @if (showCreateUser()) {
+            <form class="admin-form user-create-form" (ngSubmit)="createUser()">
+              <h3>Nouveau compte</h3><p>Le mot de passe est défini via une saisie sécurisée et n’est jamais renvoyé par l’API. Pour promouvoir un administrateur, utilisez la commande documentée.</p>
+              <div class="form-grid"><label>Nom affiché *<input name="newDisplayName" [(ngModel)]="newDisplayName" required maxlength="120" autocomplete="name" /></label>
+                <label>Adresse e-mail *<input name="newEmail" type="email" [(ngModel)]="newEmail" required maxlength="320" autocomplete="email" /></label>
+                <label>Mot de passe provisoire *<div class="password-field"><input name="newPassword" [type]="passwordVisible() ? 'text' : 'password'" [(ngModel)]="newPassword" required minlength="6" maxlength="72" autocomplete="new-password" /><button type="button" (click)="passwordVisible.set(!passwordVisible())">{{ passwordVisible() ? 'Masquer' : 'Afficher' }}</button></div><small>6 caractères minimum, 72 octets UTF-8 maximum.</small></label>
+                <label>Rôle global<select name="newRole" [(ngModel)]="newRole"><option value="TRESORIER">Trésorier</option><option value="RESPONSABLE">Responsable</option></select></label></div>
+              <div class="form-actions"><button class="admin-secondary" type="button" (click)="showCreateUser.set(false)">Annuler</button><button class="admin-primary" [disabled]="saving() || newPassword.length < 6">{{ saving() ? 'Création…' : 'Créer le compte' }}</button></div>
+            </form>
+          }
+          @if (selectedUser(); as user) {
+            <form class="admin-form" (ngSubmit)="updateUser()"><h3>Modifier {{ user.email }}</h3>
+              <div class="form-grid"><label>Nom affiché<input name="editDisplayName" [(ngModel)]="editDisplayName" required maxlength="120" /></label><label>Adresse e-mail<input name="editEmail" type="email" [(ngModel)]="editEmail" required maxlength="320" /></label>
+                <label>Rôle<select name="editRole" [(ngModel)]="editRole"><option value="TRESORIER">Trésorier</option><option value="RESPONSABLE">Responsable</option>@if (user.role === 'ADMIN') { <option value="ADMIN">Administrateur (conserver)</option> }</select></label></div>
+              <div class="form-actions"><button class="admin-secondary" type="button" (click)="selectedUser.set(null)">Annuler</button><button class="admin-primary" [disabled]="saving()">Enregistrer</button></div>
+            </form>
+          }
+          <form class="admin-search" (ngSubmit)="loadUsers(0)"><input name="userQuery" [(ngModel)]="userQuery" placeholder="Rechercher par nom ou e-mail" aria-label="Rechercher un utilisateur" /><button class="admin-secondary">Rechercher</button></form>
+          <div class="table-scroll"><table><thead><tr><th>Compte</th><th>Rôle</th><th>État</th><th>Créé le</th><th>Actions</th></tr></thead><tbody>
+            @for (user of users(); track user.id) { <tr><td><strong>{{ user.displayName }}</strong><small>{{ user.email }}</small></td><td><span class="role-pill">{{ user.role }}</span></td><td><span class="status-pill" [class.inactive]="!user.enabled">{{ user.enabled ? 'Actif' : 'Désactivé' }}</span></td><td>{{ user.createdAt | date:'d MMM y':'':'fr-FR' }}</td><td class="row-actions"><button class="admin-link" type="button" (click)="startEditUser(user)">Modifier</button><button class="admin-link" type="button" [disabled]="busyUserId() === user.id" (click)="setUserEnabled(user, !user.enabled)">{{ user.enabled ? 'Désactiver' : 'Activer' }}</button></td></tr> }
+            @empty { <tr><td colspan="5" class="admin-empty">{{ loading() ? 'Chargement…' : 'Aucun compte trouvé.' }}</td></tr> }
+          </tbody></table></div>
+          <div class="pagination"><span>{{ entryRangeStart(userPage(), userTotal()) }}–{{ entryRangeEnd(userPage(), userTotal()) }} sur {{ userTotal() }}</span><div><button class="admin-secondary" (click)="userPageMove(-1)" [disabled]="userPage() === 0">Précédent</button><button class="admin-secondary" (click)="userPageMove(1)" [disabled]="userPage() + 1 >= userPages()">Suivant</button></div></div>
+        </section>
+      }
+
+      @if (tab() === 'associations') {
+        <section class="admin-panel">
+          <div class="panel-title"><div><h2>Associations</h2><p>{{ associationsTotal() }} association(s) · les archives restent consultables</p></div><button class="admin-primary" type="button" (click)="showCreateAssociation.set(!showCreateAssociation())">＋ Créer une association</button></div>
+          @if (showCreateAssociation()) { <form class="admin-form" (ngSubmit)="createAssociation()"><h3>Créer une association</h3><div class="form-grid">
+            <label>Nom *<input name="associationName" [(ngModel)]="associationName" required maxlength="160" /></label><label>Responsable existant *<input name="responsibleEmail" type="email" [(ngModel)]="responsibleEmail" required autocomplete="email" /></label>
+            <label>Description<input name="associationDescription" [(ngModel)]="associationDescription" maxlength="1000" /></label><label>E-mail de contact<input name="associationEmail" type="email" [(ngModel)]="associationEmail" /></label><label>Téléphone<input name="associationPhone" type="tel" [(ngModel)]="associationPhone" /></label><label>Adresse<input name="associationAddress" [(ngModel)]="associationAddress" /></label>
+          </div><div class="form-actions"><button class="admin-secondary" type="button" (click)="showCreateAssociation.set(false)">Annuler</button><button class="admin-primary" [disabled]="saving()">Créer</button></div></form> }
+          <form class="admin-search" (ngSubmit)="loadAssociationsPage(0)"><input name="associationQuery" [(ngModel)]="associationQuery" placeholder="Rechercher une association" aria-label="Rechercher une association" /><button class="admin-secondary">Rechercher</button></form>
+          <div class="association-list">@for (association of associationRows(); track association.id) { <article class="association-card">
+            <div class="association-card-heading"><div><span class="status-pill" [class.inactive]="association.status === 'ARCHIVED'">{{ association.status === 'ACTIVE' ? 'Active' : 'Archivée' }}</span><h3>{{ association.name }}</h3><p>{{ association.description || 'Aucune description' }}</p></div><div class="row-actions"><button class="admin-link" type="button" (click)="editAssociation(association)">Modifier</button>@if (association.status === 'ACTIVE') { <button class="admin-link danger" type="button" (click)="archiveAssociation(association)">Archiver</button> }</div></div>
+            @if (editingAssociationId() === association.id) { <form class="admin-form compact-form" (ngSubmit)="updateAssociation(association)"><div class="form-grid"><label>Nom<input name="editAssocName" [(ngModel)]="associationName" required /></label><label>Description<input name="editAssocDescription" [(ngModel)]="associationDescription" /></label><label>E-mail de contact<input name="editAssocEmail" [(ngModel)]="associationEmail" type="email" /></label><label>Téléphone<input name="editAssocPhone" [(ngModel)]="associationPhone" /></label><label>Adresse<input name="editAssocAddress" [(ngModel)]="associationAddress" /></label></div><div class="form-actions"><button class="admin-secondary" type="button" (click)="editingAssociationId.set(null)">Annuler</button><button class="admin-primary" [disabled]="saving()">Enregistrer</button></div></form> }
+            <div class="association-stats"><span><strong>{{ association.primaryFundCount }}</strong> caisses principales</span><span><strong>{{ association.localFundCount }}</strong> caisses locales</span><span><strong>{{ association.memberCount }}</strong> membres</span></div>
+            <div class="responsibles"><strong>Responsables</strong><span>{{ association.responsibleEmails.length ? association.responsibleEmails.join(', ') : 'Aucun responsable actif' }}</span><button class="admin-link" type="button" (click)="addResponsible(association)">＋ Ajouter</button></div>
+            @if (extraResponsibleFor() === association.id) { <form class="add-responsible" (ngSubmit)="saveResponsible(association)"><label>Compte existant<input name="extraResponsibleEmail" type="email" [(ngModel)]="extraResponsibleEmail" required /></label><button class="admin-primary" [disabled]="saving()">Ajouter</button><button class="admin-secondary" type="button" (click)="extraResponsibleFor.set(null)">Annuler</button></form> }
+            <button class="association-context-link" type="button" [disabled]="association.status !== 'ACTIVE'" (click)="selectAssociation(association.id); openBusinessWorkspace()">Ouvrir son espace métier →</button>
+          </article> } @empty { <p class="admin-empty">{{ loading() ? 'Chargement…' : 'Aucune association trouvée.' }}</p> }</div>
+          <div class="pagination"><span>{{ entryRangeStart(associationsPage(), associationsTotal()) }}–{{ entryRangeEnd(associationsPage(), associationsTotal()) }} sur {{ associationsTotal() }}</span><div><button class="admin-secondary" (click)="associationPageMove(-1)" [disabled]="associationsPage() === 0">Précédent</button><button class="admin-secondary" (click)="associationPageMove(1)" [disabled]="associationsPage() + 1 >= associationsPages()">Suivant</button></div></div>
+        </section>
+      }
+
+      @if (tab() === 'audit') {
+        <section class="admin-panel"><div class="panel-title"><div><h2>Historique administratif</h2><p>Les interventions conservent l’auteur, le contexte et la date.</p></div></div>
+          @for (entry of auditRows(); track entry.id) { <article class="audit-entry"><time>{{ entry.createdAt | date:'EEEE d MMMM y, HH:mm':'':'fr-FR' }}</time><strong>{{ entry.action }}</strong><span>Par {{ entry.actorEmail }} · {{ entry.targetType }} {{ entry.targetId }}</span>@if (entry.associationId) { <small>Association : {{ entry.associationId }}</small> }@if (entry.details) { <p>{{ entry.details }}</p> }</article> }
+          @empty { <p class="admin-empty">Aucune action administrative enregistrée.</p> }
+        </section>
+      }
+    </section>
+  </div>
+</main>

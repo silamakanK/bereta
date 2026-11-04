@@ -14,7 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
-class BonjourControllerTest {
+class BonjourControllerTest {   
 
     @Autowired
     private MockMvc mockMvc;

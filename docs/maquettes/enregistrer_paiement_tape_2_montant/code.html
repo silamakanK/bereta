@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+
+<html lang="fr"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;font-family:'Plus Jakarta Sans',sans-serif;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "#004c22", "outline": "#707a6f", "inverse-surface": "#283044", "error": "#ba1a1a", "outline-variant": "#bfc9bd", "on-primary-container": "#93e0a2", "surface-tint": "#1f6c3a", "error-container": "#ffdad6", "on-surface": "#131b2e", "primary-fixed": "#a6f4b5", "on-primary": "#ffffff", "on-error": "#ffffff", "surface-container": "#eaedff", "surface-container-lowest": "#ffffff", "on-surface-variant": "#404940", "secondary-container": "#316bf3", "on-tertiary-fixed-variant": "#6e3900", "secondary": "#0051d5", "on-primary-fixed-variant": "#005226", "on-error-container": "#93000a", "on-background": "#131b2e", "inverse-on-surface": "#eef0ff", "secondary-fixed-dim": "#b4c5ff", "surface-bright": "#faf8ff", "secondary-fixed": "#dbe1ff", "on-secondary-fixed-variant": "#003ea8", "background": "#faf8ff", "tertiary-fixed-dim": "#ffb77d", "on-secondary-container": "#fefcff", "on-tertiary-fixed": "#2f1500", "on-primary-fixed": "#00210b", "primary-fixed-dim": "#8bd79b", "inverse-primary": "#8bd79b", "surface": "#faf8ff", "on-tertiary-container": "#ffc292", "surface-container-low": "#f2f3ff", "surface-container-high": "#e2e7ff", "tertiary-container": "#874700", "surface-dim": "#d2d9f4", "tertiary": "#653400", "on-secondary-fixed": "#00174b", "tertiary-fixed": "#ffdcc3", "surface-variant": "#dae2fd", "on-secondary": "#ffffff", "on-tertiary": "#ffffff", "primary-container": "#166534", "surface-container-highest": "#dae2fd" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xl": "2.25rem", "space-sm": "0.75rem", "space-xs": "0.375rem", "margin-tablet": "2rem", "gutter-desktop": "2rem", "gutter": "1rem", "space-lg": "1.5rem", "space-md": "1rem", "margin-desktop": "3rem", "gutter-tablet": "1.5rem", "margin": "1rem" }, fontFamily: { "label-md": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "amount-display": ["Plus Jakarta Sans"], "body-bold": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"] }, fontSize: { "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }], "headline-lg-mobile": ["26px", { "lineHeight": "34px", "fontWeight": "700" }], "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "500" }], "amount-display": ["36px", { "lineHeight": "44px", "fontWeight": "800" }], "body-bold": ["16px", { "lineHeight": "26px", "fontWeight": "600" }], "label-lg": ["16px", { "lineHeight": "24px", "fontWeight": "600" }], "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }], "body-md": ["16px", { "lineHeight": "26px", "fontWeight": "400" }], "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }], "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }] } } } }</script><style>body { min-height: max(884px, 100dvh); }</style></head><body class="bg-surface font-body-md text-on-surface antialiased min-h-screen flex flex-col"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-xs"><button aria-label="Retour" class="w-11 h-11 -ml-2 rounded-full flex items-center justify-center text-on-surface hover:bg-surface-container-low transition-colors" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><h1 class="font-headline-sm text-headline-sm text-on-surface truncate max-w-[240px]">Enregistrer Un Paiement   Étape 2 : Montant &amp; Mode</h1></div><div class="flex items-center"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full pb-safe">
+<!-- Stepper de progression -->
+<div class="px-margin py-space-sm bg-surface-container-low">
+<div class="flex items-center justify-between max-w-md mx-auto">
+<!-- Étape 1 : Validée -->
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<span class="font-label-md text-label-md text-primary font-bold">Membre</span>
+</div>
+<div class="flex-1 h-0.5 mx-2 bg-primary-container rounded-full"></div>
+<!-- Étape 2 : Active -->
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm">
+<span class="font-label-md text-label-md font-bold">2</span>
+</div>
+<span class="font-label-md text-label-md text-primary font-bold">Montant</span>
+</div>
+<div class="flex-1 h-0.5 mx-2 bg-surface-dim rounded-full"></div>
+<!-- Étape 3 : Suivante -->
+<div class="flex items-center gap-2 opacity-60">
+<div class="w-8 h-8 rounded-full bg-surface-dim text-on-surface-variant flex items-center justify-center">
+<span class="font-label-md text-label-md">3</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">Validation</span>
+</div>
+</div>
+</div>
+<div class="px-margin pt-space-md space-y-space-md max-w-xl mx-auto w-full">
+<!-- Rappel du membre et campagne -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full bg-surface-variant text-on-surface flex items-center justify-center font-bold text-lg">
+            BC
+          </div>
+<div>
+<div class="flex items-center gap-1.5">
+<h2 class="font-body-bold text-body-bold text-on-surface">Bakary Camara</h2>
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant">Cotisation Annuelle 2025 (30 €)</p>
+</div>
+</div>
+<div class="text-right">
+<span class="font-label-md text-label-md text-on-surface-variant block">Reste dû</span>
+<span class="font-body-bold text-body-bold text-error">30,00 €</span>
+</div>
+</div>
+</div>
+<!-- Section Saisie du Montant -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm space-y-space-sm">
+<label class="block font-label-lg text-label-lg text-on-surface" for="amount-input">
+        Montant perçu en euros (€) <span class="text-error">*</span>
+</label>
+<!-- Champ de saisie XXL tactile -->
+<div class="relative flex items-center bg-surface-container-low rounded-xl px-4 py-2 focus-within:bg-surface-container-lowest focus-within:shadow-md transition-all">
+<input class="w-full bg-transparent font-amount-display text-amount-display text-on-surface focus:outline-none pr-12 text-left tracking-tight" id="amount-input" inputmode="decimal" max="30" min="1" placeholder="0" step="1" type="number" value="30"/>
+<span class="absolute right-4 font-amount-display text-amount-display text-on-surface-variant select-none">€</span>
+</div>
+<!-- Erreur dynamique dépassement -->
+<div class="hidden flex items-center gap-2 p-3 bg-error-container rounded-lg text-on-error-container" id="error-message">
+<span class="material-symbols-outlined text-[20px] text-error flex-shrink-0" style="font-variation-settings: 'FILL' 1;">error</span>
+<p class="font-label-md text-label-md text-error">Montant supérieur au reste dû (30 €) refusé.</p>
+</div>
+<!-- Raccourcis tactiles immédiats -->
+<div class="pt-1">
+<span class="font-label-md text-label-md text-on-surface-variant block mb-2">Suggestions directes :</span>
+<div class="grid grid-cols-3 gap-2">
+<button class="min-h-[52px] px-2 py-2 rounded-xl bg-on-primary-container/20 text-primary-container font-label-md text-label-md font-bold flex flex-col items-center justify-center text-center shadow-sm active:scale-95 transition-transform" id="btn-shortcut-full" onclick="setAmount(30)" type="button">
+<span>Totalité</span>
+<span class="text-xs">30 €</span>
+</button>
+<button class="min-h-[52px] px-2 py-2 rounded-xl bg-surface-container-high text-on-surface font-label-md text-label-md flex flex-col items-center justify-center text-center active:scale-95 transition-transform" onclick="setAmount(10)" type="button">
+<span>+ 10 €</span>
+<span class="text-xs text-on-surface-variant">Partiel</span>
+</button>
+<button class="min-h-[52px] px-2 py-2 rounded-xl bg-surface-container-high text-on-surface font-label-md text-label-md flex flex-col items-center justify-center text-center active:scale-95 transition-transform" onclick="setAmount(15)" type="button">
+<span>+ 15 €</span>
+<span class="text-xs text-on-surface-variant">Acompte</span>
+</button>
+</div>
+</div>
+<!-- Avertissement Informatif Règle Métier -->
+<div class="flex items-start gap-3 p-3 bg-surface-container rounded-lg">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant flex-shrink-0 mt-0.5">info</span>
+<p class="font-body-md text-label-md text-on-surface-variant leading-relaxed">
+<span class="font-bold text-on-surface">Règle BERETA :</span> Le montant ne peut pas dépasser le reste dû (30,00 €). Pour toute contribution supplémentaire ou don, une cotisation dédiée doit être enregistrée.
+        </p>
+</div>
+</div>
+<!-- Section Mode de règlement -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm space-y-space-sm">
+<label class="block font-label-lg text-label-lg text-on-surface">
+        Mode de règlement <span class="text-error">*</span>
+</label>
+<div class="space-y-2.5">
+<!-- Espèces (Sélectionné) -->
+<label class="flex items-center gap-3 p-3.5 rounded-xl min-h-[52px] cursor-pointer bg-on-primary-container/15 shadow-sm transition-all" id="payment-cash">
+<input checked="" class="sr-only" name="payment_method" onchange="updatePaymentStyle(this)" type="radio" value="cash"/>
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">payments</span>
+</div>
+<div class="flex-1 min-w-0">
+<span class="font-body-bold text-body-bold text-on-surface block truncate">Espèces</span>
+<span class="font-label-md text-label-md text-on-surface-variant block truncate">Remise physique directe en mains propres</span>
+</div>
+<span class="material-symbols-outlined text-primary text-[24px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</label>
+<!-- Virement Bancaire -->
+<label class="flex items-center gap-3 p-3.5 rounded-xl min-h-[52px] cursor-pointer bg-surface-container-low hover:bg-surface-container transition-all" id="payment-transfer">
+<input class="sr-only" name="payment_method" onchange="updatePaymentStyle(this)" type="radio" value="transfer"/>
+<div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">account_balance</span>
+</div>
+<div class="flex-1 min-w-0">
+<span class="font-body-bold text-body-bold text-on-surface block truncate">Virement bancaire</span>
+<span class="font-label-md text-label-md text-on-surface-variant block truncate">Relevé ou virement sur compte association</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant text-[24px]">radio_button_unchecked</span>
+</label>
+<!-- Chèque -->
+<label class="flex items-center gap-3 p-3.5 rounded-xl min-h-[52px] cursor-pointer bg-surface-container-low hover:bg-surface-container transition-all" id="payment-check">
+<input class="sr-only" name="payment_method" onchange="updatePaymentStyle(this)" type="radio" value="check"/>
+<div class="w-10 h-10 rounded-full bg-surface-dim text-on-surface flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">history_edu</span>
+</div>
+<div class="flex-1 min-w-0">
+<span class="font-body-bold text-body-bold text-on-surface block truncate">Chèque</span>
+<span class="font-label-md text-label-md text-on-surface-variant block truncate">À l'ordre de l'association</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant text-[24px]">radio_button_unchecked</span>
+</label>
+</div>
+</div>
+<!-- Section Date & Note -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm space-y-space-sm">
+<!-- Date d'encaissement -->
+<div>
+<label class="block font-label-lg text-label-lg text-on-surface mb-1">
+          Date d'encaissement
+        </label>
+<div class="flex items-center gap-3 p-3 bg-surface-container-low rounded-xl text-on-surface">
+<span class="material-symbols-outlined text-[22px] text-primary">calendar_today</span>
+<span class="font-body-bold text-body-bold">Aujourd'hui, 24 Mai 2025</span>
+</div>
+</div>
+<!-- Note / Commentaire -->
+<div>
+<label class="block font-label-lg text-label-lg text-on-surface mb-1" for="payment-note">
+          Note ou commentaire <span class="font-body-md text-label-md text-on-surface-variant font-normal">(facultatif)</span>
+</label>
+<textarea class="w-full bg-surface-container-low rounded-xl p-3 font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant focus:bg-surface-container-lowest focus:outline-none resize-none transition-all" id="payment-note" placeholder="Ex : Versement lors de la réunion de foyer du dimanche" rows="2"></textarea>
+</div>
+</div>
+<!-- Actions du bas -->
+<div class="pt-2 pb-6 space-y-3">
+<button class="w-full min-h-[52px] bg-primary text-on-primary rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-2 shadow-md active:scale-[0.99] transition-transform" id="btn-next" type="button">
+<span>Vérifier avant d'enregistrer (Étape 3)</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+<button class="w-full min-h-[52px] bg-surface-container-low text-on-surface rounded-xl font-label-lg text-label-lg flex items-center justify-center gap-2 hover:bg-surface-container active:scale-[0.99] transition-all" onclick="history.back()" type="button">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+<span>Retour à l'étape 1</span>
+</button>
+</div>
+</div>
+</div>
+<script>
+  const amountInput = document.getElementById('amount-input');
+  const errorMessage = document.getElementById('error-message');
+  const btnNext = document.getElementById('btn-next');
+  const maxDue = 30;
+
+  function validateAmount() {
+    const val = parseFloat(amountInput.value);
+    if (isNaN(val) || val <= 0) {
+      errorMessage.classList.add('hidden');
+      btnNext.disabled = true;
+      btnNext.classList.add('opacity-50', 'pointer-events-none');
+    } else if (val > maxDue) {
+      errorMessage.classList.remove('hidden');
+      btnNext.disabled = true;
+      btnNext.classList.add('opacity-50', 'pointer-events-none');
+    } else {
+      errorMessage.classList.add('hidden');
+      btnNext.disabled = false;
+      btnNext.classList.remove('opacity-50', 'pointer-events-none');
+    }
+  }
+
+  function setAmount(amount) {
+    amountInput.value = amount;
+    validateAmount();
+  }
+
+  amountInput.addEventListener('input', validateAmount);
+
+  function updatePaymentStyle(radio) {
+    const containers = [
+      { id: 'payment-cash', icon: 'payments' },
+      { id: 'payment-transfer', icon: 'account_balance' },
+      { id: 'payment-check', icon: 'history_edu' }
+    ];
+
+    containers.forEach(item => {
+      const el = document.getElementById(item.id);
+      const isSelected = el.querySelector('input').checked;
+      const statusIcon = el.querySelector('.material-symbols-outlined:last-child');
+      
+      if (isSelected) {
+        el.className = 'flex items-center gap-3 p-3.5 rounded-xl min-h-[52px] cursor-pointer bg-on-primary-container/15 shadow-sm transition-all';
+        statusIcon.textContent = 'check_circle';
+        statusIcon.className = 'material-symbols-outlined text-primary text-[24px]';
+        statusIcon.style.fontVariationSettings = "'FILL' 1";
+      } else {
+        el.className = 'flex items-center gap-3 p-3.5 rounded-xl min-h-[52px] cursor-pointer bg-surface-container-low hover:bg-surface-container transition-all';
+        statusIcon.textContent = 'radio_button_unchecked';
+        statusIcon.className = 'material-symbols-outlined text-outline-variant text-[24px]';
+        statusIcon.style.fontVariationSettings = "'FILL' 0";
+      }
+    });
+  }
+</script></main></body></html>
