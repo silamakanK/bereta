@@ -37,7 +37,6 @@ class FundAndCampaignControllerTest {
     @Autowired private LocalFundRepository localFundRepository;
     @Autowired private PrimaryFundRepository primaryFundRepository;
     @Autowired private FundMembershipRepository fundMembershipRepository;
-    @Autowired private FundInvitationRepository fundInvitationRepository;
     @Autowired private PaymentRepository paymentRepository;
     @Autowired private CashRemittanceRepository remittanceRepository;
     @Autowired private MemberRepository memberRepository;
@@ -54,7 +53,6 @@ class FundAndCampaignControllerTest {
         memberCampaignRepository.deleteAll();
         campaignRepository.deleteAll();
         memberRepository.deleteAll();
-        fundInvitationRepository.deleteAll();
         fundMembershipRepository.deleteAll();
         localFundRepository.deleteAll();
         primaryFundRepository.deleteAll();

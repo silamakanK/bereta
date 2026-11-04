@@ -1,10 +1,13 @@
 package com.bereta.funds;
 
 import com.bereta.auth.BeretaUserDetails;
-import com.bereta.auth.TreasurerInvitationService;
+import com.bereta.funds.TreasurerAccountService.DesignateTreasurerRequest;
+import com.bereta.funds.TreasurerAccountService.TemporaryPasswordResponse;
+import com.bereta.funds.TreasurerAccountService.TreasurerDesignationResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
-import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,12 +26,11 @@ import java.util.UUID;
 public class FundMembershipController {
 
     private final FundAccessService fundAccessService;
-    private final TreasurerInvitationService invitationService;
+    private final TreasurerAccountService treasurerAccounts;
 
-    public FundMembershipController(FundAccessService fundAccessService,
-                                    TreasurerInvitationService invitationService) {
+    public FundMembershipController(FundAccessService fundAccessService, TreasurerAccountService treasurerAccounts) {
         this.fundAccessService = fundAccessService;
-        this.invitationService = invitationService;
+        this.treasurerAccounts = treasurerAccounts;
     }
 
     @GetMapping
@@ -37,22 +39,21 @@ public class FundMembershipController {
         return fundAccessService.listMembers(user.getId(), primaryFundId);
     }
 
+    /** Désigne un trésorier par téléphone (compte rattaché ou créé avec mot de passe provisoire). */
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public FundMembershipResponse assign(@AuthenticationPrincipal BeretaUserDetails user,
-                                         @PathVariable UUID primaryFundId,
-                                         @Valid @RequestBody AssignTreasurerRequest request) {
-        return fundAccessService.assignTreasurer(user.getId(), primaryFundId, request);
+    public ResponseEntity<TreasurerDesignationResponse> designate(@AuthenticationPrincipal BeretaUserDetails user,
+                                                                  @PathVariable UUID primaryFundId,
+                                                                  @Valid @RequestBody DesignateTreasurerRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).cacheControl(CacheControl.noStore())
+                .body(treasurerAccounts.designate(user.getId(), primaryFundId, request));
     }
 
-    @PostMapping("/invitations")
-    @ResponseStatus(HttpStatus.CREATED)
-    public TreasurerInvitationResponse invite(@AuthenticationPrincipal BeretaUserDetails user,
-                                              @PathVariable UUID primaryFundId,
-                                              @Valid @RequestBody CreateTreasurerInvitationRequest request,
-                                              HttpServletResponse response) {
-        response.setHeader("Cache-Control", "no-store");
-        return invitationService.create(user.getId(), primaryFundId, request.email(), request.localFundId());
+    @PostMapping("/{membershipId}/mot-de-passe-provisoire")
+    public ResponseEntity<TemporaryPasswordResponse> issueTemporaryPassword(
+            @AuthenticationPrincipal BeretaUserDetails user,
+            @PathVariable UUID primaryFundId, @PathVariable UUID membershipId) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .body(treasurerAccounts.issueTemporaryPassword(user.getId(), primaryFundId, membershipId));
     }
 
     @DeleteMapping("/{membershipId}")

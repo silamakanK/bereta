@@ -1,5 +1,6 @@
 package com.bereta;
 
+import com.bereta.auth.AccountStatus;
 import com.bereta.auth.BeretaUserDetails;
 import com.bereta.auth.UserAccountEntity;
 import com.bereta.auth.UserAccountRepository;
@@ -25,8 +26,17 @@ public final class TestSecurity {
 
     public static UserAccountEntity account(UserAccountRepository accounts, PasswordEncoder encoder,
                                             String email, String role) {
-        return accounts.findByEmailIgnoreCase(email).orElseGet(() -> accounts.save(new UserAccountEntity(
-                email, "Compte de test", encoder.encode("TestPassword!234"), role)));
+        return accounts.findByEmailIgnoreCase(email).orElseGet(() -> {
+            UserAccountEntity account = new UserAccountEntity(email, phoneFor(email), "Compte de test",
+                    encoder.encode("TestPassword!234"), role, AccountStatus.ACTIVE);
+            account.verifyPhone(phoneFor(email));
+            return accounts.save(account);
+        });
+    }
+
+    /** Numéro mobile français stable et propre à chaque compte de test. */
+    public static String phoneFor(String email) {
+        return "+336" + "%08d".formatted(Math.floorMod(email.hashCode(), 100_000_000));
     }
 
     public static PrimaryFundEntity primaryFund(PrimaryFundRepository funds,

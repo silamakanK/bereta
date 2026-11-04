@@ -149,29 +149,6 @@ public class FundAccessService {
     }
 
     @Transactional
-    public FundMembershipResponse assignTreasurer(UUID managerId, UUID primaryFundId, AssignTreasurerRequest request) {
-        requireManager(managerId, primaryFundId);
-        PrimaryFundEntity primaryFund = primaryFundRepository.findById(primaryFundId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Caisse principale introuvable."));
-        LocalFundEntity localFund = localFundRepository.findById(request.localFundId())
-                .filter(f -> f.getPrimaryFund().getId().equals(primaryFundId))
-                .filter(f -> f.getAssociation().getId().equals(context.requireId()))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "La caisse locale ne dépend pas de cette association et caisse principale."));
-        UserAccountEntity account = userAccountRepository.findByEmailIgnoreCase(request.email().trim())
-                .filter(UserAccountEntity::isEnabled)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Aucun compte actif ne correspond à cette adresse e-mail."));
-        if (isAssociationManager(account.getId(), context.requireId())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Un responsable ne peut pas être affecté comme trésorier.");
-        }
-        FundMembershipEntity membership = membershipRepository.findByUserAccountIdAndLocalFundId(account.getId(), localFund.getId())
-                .orElseGet(() -> new FundMembershipEntity(account, primaryFund, localFund, FundRole.TRESORIER));
-        membership.assignTo(localFund);
-        return FundMembershipResponse.from(membershipRepository.save(membership));
-    }
-
-    @Transactional
     public void deactivateMembership(UUID managerId, UUID primaryFundId, UUID membershipId) {
         requireManager(managerId, primaryFundId);
         FundMembershipEntity membership = membershipRepository.findByIdAndPrimaryFundIdAndActiveTrue(membershipId, primaryFundId)

@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -43,7 +44,6 @@ class FundAccessControllerTest {
     @Autowired private MemberRepository memberRepository;
     @Autowired private MemberCampaignRepository enrollmentRepository;
     @Autowired private FundMembershipRepository membershipRepository;
-    @Autowired private FundInvitationRepository invitationRepository;
     @Autowired private PaymentRepository paymentRepository;
     @Autowired private CashRemittanceRepository remittanceRepository;
     @Autowired private AssociationRepository associationRepository;
@@ -60,7 +60,6 @@ class FundAccessControllerTest {
         enrollmentRepository.deleteAll();
         campaignRepository.deleteAll();
         memberRepository.deleteAll();
-        invitationRepository.deleteAll();
         membershipRepository.deleteAll();
         localFundRepository.deleteAll();
         primaryFundRepository.deleteAll();
@@ -84,7 +83,7 @@ class FundAccessControllerTest {
         String otherLocalId = create("/api/caisses-principales/%s/caisses-locales".formatted(primaryId),
                 "{\"name\":\"Caisse B\"}", manager);
         create("/api/caisses-principales/%s/acces".formatted(primaryId),
-                "{\"email\":\"access-treasurer@example.test\",\"localFundId\":\"%s\"}".formatted(assignedLocalId), manager);
+                "{\"phone\":\"" + TestSecurity.phoneFor("access-treasurer@example.test") + "\",\"localFundId\":\"%s\"}".formatted(assignedLocalId), manager);
         String campaignId = create("/api/campagnes", """
                 {"primaryFundId":"%s","name":"Cotisation 2026","campaignType":"ANNUAL","campaignYear":2026,"expectedAmount":30}
                 """.formatted(primaryId), manager);
@@ -152,7 +151,7 @@ class FundAccessControllerTest {
         String localId = create("/api/caisses-principales/%s/caisses-locales".formatted(primaryId),
                 "{\"name\":\"Caisse A\"}", manager);
         create("/api/caisses-principales/%s/acces".formatted(primaryId),
-                "{\"email\":\"access-treasurer@example.test\",\"localFundId\":\"%s\"}".formatted(localId), manager);
+                "{\"phone\":\"" + TestSecurity.phoneFor("access-treasurer@example.test") + "\",\"localFundId\":\"%s\"}".formatted(localId), manager);
 
         mockMvc.perform(as(treasurer, post("/api/campagnes").contentType(APPLICATION_JSON).content("""
                         {"primaryFundId":"%s","name":"Événement","campaignType":"EVENT"}
@@ -163,39 +162,99 @@ class FundAccessControllerTest {
     }
 
     @Test
-    void invitationCreatesScopedTreasurerAccountAndCanBeUsedOnce() throws Exception {
+    void managerDesignatesNewTreasurerByPhoneWithTemporaryPassword() throws Exception {
         String primaryId = create("/api/caisses-principales", """
                 {"name":"Solidarité","objective":"Soutenir les membres"}
                 """, manager);
         String localId = create("/api/caisses-principales/%s/caisses-locales".formatted(primaryId),
                 "{\"name\":\"Caisse d’Awa\"}", manager);
-        var invitationResult = mockMvc.perform(as(manager,
-                        post("/api/caisses-principales/{id}/acces/invitations", primaryId)
-                                .contentType(APPLICATION_JSON)
-                                .content("{\"email\":\"new-treasurer@example.test\",\"localFundId\":\"%s\"}"
-                                        .formatted(localId))))
+        String designation = """
+                {"localFundId":"%s","phone":"07 61 22 33 44","firstName":"Awa","lastName":"Diallo"}
+                """.formatted(localId);
+
+        var created = mockMvc.perform(as(manager, post("/api/caisses-principales/{id}/acces", primaryId)
+                        .contentType(APPLICATION_JSON).content(designation)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.email").value("new-treasurer@example.test"))
+                .andExpect(jsonPath("$.accountCreated").value(true))
+                .andExpect(jsonPath("$.membership.phone").value("+33761223344"))
+                .andExpect(jsonPath("$.temporaryPassword").isString())
                 .andReturn();
-        String token = objectMapper.readTree(invitationResult.getResponse().getContentAsString())
-                .get("token").asText();
-        String acceptBody = ("{\"token\":\"%s\",\"email\":\"new-treasurer@example.test\","
-                + "\"displayName\":\"Awa Test\",\"password\":\"Awa123\"}").formatted(token);
+        String temporaryPassword = objectMapper.readTree(created.getResponse().getContentAsString())
+                .get("temporaryPassword").asText();
+        String membershipId = objectMapper.readTree(created.getResponse().getContentAsString())
+                .get("membership").get("id").asText();
+        UserAccountEntity awa = userAccountRepository.findByPhoneE164("+33761223344").orElseThrow();
+        assertThat(awa.isMustChangePassword()).isTrue();
+        assertThat(passwordEncoder.matches(temporaryPassword, awa.getPasswordHash())).isTrue();
 
-        mockMvc.perform(post("/api/auth/invitations/accept").with(csrf())
-                        .contentType(APPLICATION_JSON).content(acceptBody))
+        // Tant que le mot de passe provisoire n'est pas changé, l'API métier est fermée.
+        mockMvc.perform(as(awa, get("/api/caisses-principales/{id}/caisses-locales", primaryId)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("PASSWORD_CHANGE_REQUIRED"));
+
+        // Même numéro une seconde fois : le compte existant est rattaché, aucun mot de passe n'est généré.
+        mockMvc.perform(as(manager, post("/api/caisses-principales/{id}/acces", primaryId)
+                        .contentType(APPLICATION_JSON).content(designation)))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.email").value("new-treasurer@example.test"))
-                .andExpect(jsonPath("$.role").value("TRESORIER"));
-        mockMvc.perform(post("/api/auth/invitations/accept").with(csrf())
-                        .contentType(APPLICATION_JSON).content(acceptBody))
-                .andExpect(status().isNotFound());
+                .andExpect(jsonPath("$.accountCreated").value(false))
+                .andExpect(jsonPath("$.temporaryPassword").doesNotExist());
 
-        UserAccountEntity invited = userAccountRepository.findByEmailIgnoreCase("new-treasurer@example.test")
-                .orElseThrow();
-        mockMvc.perform(as(invited, get("/api/caisses-principales/{id}/caisses-locales", primaryId)))
-                .andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id").value(localId));
+        var reset = mockMvc.perform(as(manager, post(
+                        "/api/caisses-principales/{id}/acces/{membershipId}/mot-de-passe-provisoire",
+                        primaryId, membershipId)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.maskedPhone").value("+33 7 ** ** ** 44"))
+                .andReturn();
+        String newTemporary = objectMapper.readTree(reset.getResponse().getContentAsString())
+                .get("temporaryPassword").asText();
+        UserAccountEntity reloaded = userAccountRepository.findById(awa.getId()).orElseThrow();
+        assertThat(passwordEncoder.matches(newTemporary, reloaded.getPasswordHash())).isTrue();
+        assertThat(passwordEncoder.matches(temporaryPassword, reloaded.getPasswordHash())).isFalse();
+        assertThat(reloaded.getTokenVersion()).isGreaterThan(awa.getTokenVersion());
+    }
+
+    @Test
+    void newTreasurerRequiresNameAndResponsibleCannotResetAccountUsedElsewhere() throws Exception {
+        String primaryId = create("/api/caisses-principales", """
+                {"name":"Caisse A","objective":"Tester"}
+                """, manager);
+        String localId = create("/api/caisses-principales/%s/caisses-locales".formatted(primaryId),
+                "{\"name\":\"Locale A\"}", manager);
+        mockMvc.perform(as(manager, post("/api/caisses-principales/{id}/acces", primaryId)
+                        .contentType(APPLICATION_JSON)
+                        .content("{\"localFundId\":\"%s\",\"phone\":\"07 99 88 77 66\"}".formatted(localId))))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(as(manager, post("/api/caisses-principales/{id}/acces", primaryId)
+                        .contentType(APPLICATION_JSON)
+                        .content("{\"localFundId\":\"%s\",\"phone\":\"12\"}".formatted(localId))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("PHONE_INVALID"));
+
+        String membershipId = create("/api/caisses-principales/%s/acces".formatted(primaryId),
+                "{\"phone\":\"" + TestSecurity.phoneFor("access-treasurer@example.test")
+                        + "\",\"localFundId\":\"%s\"}".formatted(localId), manager);
+
+        // Le même trésorier tient aussi une caisse dans une autre association.
+        UserAccountEntity otherManager = TestSecurity.account(userAccountRepository, passwordEncoder,
+                "access-other-manager@example.test", "RESPONSABLE");
+        java.util.UUID firstAssociation = primaryFundRepository.findById(java.util.UUID.fromString(primaryId))
+                .orElseThrow().getAssociation().getId();
+        TestSecurity.association(associationRepository, associationMembershipRepository, otherManager,
+                "Autre association " + java.util.UUID.randomUUID());
+        String otherPrimary = create("/api/caisses-principales", """
+                {"name":"Caisse B","objective":"Tester"}
+                """, otherManager);
+        String otherLocal = create("/api/caisses-principales/%s/caisses-locales".formatted(otherPrimary),
+                "{\"name\":\"Locale B\"}", otherManager);
+        create("/api/caisses-principales/%s/acces".formatted(otherPrimary),
+                "{\"phone\":\"" + TestSecurity.phoneFor("access-treasurer@example.test")
+                        + "\",\"localFundId\":\"%s\"}".formatted(otherLocal), otherManager);
+
+        TestSecurity.activeAssociation(firstAssociation);
+        mockMvc.perform(as(manager, post(
+                        "/api/caisses-principales/{id}/acces/{membershipId}/mot-de-passe-provisoire",
+                        primaryId, membershipId)))
+                .andExpect(status().isConflict());
     }
 
     @Test
@@ -208,11 +267,11 @@ class FundAccessControllerTest {
         var assigned = mockMvc.perform(as(manager,
                         post("/api/caisses-principales/{id}/acces", primaryId)
                                 .contentType(APPLICATION_JSON)
-                                .content("{\"email\":\"access-treasurer@example.test\",\"localFundId\":\"%s\"}"
+                                .content("{\"phone\":\"" + TestSecurity.phoneFor("access-treasurer@example.test") + "\",\"localFundId\":\"%s\"}"
                                         .formatted(localId))))
                 .andExpect(status().isCreated()).andReturn();
         String membershipId = objectMapper.readTree(assigned.getResponse().getContentAsString())
-                .get("id").asText();
+                .get("membership").get("id").asText();
 
         mockMvc.perform(as(manager,
                         delete("/api/caisses-principales/{fundId}/acces/{membershipId}", primaryId, membershipId)))
@@ -225,7 +284,7 @@ class FundAccessControllerTest {
         var result = mockMvc.perform(as(actor, post(path).contentType(APPLICATION_JSON).content(content)))
                 .andExpect(status().isCreated()).andReturn();
         JsonNode response = objectMapper.readTree(result.getResponse().getContentAsString());
-        return response.get("id").asText();
+        return (response.has("id") ? response : response.get("membership")).get("id").asText();
     }
 
     private MockHttpServletRequestBuilder as(UserAccountEntity actor, MockHttpServletRequestBuilder request) {

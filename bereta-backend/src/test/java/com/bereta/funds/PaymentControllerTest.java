@@ -114,7 +114,7 @@ class PaymentControllerTest {
                 "{\"name\":\"Caisse privée\"}", manager);
         mockMvc.perform(as(manager, post("/api/caisses-principales/{id}/acces", primaryId)
                         .contentType(APPLICATION_JSON)
-                        .content("{\"email\":\"payment-treasurer@example.test\",\"localFundId\":\"%s\"}".formatted(assignedLocalId))))
+                        .content("{\"phone\":\"" + TestSecurity.phoneFor("payment-treasurer@example.test") + "\",\"localFundId\":\"%s\"}".formatted(assignedLocalId))))
                 .andExpect(status().isCreated());
         String campaignId = create("/api/campagnes", """
                 {"primaryFundId":"%s","name":"Campagne","campaignType":"ANNUAL","campaignYear":2026,"expectedAmount":20}

@@ -141,7 +141,7 @@ class CashRemittanceControllerTest {
                 "{\"name\":\"Caisse locale test\"}", manager);
         mockMvc.perform(as(manager, post("/api/caisses-principales/{id}/acces", primaryId)
                         .contentType(APPLICATION_JSON)
-                        .content("{\"email\":\"remittance-treasurer@example.test\",\"localFundId\":\"%s\"}"
+                        .content("{\"phone\":\"" + TestSecurity.phoneFor("remittance-treasurer@example.test") + "\",\"localFundId\":\"%s\"}"
                                 .formatted(localId))))
                 .andExpect(status().isCreated());
         String campaignId = create("/api/campagnes", """

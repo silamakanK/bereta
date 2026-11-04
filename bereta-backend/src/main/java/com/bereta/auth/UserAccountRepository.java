@@ -10,10 +10,6 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import jakarta.persistence.LockModeType;
 
 public interface UserAccountRepository extends JpaRepository<UserAccountEntity, UUID> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -22,6 +18,8 @@ public interface UserAccountRepository extends JpaRepository<UserAccountEntity, 
 
     Optional<UserAccountEntity> findByEmailIgnoreCase(String email);
     boolean existsByEmailIgnoreCase(String email);
+    Optional<UserAccountEntity> findByPhoneE164(String phoneE164);
+    boolean existsByPhoneE164(String phoneE164);
     long countByRoleAndEnabledTrue(String role);
     long countByEnabledTrue();
     long countByRole(String role);

@@ -18,20 +18,26 @@ public class BootstrapUserRunner implements ApplicationRunner {
 
     private final UserAccountRepository userAccountRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PhoneNumberService phoneNumbers;
     private final String email;
+    private final String phone;
     private final String password;
     private final String displayName;
 
     public BootstrapUserRunner(
             UserAccountRepository userAccountRepository,
             PasswordEncoder passwordEncoder,
+            PhoneNumberService phoneNumbers,
             @Value("${bereta.auth.bootstrap.email:}") String email,
+            @Value("${bereta.auth.bootstrap.phone:}") String phone,
             @Value("${bereta.auth.bootstrap.password:}") String password,
             @Value("${bereta.auth.bootstrap.display-name:Responsable BERETA}") String displayName
     ) {
         this.userAccountRepository = userAccountRepository;
         this.passwordEncoder = passwordEncoder;
+        this.phoneNumbers = phoneNumbers;
         this.email = email;
+        this.phone = phone;
         this.password = password;
         this.displayName = displayName;
     }
@@ -43,21 +49,24 @@ public class BootstrapUserRunner implements ApplicationRunner {
         if (email.isBlank() || password.isBlank()) {
             throw new IllegalStateException("Configurez ensemble BOOTSTRAP_USER_EMAIL et BOOTSTRAP_USER_PASSWORD.");
         }
-        if (password.length() < 6) {
-            throw new IllegalStateException("Le mot de passe initial doit contenir au moins 6 caractères.");
+        try {
+            PasswordPolicy.check(password);
+        } catch (AuthException weak) {
+            throw new IllegalStateException("BOOTSTRAP_USER_PASSWORD : " + weak.getMessage());
         }
-        if (password.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72) {
-            throw new IllegalStateException("Le mot de passe initial ne peut pas dépasser 72 octets UTF-8.");
-        }
+        String phoneE164 = phone.isBlank() ? null : phoneNumbers.tryNormalize(phone)
+                .orElseThrow(() -> new IllegalStateException("BOOTSTRAP_USER_PHONE n’est pas un numéro valide."));
 
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
         UserAccountEntity account = userAccountRepository.findByEmailIgnoreCase(normalizedEmail).orElse(null);
         if (account == null) {
             account = userAccountRepository.save(new UserAccountEntity(
                     normalizedEmail,
+                    phoneE164,
                     displayName.isBlank() ? "Responsable BERETA" : displayName.trim(),
                     passwordEncoder.encode(password),
-                    "RESPONSABLE"
+                    "RESPONSABLE",
+                    AccountStatus.ACTIVE
             ));
             logger.info("Le compte responsable initial a été créé à partir de la configuration locale.");
         }

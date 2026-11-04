@@ -36,7 +36,6 @@ class MemberCampaignControllerTest {
     @Autowired private PrimaryFundRepository primaryFundRepository;
     @Autowired private com.bereta.members.MemberRepository memberRepository;
     @Autowired private FundMembershipRepository fundMembershipRepository;
-    @Autowired private FundInvitationRepository fundInvitationRepository;
     @Autowired private PaymentRepository paymentRepository;
     @Autowired private CashRemittanceRepository remittanceRepository;
     @Autowired private UserAccountRepository userAccountRepository;
@@ -52,7 +51,6 @@ class MemberCampaignControllerTest {
         enrollmentRepository.deleteAll();
         campaignRepository.deleteAll();
         memberRepository.deleteAll();
-        fundInvitationRepository.deleteAll();
         fundMembershipRepository.deleteAll();
         localFundRepository.deleteAll();
         primaryFundRepository.deleteAll();
