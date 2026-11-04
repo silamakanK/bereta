@@ -97,7 +97,7 @@
 .treasurer-access { display: grid; gap: 11px; margin-top: 18px; padding-top: 15px; border-top: 1px solid #e9eee7; }
 .access-heading h4 { margin: 0 0 4px; color: #3c483e; font-size: 12px; }
 .access-heading p { margin: 0; color: #899287; font-size: 10px; }
-.invite-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .9fr) auto; align-items: end; gap: 9px; }
+.invite-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); align-items: end; gap: 9px; }
 .invite-form label { display: grid; gap: 5px; color: #59645a; font-size: 10px; font-weight: 650; }
 .invite-form input, .invite-form select, .invitation-link input { width: 100%; min-width: 0; min-height: 37px; padding: 0 9px; border: 1px solid #e1e7df; border-radius: 6px; background: #fff; color: #313a32; font: inherit; font-size: 10px; }
 .invite-form input:focus, .invite-form select:focus { outline: 2px solid #83a98c; outline-offset: 1px; }
@@ -129,3 +129,6 @@
   .existing-access-form button { width: 100%; }
   .invitation-link { align-items: stretch; flex-direction: column; }
 }
+
+.access-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.setup-hint { grid-column: 1 / -1; margin: 0; font-size: 14px; color: #475569; }

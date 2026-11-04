@@ -72,31 +72,28 @@
           @if (canManageSelectedFund()) {
             <div class="treasurer-access">
               <div class="access-heading"><h4>Accès des trésoriers</h4><p>Chaque personne voit uniquement sa caisse locale.</p></div>
-              <form class="invite-form" (ngSubmit)="inviteTreasurer()">
-                <label>E-mail du trésorier<input name="treasurerEmail" type="email" [(ngModel)]="treasurerEmail" required maxlength="320" autocomplete="email" placeholder="nom@exemple.fr" /></label>
+              <form class="invite-form" (ngSubmit)="designateTreasurer()">
+                <label>Téléphone portable du trésorier<input name="treasurerPhone" type="tel" inputmode="tel" [(ngModel)]="treasurerPhone" required maxlength="30" autocomplete="off" placeholder="06 12 34 56 78" /></label>
+                <label>Prénom <small>(si nouveau compte)</small><input name="treasurerFirstName" [(ngModel)]="treasurerFirstName" maxlength="100" /></label>
+                <label>Nom <small>(si nouveau compte)</small><input name="treasurerLastName" [(ngModel)]="treasurerLastName" maxlength="100" /></label>
                 <label>Caisse locale
                   <select name="treasurerLocalFund" [(ngModel)]="selectedTreasurerLocalFundId" required [disabled]="localFunds().length === 0">
                     @for (fund of localFunds(); track fund.id) { <option [value]="fund.id">{{ fund.name }}</option> }
                   </select>
                 </label>
-                <button class="setup-submit" type="submit" [disabled]="saving() || localFunds().length === 0">{{ saving() ? 'Création…' : 'Créer une invitation' }}</button>
+                <button class="setup-submit" type="submit" [disabled]="saving() || localFunds().length === 0">{{ saving() ? 'Enregistrement…' : 'Désigner le trésorier' }}</button>
+                <p class="setup-hint">Si ce numéro a déjà un compte BERETA, il est simplement rattaché à la caisse. Sinon, un compte est créé avec un mot de passe provisoire.</p>
               </form>
-              <form class="existing-access-form" (ngSubmit)="assignExistingTreasurer()">
-                <label>Compte déjà créé
-                  <input name="existingTreasurerEmail" type="email" [(ngModel)]="existingTreasurerEmail" required maxlength="320" autocomplete="email" placeholder="E-mail du compte existant" />
-                </label>
-                <button type="submit" [disabled]="saving() || localFunds().length === 0">Ajouter à cette caisse locale</button>
-              </form>
-              @if (invitation()) {
+              @if (issuedPassword(); as issued) {
                 <div class="invitation-result" role="status">
-                  <div><strong>Invitation pour {{ invitation()?.email }}</strong><small>Valable 7 jours · transmettez le lien en privé.</small></div>
-                  <div class="invitation-link"><input aria-label="Lien d’invitation à usage unique" readonly [value]="invitationLink()" /><button type="button" (click)="copyInvitationLink()">{{ invitationCopied() ? 'Copié' : 'Copier le lien' }}</button></div>
+                  <div><strong>Mot de passe provisoire de {{ issued.name }}</strong><small>Remettez-le en main propre. Il ne sera plus affiché ; le trésorier devra le changer à sa première connexion.</small></div>
+                  <div class="invitation-link"><input aria-label="Mot de passe provisoire" readonly [value]="issued.password" /></div>
                 </div>
               }
               <div class="access-list">
                 @for (membership of memberships(); track membership.id) {
                   @if (membership.role === 'TRESORIER') {
-                    <div class="access-row"><span><strong>{{ membership.displayName }}</strong><small>{{ membership.email }} · {{ membership.localFundName }}</small></span><button type="button" (click)="deactivateTreasurer(membership)" [disabled]="saving()">Désactiver</button></div>
+                    <div class="access-row"><span><strong>{{ membership.displayName }}</strong><small>{{ membership.phone || membership.email }} · {{ membership.localFundName }}</small></span><span class="access-actions"><button type="button" (click)="issueTemporaryPassword(membership)" [disabled]="saving()">Nouveau mot de passe</button><button type="button" (click)="deactivateTreasurer(membership)" [disabled]="saving()">Désactiver</button></span></div>
                   }
                 }
                 @if (memberships().length <= 1) { <p class="setup-empty">Aucun trésorier n’a encore accès à cette caisse.</p> }

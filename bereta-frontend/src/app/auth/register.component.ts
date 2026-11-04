@@ -1,14 +1,18 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService, RegisteredAccountLoginError } from './auth.service';
-import { passwordValidationMessage } from './register-validation';
+import { AuthService } from './auth.service';
+import { CodeSent } from './auth.model';
+import { OtpStepComponent } from './otp-step.component';
+import { PasswordStrengthComponent } from './password-strength.component';
+import { passwordValidationMessage } from './password-rules';
+import { apiErrorMessage } from '../shared/api-error';
 
+/** Maquette « inscription_responsable_bereta », puis vérification du téléphone par SMS. */
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, OtpStepComponent, PasswordStrengthComponent],
   templateUrl: './register.component.html',
   styleUrl: './login.component.scss',
 })
@@ -18,14 +22,18 @@ export class RegisterComponent {
 
   protected firstName = '';
   protected lastName = '';
+  protected phone = '';
   protected email = '';
   protected password = '';
   protected confirmPassword = '';
+  protected acceptTerms = false;
+  protected readonly phoneChallenge = signal<CodeSent | null>(null);
+  protected readonly isSubmitting = signal(false);
+  protected readonly errorMessage = signal<string | null>(null);
   protected readonly showPassword = signal(false);
   protected readonly showConfirmPassword = signal(false);
   protected readonly attemptedSubmit = signal(false);
-  protected readonly isSubmitting = signal(false);
-  protected readonly errorMessage = signal<string | null>(null);
+  private emailVerificationSent = false;
 
   protected submit(): void {
     if (this.isSubmitting()) return;
@@ -35,12 +43,12 @@ export class RegisterComponent {
       this.errorMessage.set('Renseignez votre prénom et votre nom.');
       return;
     }
-    if (`${this.firstName.trim()} ${this.lastName.trim()}`.length > 120) {
-      this.errorMessage.set('Le prénom et le nom ne peuvent pas dépasser 120 caractères au total.');
+    if (this.phoneError()) {
+      this.errorMessage.set('Saisissez votre numéro de téléphone portable.');
       return;
     }
-    if (!/^\S+@\S+\.\S+$/.test(this.email.trim())) {
-      this.errorMessage.set('Saisissez une adresse e-mail valide.');
+    if (this.emailError()) {
+      this.errorMessage.set('L’adresse e-mail n’est pas valide. Vous pouvez aussi laisser le champ vide.');
       return;
     }
     const passwordError = passwordValidationMessage(this.password, this.confirmPassword);
@@ -48,46 +56,67 @@ export class RegisterComponent {
       this.errorMessage.set(passwordError);
       return;
     }
-
+    if (!this.acceptTerms) {
+      this.errorMessage.set('Acceptez les conditions d’utilisation pour continuer.');
+      return;
+    }
     this.isSubmitting.set(true);
     this.authService.register({
       firstName: this.firstName.trim(),
       lastName: this.lastName.trim(),
-      email: this.email.trim(),
+      phone: this.phone.trim(),
+      email: this.email.trim() || null,
       password: this.password,
+      acceptTerms: this.acceptTerms,
     }).subscribe({
+      next: (response) => {
+        this.isSubmitting.set(false);
+        this.emailVerificationSent = response.emailVerificationSent;
+        this.password = '';
+        this.confirmPassword = '';
+        this.phoneChallenge.set(response.phoneVerification);
+      },
+      error: (error: unknown) => {
+        this.isSubmitting.set(false);
+        this.errorMessage.set(apiErrorMessage(error, 'Le compte n’a pas pu être créé. Vérifiez les champs puis réessayez.'));
+      },
+    });
+  }
+
+  protected verifyPhone(code: string): void {
+    const challenge = this.phoneChallenge();
+    if (this.isSubmitting() || !challenge) return;
+    this.isSubmitting.set(true);
+    this.errorMessage.set(null);
+    this.authService.verifyRegistration(challenge.challengeId, code, this.emailVerificationSent).subscribe({
       next: () => {
         this.isSubmitting.set(false);
         void this.router.navigateByUrl('/');
       },
-      error: (error: HttpErrorResponse) => {
-        this.errorMessage.set(error instanceof RegisteredAccountLoginError
-          ? 'Votre compte a été créé, mais la connexion automatique a échoué. Connectez-vous avec votre adresse et votre mot de passe.'
-          : error.status === 409
-            ? 'Cette adresse e-mail est déjà utilisée. Connectez-vous ou choisissez une autre adresse.'
-            : error.status === 400
-              ? 'Vérifiez les champs et les exigences du mot de passe.'
-              : error.status === 404
-                ? 'La route d’inscription est introuvable. Redémarrez le backend avec la dernière version.'
-                : error.status === 403
-                  ? 'La vérification de sécurité a expiré. Rechargez la page puis réessayez.'
-                  : error.status === 0
-                    ? 'Le serveur est injoignable. Vérifiez que le backend est démarré.'
-                    : 'Le serveur n’a pas pu créer le compte. Vérifiez les logs du backend et que ses migrations sont appliquées.');
+      error: (error: unknown) => {
         this.isSubmitting.set(false);
+        this.errorMessage.set(apiErrorMessage(error, 'Le code n’a pas pu être vérifié. Réessayez.'));
       },
     });
+  }
+
+  protected renewChallenge(challengeId: string): void {
+    this.phoneChallenge.update((current) => (current ? { ...current, challengeId } : current));
   }
 
   protected nameError(value: string): boolean {
     return this.attemptedSubmit() && !value.trim();
   }
 
+  protected phoneError(): boolean {
+    return this.attemptedSubmit() && this.phone.replace(/\D/g, '').length < 8;
+  }
+
   protected emailError(): boolean {
-    return this.attemptedSubmit() && !/^\S+@\S+\.\S+$/.test(this.email.trim());
+    return this.attemptedSubmit() && !!this.email.trim() && !/^\S+@\S+\.\S+$/.test(this.email.trim());
   }
 
   protected passwordError(): boolean {
-    return this.attemptedSubmit() && (this.password.length < 6 || new TextEncoder().encode(this.password).length > 72);
+    return this.attemptedSubmit() && passwordValidationMessage(this.password, this.password) !== null;
   }
 }

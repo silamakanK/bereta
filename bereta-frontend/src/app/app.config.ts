@@ -4,11 +4,12 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { associationInterceptor } from './associations/association.interceptor';
+import { authInterceptor } from './auth/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideHttpClient(withInterceptors([associationInterceptor])),
+    provideHttpClient(withInterceptors([associationInterceptor, authInterceptor])),
     provideRouter(routes)
   ]
 };

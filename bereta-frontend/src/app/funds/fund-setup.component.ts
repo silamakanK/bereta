@@ -3,7 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, EventEmitter, Output, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
-import { Campaign, CampaignType, FundMembership, LocalFund, PrimaryFund, TreasurerInvitation } from './fund.model';
+import { Campaign, CampaignType, FundMembership, LocalFund, PrimaryFund } from './fund.model';
 import { FundService } from './fund.service';
 import { CashRemittanceSummary, Remittance, RemittanceStatus } from './remittance.model';
 
@@ -26,8 +26,8 @@ export class FundSetupComponent {
   protected readonly remittances = signal<Remittance[]>([]);
   protected readonly remittanceSummary = signal<CashRemittanceSummary | null>(null);
   protected readonly canManageSelectedFund = signal(false);
-  protected readonly invitation = signal<TreasurerInvitation | null>(null);
-  protected readonly invitationCopied = signal(false);
+  /** Mot de passe provisoire à remettre au trésorier : affiché une seule fois. */
+  protected readonly issuedPassword = signal<{ name: string; password: string } | null>(null);
   protected readonly isLoading = signal(true);
   protected readonly saving = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
@@ -43,8 +43,9 @@ export class FundSetupComponent {
   protected primaryDescription = '';
   protected selectedPrimaryFundId = '';
   protected localFundName = '';
-  protected treasurerEmail = '';
-  protected existingTreasurerEmail = '';
+  protected treasurerPhone = '';
+  protected treasurerFirstName = '';
+  protected treasurerLastName = '';
   protected selectedTreasurerLocalFundId = '';
   protected campaignName = '';
   protected campaignType: CampaignType = 'ANNUAL';
@@ -89,7 +90,7 @@ export class FundSetupComponent {
 
   protected onPrimaryFundChange(id: string): void {
     this.selectedPrimaryFundId = id;
-    this.invitation.set(null);
+    this.issuedPassword.set(null);
     this.loadLocalFunds();
     this.loadMemberships();
     this.loadRemittances();
@@ -133,62 +134,48 @@ export class FundSetupComponent {
     });
   }
 
-  protected inviteTreasurer(): void {
+  protected designateTreasurer(): void {
     if (this.saving() || !this.canManageSelectedFund() || !this.selectedTreasurerLocalFundId) return;
-    this.startSave();
-    this.fundService.inviteTreasurer(
-      this.selectedPrimaryFundId,
-      this.treasurerEmail.trim(),
-      this.selectedTreasurerLocalFundId,
-    ).subscribe({
-      next: (invitation) => {
-        this.invitation.set(invitation);
-        this.invitationCopied.set(false);
-        this.treasurerEmail = '';
-        this.saved('Invitation créée. Copiez le lien et transmettez-le au trésorier.');
-        this.loadMemberships();
-      },
-      error: (error: HttpErrorResponse) => this.failed(error),
-    });
-  }
-
-  protected assignExistingTreasurer(): void {
-    if (this.saving() || !this.canManageSelectedFund() || !this.selectedTreasurerLocalFundId) return;
-    this.startSave();
-    this.fundService.assignExistingTreasurer(
-      this.selectedPrimaryFundId,
-      this.existingTreasurerEmail.trim(),
-      this.selectedTreasurerLocalFundId,
-    ).subscribe({
-      next: (membership) => {
-        this.existingTreasurerEmail = '';
-        this.memberships.update((items) => [
-          ...items.filter((item) => item.id !== membership.id),
-          membership,
-        ]);
-        this.saved(`${membership.displayName} a accès à ${membership.localFundName}.`);
-      },
-      error: (error: HttpErrorResponse) => this.failed(error),
-    });
-  }
-
-  protected invitationLink(): string {
-    const invitation = this.invitation();
-    return invitation
-      ? `${window.location.origin}/?invitation=${encodeURIComponent(invitation.token)}&email=${encodeURIComponent(invitation.email)}`
-      : '';
-  }
-
-  protected copyInvitationLink(): void {
-    const link = this.invitationLink();
-    if (!link) return;
-    if (!navigator.clipboard) {
-      this.errorMessage.set('Copie automatique indisponible. Sélectionnez le lien pour le copier.');
+    if (!this.treasurerPhone.trim()) {
+      this.errorMessage.set('Saisissez le numéro de téléphone portable du trésorier.');
       return;
     }
-    navigator.clipboard.writeText(link)
-      .then(() => this.invitationCopied.set(true))
-      .catch(() => this.errorMessage.set('Copie automatique indisponible. Sélectionnez le lien pour le copier.'));
+    this.startSave();
+    this.issuedPassword.set(null);
+    this.fundService.designateTreasurer(this.selectedPrimaryFundId, {
+      localFundId: this.selectedTreasurerLocalFundId,
+      phone: this.treasurerPhone.trim(),
+      firstName: this.treasurerFirstName.trim() || undefined,
+      lastName: this.treasurerLastName.trim() || undefined,
+    }).subscribe({
+      next: (designation) => {
+        const membership = designation.membership;
+        this.treasurerPhone = '';
+        this.treasurerFirstName = '';
+        this.treasurerLastName = '';
+        this.memberships.update((items) => [...items.filter((item) => item.id !== membership.id), membership]);
+        if (designation.temporaryPassword) {
+          this.issuedPassword.set({ name: membership.displayName, password: designation.temporaryPassword });
+        }
+        this.saved(designation.accountCreated
+          ? `Compte créé pour ${membership.displayName}. Remettez-lui le mot de passe provisoire ci-dessous.`
+          : `${membership.displayName} utilise son compte existant et a accès à ${membership.localFundName}.`);
+      },
+      error: (error: HttpErrorResponse) => this.failed(error),
+    });
+  }
+
+  protected issueTemporaryPassword(membership: FundMembership): void {
+    if (this.saving() || membership.role !== 'TRESORIER') return;
+    this.startSave();
+    this.issuedPassword.set(null);
+    this.fundService.issueTemporaryPassword(this.selectedPrimaryFundId, membership.id).subscribe({
+      next: (result) => {
+        this.issuedPassword.set({ name: membership.displayName, password: result.temporaryPassword });
+        this.saved(`Nouveau mot de passe provisoire pour ${membership.displayName} : ses appareils sont déconnectés.`);
+      },
+      error: (error: HttpErrorResponse) => this.failed(error),
+    });
   }
 
   protected deactivateTreasurer(membership: FundMembership): void {

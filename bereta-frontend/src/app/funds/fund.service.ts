@@ -8,7 +8,9 @@ import {
   FundMembership,
   LocalFund,
   PrimaryFund,
-  TreasurerInvitation,
+  DesignateTreasurerRequest,
+  TemporaryPassword,
+  TreasurerDesignation,
 } from './fund.model';
 import { CashRemittanceSummary, CreateRemittanceRequest, Remittance } from './remittance.model';
 
@@ -49,18 +51,13 @@ export class FundService {
     return this.http.get<FundMembership[]>(`${this.primaryFundsEndpoint}/${primaryFundId}/acces`);
   }
 
-  inviteTreasurer(primaryFundId: string, email: string, localFundId: string): Observable<TreasurerInvitation> {
-    return this.http.post<TreasurerInvitation>(`${this.primaryFundsEndpoint}/${primaryFundId}/acces/invitations`, {
-      email,
-      localFundId,
-    });
+  designateTreasurer(primaryFundId: string, request: DesignateTreasurerRequest): Observable<TreasurerDesignation> {
+    return this.http.post<TreasurerDesignation>(`${this.primaryFundsEndpoint}/${primaryFundId}/acces`, request);
   }
 
-  assignExistingTreasurer(primaryFundId: string, email: string, localFundId: string): Observable<FundMembership> {
-    return this.http.post<FundMembership>(`${this.primaryFundsEndpoint}/${primaryFundId}/acces`, {
-      email,
-      localFundId,
-    });
+  issueTemporaryPassword(primaryFundId: string, membershipId: string): Observable<TemporaryPassword> {
+    return this.http.post<TemporaryPassword>(
+      `${this.primaryFundsEndpoint}/${primaryFundId}/acces/${membershipId}/mot-de-passe-provisoire`, {});
   }
 
   deactivateFundAccess(primaryFundId: string, membershipId: string): Observable<void> {

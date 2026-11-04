@@ -1,6 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { filter, map } from 'rxjs';
 import { CurrencyPipe, DatePipe, LowerCasePipe, UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MemberService } from './members/member.service';
@@ -10,13 +12,15 @@ import { FundService } from './funds/fund.service';
 import { Campaign, LocalFund } from './funds/fund.model';
 import { forkJoin } from 'rxjs';
 import { AuthService } from './auth/auth.service';
+import { FirstLoginComponent } from './auth/first-login.component';
+import { EmailVerificationComponent } from './auth/email-verification.component';
 import { PaymentService } from './payments/payment.service';
 import { AssociationService } from './associations/association.service';
 import { CreatePaymentRequest, Payment, PaymentEnrollment, PaymentMethod, PaymentSummary } from './payments/payment.model';
 
 @Component({
   selector: 'app-root',
-  imports: [CurrencyPipe, DatePipe, FormsModule, LowerCasePipe, UpperCasePipe, FundSetupComponent, RouterLink, RouterOutlet],
+  imports: [CurrencyPipe, DatePipe, FormsModule, LowerCasePipe, UpperCasePipe, FundSetupComponent, RouterLink, RouterOutlet, FirstLoginComponent, EmailVerificationComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
@@ -29,6 +33,12 @@ export class App {
   protected readonly today = new Date();
   protected readonly isCheckingSession = signal(true);
   protected readonly currentUser = this.authService.currentUser;
+  protected readonly pendingEmailVerification = this.authService.pendingEmailVerification;
+  private readonly router = inject(Router);
+  private readonly currentUrl = toSignal(this.router.events.pipe(
+    filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+    map((event) => event.urlAfterRedirects)), { initialValue: this.router.url });
+  protected readonly isAdminRoute = computed(() => this.currentUrl().startsWith('/admin'));
   protected readonly associations = this.associationService.associations;
   protected readonly activeAssociation = this.associationService.activeAssociation;
   protected readonly activeAssociationId = this.associationService.activeAssociationId;
@@ -97,7 +107,8 @@ export class App {
 
   constructor() {
     effect(() => {
-      if (this.isCheckingSession() || !this.currentUser()) return;
+      const user = this.currentUser();
+      if (this.isCheckingSession() || !user || user.mustChangePassword) return;
       this.loadAssociations();
     });
     effect(() => {
@@ -110,14 +121,10 @@ export class App {
       this.loadMembers();
       this.loadPaymentData();
     });
-    this.authService.me().subscribe({
-      next: () => {
-        this.isCheckingSession.set(false);
-      },
-      error: () => {
-        this.authService.currentUser.set(null);
-        this.isCheckingSession.set(false);
-      },
+    // Au chargement, l'access token (gardé en mémoire) est perdu : on le redemande grâce au cookie.
+    this.authService.restoreSession().subscribe({
+      next: () => this.isCheckingSession.set(false),
+      error: () => this.isCheckingSession.set(false),
     });
   }
 
@@ -552,7 +559,7 @@ export class App {
   }
 
   private finishLogout(): void {
-    this.authService.currentUser.set(null);
+    this.authService.clearSession();
     this.associationService.clear();
     this.hasPrimaryFunds.set(false);
     this.isCheckingFunds.set(false);

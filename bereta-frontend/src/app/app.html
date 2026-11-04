@@ -1,4 +1,12 @@
-@if (isCheckingSession() || (currentUser() && (isCheckingAssociations() || (activeAssociationId() && isCheckingFunds())))) {
+@if (isCheckingSession()) {
+  <main class="session-check" role="status"><span class="session-spinner"></span>Vérification de votre connexion…</main>
+} @else if (currentUser()?.mustChangePassword) {
+  <app-first-login />
+} @else if (currentUser() && pendingEmailVerification()) {
+  <app-email-verification />
+} @else if (currentUser()?.role === 'ADMIN' && isAdminRoute()) {
+  <router-outlet />
+} @else if (currentUser() && (isCheckingAssociations() || (activeAssociationId() && isCheckingFunds()))) {
   <main class="session-check" role="status"><span class="session-spinner"></span>Vérification de votre connexion…</main>
 } @else if (currentUser() && associationLoadError()) {
   <main class="onboarding-page"><section class="onboarding-card"><h1>Associations indisponibles</h1><p>Impossible de charger les espaces auxquels votre compte a accès.</p><button class="login-submit" type="button" (click)="loadAssociations()">Réessayer</button><button class="onboarding-link" type="button" (click)="logout()">Se déconnecter</button></section></main>

@@ -1,36 +1,60 @@
+export type Role = 'RESPONSABLE' | 'TRESORIER' | 'ADMIN';
+
 export interface AuthUser {
-  email: string;
+  id: string;
   displayName: string;
-  role: 'RESPONSABLE' | 'TRESORIER' | 'ADMIN';
+  email: string | null;
+  phone: string | null;
+  role: Role;
+  emailVerified: boolean;
+  phoneVerified: boolean;
+  mustChangePassword: boolean;
 }
 
-export interface CsrfTokenResponse {
-  token: string;
-  headerName: string;
-  parameterName: string;
+export interface TokenResponse {
+  accessToken: string;
+  tokenType: 'Bearer';
+  expiresInSeconds: number;
+  user: AuthUser;
 }
 
-export interface AcceptInvitationRequest {
-  token: string;
-  email: string;
-  displayName: string;
-  password: string;
+/** Étape 1 de la connexion : jamais de jeton, seulement un challenge SMS ou une demande de téléphone. */
+export interface LoginStep {
+  step: 'OTP_REQUIRED' | 'PHONE_REQUIRED';
+  challengeId: string | null;
+  maskedPhone: string | null;
+  expiresInSeconds: number | null;
+  resendAvailableInSeconds: number | null;
+  enrollmentToken: string | null;
+}
+
+export interface CodeSent {
+  challengeId: string;
+  channel: 'SMS' | 'EMAIL' | null;
+  maskedDestination: string | null;
+  expiresInSeconds: number;
+  resendAvailableInSeconds: number;
 }
 
 export interface RegisterRequest {
   firstName: string;
   lastName: string;
-  email: string;
+  phone: string;
+  email: string | null;
   password: string;
+  acceptTerms: boolean;
 }
 
-export interface PasswordResetRequest {
-  email: string;
+export interface RegistrationResponse {
+  phoneVerification: CodeSent;
+  emailVerificationSent: boolean;
 }
 
-export interface CompletePasswordResetRequest {
-  token: string;
-  password: string;
+export interface ForgotPasswordResponse {
+  message: string;
+  channel: 'SMS' | 'EMAIL';
+  challengeId: string | null;
+  expiresInSeconds: number;
 }
 
 export interface AuthMessage {

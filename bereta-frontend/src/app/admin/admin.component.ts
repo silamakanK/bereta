@@ -159,7 +159,7 @@ export class AdminComponent implements OnInit {
         this.success.set('Le compte a été modifié.');
         this.selectedUser.set(null); this.saving.set(false);
         this.loadUsers(); this.loadAudit();
-        if (updated.id === this.currentUser()?.email) this.auth.currentUser.set({ ...this.currentUser()!, role: updated.role as 'ADMIN' | 'RESPONSABLE' | 'TRESORIER' });
+        if (updated.id === this.currentUser()?.id) this.auth.currentUser.set({ ...this.currentUser()!, role: updated.role as 'ADMIN' | 'RESPONSABLE' | 'TRESORIER' });
       }, error: (e) => this.fail(e),
     });
   }
