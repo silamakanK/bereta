@@ -55,7 +55,8 @@ public class OtpService {
                       PhoneNumberService phoneNumbers, Clock clock,
                       @Value("${bereta.auth.otp.secret}") String secret) {
         if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < 32) {
-            throw new IllegalStateException("OTP_HASH_SECRET (ou JWT_SECRET) doit contenir au moins 32 octets.");
+            throw new IllegalStateException("JWT_SECRET n’est pas défini ou fait moins de 32 octets : ajoutez-le dans "
+                    + "bereta-backend/.env (openssl rand -base64 48). OTP_HASH_SECRET est facultatif.");
         }
         this.codes = codes;
         this.smsSender = smsSender;
