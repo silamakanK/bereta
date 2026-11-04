@@ -63,7 +63,7 @@ h1 span { color: #d2a14f; font-size: 19px; vertical-align: 4px; }
 .change-campaign { display: flex; width: 162px; min-height: 42px; flex: 0 0 162px; align-items: center; justify-content: center; gap: 7px; margin-left: auto; padding: 0 12px; border: 1px solid #2e6248; border-radius: 8px; background: #2e6248; color: #fff; cursor: pointer; font: inherit; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .change-campaign:hover { background: #244e39; }
 .change-campaign::after { content: 'Gérer les caisses'; }
-.change-campaign-icon { font-size: 16px; font-weight: 500; line-height: 1; }
+.change-campaign-icon { font-size: 16px; }
 
 .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; margin-top: 18px; }
 .stat-card { min-width: 0; min-height: 158px; padding: 17px 18px 15px; border: 1px solid #e8ebe6; border-radius: 11px; background: #fff; }
@@ -125,8 +125,8 @@ h1 span { color: #d2a14f; font-size: 19px; vertical-align: 4px; }
 .form-heading span, .optional-label { color: #90988f; font-size: 9px; font-weight: 400; }
 .form-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .form-fields label { display: grid; gap: 6px; color: #59645a; font-size: 10px; font-weight: 650; }
-.form-fields input { width: 100%; min-height: 37px; padding: 0 9px; border: 1px solid #e1e7df; border-radius: 6px; outline: 0; background: #fff; color: #313a32; font-size: 11px; }
-.form-fields input:focus { border-color: #83a98c; box-shadow: 0 0 0 3px #60936d1a; }
+.form-fields input, .form-fields select { width: 100%; min-height: 37px; padding: 0 9px; border: 1px solid #e1e7df; border-radius: 6px; background: #fff; color: #313a32; font-size: 11px; }
+.form-fields input:focus, .form-fields select:focus { border-color: #83a98c; box-shadow: 0 0 0 3px #60936d1a; }
 .form-actions { display: flex; justify-content: end; gap: 10px; margin-top: 13px; }
 .cancel-button { min-height: 36px; padding: 0 12px; border: 1px solid #e2e7e0; border-radius: 7px; background: #fff; color: #667067; cursor: pointer; font-size: 10px; font-weight: 650; }
 .form-submit { min-height: 36px; padding-inline: 12px; font-size: 10px; }
@@ -222,7 +222,7 @@ h1 span { color: #d2a14f; font-size: 19px; vertical-align: 4px; }
 @media (max-width: 600px) {
   .sidebar { display: none; }
   .main-content { margin-left: 0; padding-bottom: 74px; }
-  .topbar { height: 58px; padding: 0 18px; }
+  .topbar { height: auto; padding: 9px 14px; }
   .breadcrumb { gap: 7px; font-size: 10px; }
   .topbar-right { gap: 10px; }
   .demo-badge { padding: 6px 8px; font-size: 9px; }

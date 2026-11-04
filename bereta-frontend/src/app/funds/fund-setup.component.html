@@ -51,10 +51,12 @@
               @for (fund of primaryFunds(); track fund.id) { <option [value]="fund.id">{{ fund.name }}</option> }
             </select>
           </label>
-          <button class="setup-add" type="button" (click)="localFormOpen.set(!localFormOpen())">
-            {{ localFormOpen() ? 'Fermer' : '＋ Ajouter une caisse locale' }}
-          </button>
-          @if (localFormOpen()) {
+          @if (canManageSelectedFund()) {
+            <button class="setup-add" type="button" (click)="localFormOpen.set(!localFormOpen())">
+              {{ localFormOpen() ? 'Fermer' : '＋ Ajouter une caisse locale' }}
+            </button>
+          }
+          @if (localFormOpen() && canManageSelectedFund()) {
             <form class="setup-form" (ngSubmit)="createLocalFund()">
               <label>Nom de la caisse locale *<input name="localFundName" [(ngModel)]="localFundName" required maxlength="100" placeholder="Ex. Caisse de Mamadou" /></label>
               <button class="setup-submit" type="submit" [disabled]="saving()">{{ saving() ? 'Enregistrement…' : 'Créer la caisse locale' }}</button>
@@ -67,8 +69,97 @@
               <p class="setup-empty">Aucune caisse locale rattachée.</p>
             }
           </div>
+          @if (canManageSelectedFund()) {
+            <div class="treasurer-access">
+              <div class="access-heading"><h4>Accès des trésoriers</h4><p>Chaque personne voit uniquement sa caisse locale.</p></div>
+              <form class="invite-form" (ngSubmit)="inviteTreasurer()">
+                <label>E-mail du trésorier<input name="treasurerEmail" type="email" [(ngModel)]="treasurerEmail" required maxlength="320" autocomplete="email" placeholder="nom@exemple.fr" /></label>
+                <label>Caisse locale
+                  <select name="treasurerLocalFund" [(ngModel)]="selectedTreasurerLocalFundId" required [disabled]="localFunds().length === 0">
+                    @for (fund of localFunds(); track fund.id) { <option [value]="fund.id">{{ fund.name }}</option> }
+                  </select>
+                </label>
+                <button class="setup-submit" type="submit" [disabled]="saving() || localFunds().length === 0">{{ saving() ? 'Création…' : 'Créer une invitation' }}</button>
+              </form>
+              <form class="existing-access-form" (ngSubmit)="assignExistingTreasurer()">
+                <label>Compte déjà créé
+                  <input name="existingTreasurerEmail" type="email" [(ngModel)]="existingTreasurerEmail" required maxlength="320" autocomplete="email" placeholder="E-mail du compte existant" />
+                </label>
+                <button type="submit" [disabled]="saving() || localFunds().length === 0">Ajouter à cette caisse locale</button>
+              </form>
+              @if (invitation()) {
+                <div class="invitation-result" role="status">
+                  <div><strong>Invitation pour {{ invitation()?.email }}</strong><small>Valable 7 jours · transmettez le lien en privé.</small></div>
+                  <div class="invitation-link"><input aria-label="Lien d’invitation à usage unique" readonly [value]="invitationLink()" /><button type="button" (click)="copyInvitationLink()">{{ invitationCopied() ? 'Copié' : 'Copier le lien' }}</button></div>
+                </div>
+              }
+              <div class="access-list">
+                @for (membership of memberships(); track membership.id) {
+                  @if (membership.role === 'TRESORIER') {
+                    <div class="access-row"><span><strong>{{ membership.displayName }}</strong><small>{{ membership.email }} · {{ membership.localFundName }}</small></span><button type="button" (click)="deactivateTreasurer(membership)" [disabled]="saving()">Désactiver</button></div>
+                  }
+                }
+                @if (memberships().length <= 1) { <p class="setup-empty">Aucun trésorier n’a encore accès à cette caisse.</p> }
+              </div>
+            </div>
+          }
         } @else {
           <p class="setup-empty">Créez d’abord une caisse principale.</p>
+        }
+      </article>
+
+      <article class="setup-card remittance-card">
+        <div class="setup-card-heading">
+          <span class="setup-card-icon local-icon" aria-hidden="true">⇄</span>
+          <div><h3>Remises d’argent</h3><p>Suivez les fonds en attente et les réceptions centrales.</p></div>
+        </div>
+        @if (remittanceSummary(); as summary) {
+          <div class="remittance-balances">
+            <div><span>Disponible localement</span><strong>{{ summary.availableLocally | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</strong></div>
+            <div><span>En cours de remise</span><strong>{{ summary.inTransit | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</strong></div>
+            @if (summary.centralBalance !== null) {
+              <div><span>Solde central</span><strong>{{ summary.centralBalance | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</strong></div>
+              <div><span>Total détenu</span><strong>{{ summary.totalHeldGlobally | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</strong></div>
+            } @else {
+              <p class="setup-empty">Les soldes de la caisse centrale sont visibles par le responsable.</p>
+            }
+          </div>
+          @if (!canManageSelectedFund()) {
+            <button class="setup-add" type="button" (click)="remittanceFormOpen.set(!remittanceFormOpen())">
+              {{ remittanceFormOpen() ? 'Fermer' : '＋ Déclarer une remise' }}
+            </button>
+          }
+          @if (remittanceFormOpen() && !canManageSelectedFund()) {
+            <form class="setup-form remittance-form" (ngSubmit)="declareRemittance()">
+              <label>Ma caisse locale *
+                <select name="remittanceLocalFund" [(ngModel)]="remittanceLocalFundId" required>
+                  @for (fund of summary.localFunds; track fund.localFundId) { <option [value]="fund.localFundId">{{ fund.localFundName }} · disponible {{ fund.availableLocally | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</option> }
+                </select>
+              </label>
+              <label>Montant remis *<input name="remittanceAmount" type="text" inputmode="decimal" [(ngModel)]="remittanceAmount" required pattern="[0-9]+([.,][0-9]{1,2})?" placeholder="Ex. 100,00" /></label>
+              <label>Date de remise *<input name="remittanceDate" type="date" [(ngModel)]="remittanceDate" required /></label>
+              <label>Mode *<select name="remittanceMethod" [(ngModel)]="remittanceMethod" required><option value="ESPECES">Espèces</option><option value="VIREMENT">Virement</option><option value="CHEQUE">Chèque</option><option value="AUTRE">Autre</option></select></label>
+              <label>Note <span class="optional">(facultative)</span><textarea name="remittanceNote" [(ngModel)]="remittanceNote" maxlength="500" rows="2"></textarea></label>
+              <button class="setup-submit" type="submit" [disabled]="saving() || !remittanceLocalFundId">{{ saving() ? 'Enregistrement…' : 'Déclarer la remise' }}</button>
+            </form>
+          }
+          <div class="remittance-list" aria-live="polite">
+            <h4>Historique des remises</h4>
+            @for (remittance of remittances(); track remittance.id) {
+              <div class="remittance-row">
+                <div class="remittance-main"><strong>{{ remittance.localFundName }} · {{ remittance.amount | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</strong><small>{{ remittance.transferredOn | date:'d MMM y':'UTC':'fr-FR' }} · déclarée par {{ remittance.declaredByName }}</small></div>
+                <span class="remittance-status" [class.status-pending]="remittance.status === 'EN_ATTENTE'" [class.status-confirmed]="remittance.status === 'CONFIRMEE'" [class.status-cancelled]="remittance.status === 'ANNULEE'">{{ remittanceStatusLabel(remittance.status) }}</span>
+                @if (canManageSelectedFund() && remittance.status === 'EN_ATTENTE') {
+                  <div class="remittance-actions"><button type="button" (click)="confirmRemittance(remittance)" [disabled]="saving()">Confirmer la réception</button><button type="button" (click)="beginCancelRemittance(remittance.id)" [disabled]="saving()">Annuler</button></div>
+                }
+                @if (cancellingRemittanceId() === remittance.id) {
+                  <form class="remittance-cancel-form" (ngSubmit)="cancelRemittance(remittance)"><label>Motif d’annulation *<input name="cancellationReason" [(ngModel)]="cancellationReason" maxlength="500" required /></label><button type="submit" [disabled]="saving() || !cancellationReason.trim()">Confirmer l’annulation</button></form>
+                }
+                @if (remittance.status === 'CONFIRMEE') { <small class="remittance-audit">Reçue par {{ remittance.confirmedByName }} · {{ remittance.confirmedAt | date:'d MMM y à HH:mm':'':'fr-FR' }}</small> }
+                @if (remittance.status === 'ANNULEE') { <small class="remittance-audit">Annulée par {{ remittance.cancelledByName }} · {{ remittance.cancellationReason }}</small> }
+              </div>
+            } @empty { <p class="setup-empty">Aucune remise déclarée pour cette caisse.</p> }
+          </div>
         }
       </article>
 
@@ -78,10 +169,12 @@
           <div><h3>Campagnes de cotisation</h3><p>Une campagne annuelle ou dédiée à un événement.</p></div>
         </div>
         @if (primaryFunds().length > 0) {
-          <button class="setup-add" type="button" (click)="campaignFormOpen.set(!campaignFormOpen())">
-            {{ campaignFormOpen() ? 'Fermer' : '＋ Créer une campagne' }}
-          </button>
-          @if (campaignFormOpen()) {
+          @if (canManageSelectedFund()) {
+            <button class="setup-add" type="button" (click)="campaignFormOpen.set(!campaignFormOpen())">
+              {{ campaignFormOpen() ? 'Fermer' : '＋ Créer une campagne' }}
+            </button>
+          }
+          @if (campaignFormOpen() && canManageSelectedFund()) {
             <form class="setup-form campaign-form" (ngSubmit)="createCampaign()">
               <label>Caisse principale *
                 <select name="campaignParent" [(ngModel)]="selectedPrimaryFundId" (ngModelChange)="onPrimaryFundChange($event)" required>

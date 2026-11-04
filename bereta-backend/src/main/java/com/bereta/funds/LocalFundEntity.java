@@ -1,5 +1,6 @@
 package com.bereta.funds;
 
+import com.bereta.associations.AssociationEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -26,6 +27,10 @@ public class LocalFundEntity {
     @JoinColumn(name = "primary_fund_id", nullable = false)
     private PrimaryFundEntity primaryFund;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "association_id", nullable = false)
+    private AssociationEntity association;
+
     @Column(nullable = false, length = 100)
     private String name;
 
@@ -37,6 +42,7 @@ public class LocalFundEntity {
 
     public LocalFundEntity(PrimaryFundEntity primaryFund, String name) {
         this.primaryFund = primaryFund;
+        this.association = primaryFund.getAssociation();
         this.name = name;
     }
 
@@ -47,6 +53,7 @@ public class LocalFundEntity {
 
     public UUID getId() { return id; }
     public PrimaryFundEntity getPrimaryFund() { return primaryFund; }
+    public AssociationEntity getAssociation() { return association; }
     public String getName() { return name; }
     public Instant getCreatedAt() { return createdAt; }
 }

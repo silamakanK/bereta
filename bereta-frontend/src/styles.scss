@@ -4,8 +4,101 @@ html { min-width: 320px; min-height: 100%; background: #f7f8f5; scroll-behavior:
 
 body { min-width: 320px; min-height: 100vh; margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
 
-button, input { font: inherit; }
+button, input, select { font: inherit; }
 
 button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid #83a98c; outline-offset: 3px; }
 
 ::selection { background: #dbeade; color: #234a33; }
+
+.payment-overlay { position: fixed; z-index: 20; inset: 0; display: grid; place-items: center; overflow-y: auto; padding: 22px; background: #14251bb8; }
+.payment-dialog { width: min(560px, 100%); max-height: min(92vh, 820px); overflow-y: auto; padding: 25px; border: 1px solid #e8ebe6; border-radius: 15px; background: #fff; box-shadow: 0 22px 70px #10221742; }
+.payment-dialog-heading { display: flex; align-items: start; justify-content: space-between; gap: 15px; margin-bottom: 18px; }
+.payment-dialog-heading .eyebrow { margin-bottom: 7px; }
+.payment-dialog-heading h2 { margin: 0 0 6px; color: #303a31; font-size: 21px; letter-spacing: -.5px; }
+.payment-dialog-heading p { margin: 0; color: #7d877d; font-size: 12px; line-height: 1.45; }
+.payment-form { display: grid; gap: 15px; }
+.payment-form label { display: grid; min-width: 0; gap: 7px; color: #536054; font-size: 11px; font-weight: 650; }
+.payment-form select, .payment-form input, .payment-form textarea { width: 100%; min-height: 42px; padding: 9px 11px; border: 1px solid #dfe6de; border-radius: 7px; background: #fff; color: #303a31; font: inherit; font-size: 12px; }
+.payment-form textarea { resize: vertical; }
+.payment-form select:focus, .payment-form input:focus, .payment-form textarea:focus { border-color: #83a98c; box-shadow: 0 0 0 3px #60936d1a; outline: 0; }
+.payment-balance { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 14px; padding: 11px 12px; border-radius: 8px; background: #f5f8f3; color: #758075; font-size: 10px; }
+.payment-balance strong { color: #3b6145; }
+.payment-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; }
+.payment-note { grid-column: 1 / -1; }
+.amount-input { position: relative; }
+.amount-input input { padding-right: 34px; }
+.amount-input > span { position: absolute; top: 50%; right: 12px; color: #899289; font-size: 12px; transform: translateY(-50%); }
+.payment-dialog-actions { display: flex; justify-content: end; gap: 9px; margin-top: 5px; }
+.payment-dialog-actions .primary-button { min-height: 40px; padding-inline: 15px; font-size: 11px; }
+.payment-dialog-actions .primary-button:disabled { opacity: .55; cursor: not-allowed; }
+.payment-review { padding: 16px; border: 1px solid #e6ebe4; border-radius: 9px; background: #fafcf9; }
+.payment-review h3 { margin: 0 0 12px; color: #3c483d; font-size: 14px; }
+.payment-review dl { display: grid; gap: 9px; margin: 0; }
+.payment-review dl div { display: flex; justify-content: space-between; gap: 14px; font-size: 11px; }
+.payment-review dt { color: #818b80; }
+.payment-review dd { margin: 0; color: #374438; font-weight: 650; text-align: right; }
+.payment-review > p { margin: 14px 0 0; color: #8a9388; font-size: 10px; line-height: 1.5; }
+.payments-panel { margin-top: 17px; padding: 19px; scroll-margin-top: 18px; }
+.payment-row { display: grid; min-height: 65px; grid-template-columns: 34px minmax(130px, 1fr) minmax(84px, .45fr) auto; align-items: center; gap: 11px; border-bottom: 1px solid #eff1ed; }
+.payment-row:last-child { border-bottom: 0; }
+.payment-avatar { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 9px; background: #edf5ee; color: #438058; font-size: 15px; font-weight: 700; }
+.payment-copy, .payment-date { display: grid; min-width: 0; gap: 4px; }
+.payment-copy strong { overflow: hidden; color: #414b42; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.payment-copy span, .payment-date span, .payment-date small { overflow: hidden; color: #899288; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.payment-date small { color: #a0a79f; text-transform: capitalize; }
+.payment-amount { color: #3b7750; font-size: 12px; white-space: nowrap; }
+.payments-empty { display: grid; justify-items: center; gap: 7px; padding: 27px 10px; color: #657064; text-align: center; }
+.payments-empty strong { color: #424c43; font-size: 12px; }
+.payments-empty p { margin: 0; color: #929a90; font-size: 10px; }
+.payments-empty .text-button { padding: 4px; font-size: 10px; }
+.member-payment-history { display: grid; gap: 7px; margin-top: 13px; padding-top: 10px; border-top: 1px solid #e9eee7; }
+.member-payment-history > strong { color: #697269; font-size: 9px; }
+.member-payment-history-row { display: flex; justify-content: space-between; gap: 10px; color: #737d73; font-size: 9px; }
+.member-payment-history-row strong { color: #3b7750; font-size: 9px; white-space: nowrap; }
+@media (max-width: 600px) {
+  .payment-overlay { align-items: end; padding: 0; }
+  .payment-dialog { width: 100%; max-height: 94vh; padding: 21px 17px calc(21px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; }
+  .payment-fields { grid-template-columns: 1fr; }
+  .payment-note { grid-column: auto; }
+  .payment-dialog-actions { display: grid; grid-template-columns: 1fr 1.5fr; }
+  .payments-panel { padding: 16px 12px; }
+  .payments-panel .panel-heading > .text-button { display: none; }
+  .payment-row { grid-template-columns: 30px minmax(0, 1fr) auto; gap: 8px; }
+  .payment-avatar { width: 28px; height: 28px; }
+  .payment-date { display: none; }
+  .payment-copy strong { font-size: 10px; }
+  .payment-copy span { font-size: 8px; }
+  .payment-amount { font-size: 10px; }
+}
+
+.onboarding-page { display: grid; min-height: 100vh; align-content: center; justify-items: center; padding: 24px 16px; background: radial-gradient(circle at 50% 8%, #eef4ec 0, #f7f8f5 45%, #f3f5f0 100%); }
+.onboarding-card { width: min(100%, 760px); padding: 34px 36px 30px; border: 1px solid #e7ebe4; border-radius: 16px; background: #fff; box-shadow: 0 18px 50px #2a42220d; }
+.onboarding-card > .login-brand { margin-bottom: 24px; }
+.onboarding-card h1 { margin: 0 0 9px; color: #2c352d; font-size: 25px; letter-spacing: -.8px; }
+.onboarding-card > p { color: #818a80; font-size: 12px; line-height: 1.6; }
+.onboarding-card > .login-submit { width: 100%; }
+.onboarding-invitation { margin-top: 21px; padding: 15px; border: 1px solid #e7ede5; border-radius: 8px; background: #f8faf7; }
+.onboarding-invitation strong { color: #465047; font-size: 11px; }
+.onboarding-invitation p { margin: 6px 0 0; color: #818a80; font-size: 10px; line-height: 1.55; }
+.onboarding-link { display: block; margin: 14px auto 0; padding: 8px; border: 0; background: transparent; color: #356b4b; cursor: pointer; font: inherit; font-size: 10px; font-weight: 680; }
+.onboarding-back { margin: 0 0 13px; }
+.onboarding-card .fund-setup { margin-top: 0; }
+@media (max-width: 600px) {
+  .onboarding-card { padding: 26px 19px 22px; border-radius: 13px; }
+}
+/* Association context and onboarding */
+.active-association-picker { display: grid; gap: 3px; color: #899087; font-size: 9px; font-weight: 700; }
+.active-association-picker select { max-width: 190px; min-height: 34px; border: 1px solid #e4e9e2; border-radius: 7px; background: #fff; color: #344238; padding: 0 9px; font: inherit; font-size: 11px; }
+.association-add-button { min-height: 35px; padding: 0 10px; border: 1px solid #dfe8df; border-radius: 7px; background: #f7faf6; color: #2e6248; cursor: pointer; font: inherit; font-size: 11px; font-weight: 700; }
+.association-onboarding { width: min(100%, 520px); }
+.association-form, .association-form label, .association-choice-label { display: grid; gap: 8px; }
+.association-form { gap: 14px; margin-top: 20px; }
+.association-form label, .association-choice-label { color: #374239; font-size: 12px; font-weight: 650; }
+.association-form input, .association-form textarea, .association-choice-label select, .association-inline-form input { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #dfe5dd; border-radius: 8px; background: #fff; color: #27332b; font: inherit; font-size: 13px; }
+.association-form textarea { resize: vertical; }
+.association-inline-form { display: flex; align-items: end; gap: 12px; margin-bottom: 20px; padding: 16px; border: 1px solid #e4e9e2; border-radius: 10px; background: #fff; }
+.association-inline-form > div { margin-right: auto; }
+.association-inline-form > div p { margin: 5px 0 0; color: #788078; font-size: 11px; }
+.association-inline-form label { display: grid; min-width: 160px; gap: 5px; color: #667168; font-size: 10px; font-weight: 700; }
+@media (max-width: 850px) { .association-inline-form { display: grid; align-items: stretch; } .association-inline-form label { min-width: 0; } }
+@media (max-width: 600px) { .topbar { height: auto; min-height: 58px; padding: 9px 14px; } .active-association-picker { max-width: 140px; } .active-association-picker select { max-width: 140px; } .association-add-button { padding-inline: 7px; font-size: 10px; } }

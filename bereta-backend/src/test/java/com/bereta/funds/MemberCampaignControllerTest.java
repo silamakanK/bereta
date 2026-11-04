@@ -1,5 +1,10 @@
 package com.bereta.funds;
 
+import com.bereta.TestSecurity;
+import com.bereta.auth.UserAccountEntity;
+import com.bereta.auth.UserAccountRepository;
+import com.bereta.associations.AssociationMembershipRepository;
+import com.bereta.associations.AssociationRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -7,17 +12,19 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc
 @ActiveProfiles("test")
 class MemberCampaignControllerTest {
 
@@ -28,53 +35,67 @@ class MemberCampaignControllerTest {
     @Autowired private LocalFundRepository localFundRepository;
     @Autowired private PrimaryFundRepository primaryFundRepository;
     @Autowired private com.bereta.members.MemberRepository memberRepository;
+    @Autowired private FundMembershipRepository fundMembershipRepository;
+    @Autowired private FundInvitationRepository fundInvitationRepository;
+    @Autowired private PaymentRepository paymentRepository;
+    @Autowired private CashRemittanceRepository remittanceRepository;
+    @Autowired private UserAccountRepository userAccountRepository;
+    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private AssociationRepository associationRepository;
+    @Autowired private AssociationMembershipRepository associationMembershipRepository;
+    private UserAccountEntity testAccount;
 
     @BeforeEach
     void clearData() {
+        remittanceRepository.deleteAll();
+        paymentRepository.deleteAll();
         enrollmentRepository.deleteAll();
         campaignRepository.deleteAll();
+        memberRepository.deleteAll();
+        fundInvitationRepository.deleteAll();
+        fundMembershipRepository.deleteAll();
         localFundRepository.deleteAll();
         primaryFundRepository.deleteAll();
-        memberRepository.deleteAll();
+        testAccount = TestSecurity.account(userAccountRepository, passwordEncoder,
+                "enrollment-tests@example.test", "RESPONSABLE");
+        TestSecurity.association(associationRepository, associationMembershipRepository, testAccount,
+                "Association enrollment tests " + java.util.UUID.randomUUID());
     }
 
     @Test
     void enrollsMemberAndPreventsDuplicateCampaignEnrollment() throws Exception {
-        String memberId = create("/api/membres", """
-                {"firstName":"Awa","lastName":"Traoré"}
-                """);
         String primaryFundId = create("/api/caisses-principales", """
                 {"name":"Développement","objective":"Projets du village"}
                 """);
         String localFundId = create("/api/caisses-principales/%s/caisses-locales".formatted(primaryFundId),
                 "{\"name\":\"Caisse de Mamadou\"}");
+        String memberId = create("/api/membres", """
+                {"firstName":"Awa","lastName":"Traoré","localFundId":"%s"}
+                """.formatted(localFundId));
         String campaignId = create("/api/campagnes", """
                 {"primaryFundId":"%s","name":"Campagne 2026","campaignType":"ANNUAL","campaignYear":2026,"expectedAmount":30.00}
                 """.formatted(primaryFundId));
 
-        mockMvc.perform(post("/api/membres/{memberId}/inscriptions", memberId)
+        mockMvc.perform(secured(post("/api/membres/{memberId}/inscriptions", memberId)
                         .contentType(APPLICATION_JSON)
                         .content("""
                                 {"campaignId":"%s","localFundId":"%s"}
-                                """.formatted(campaignId, localFundId)))
+                                """.formatted(campaignId, localFundId))))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.campaignName").value("Campagne 2026"))
                 .andExpect(jsonPath("$.localFundName").value("Caisse de Mamadou"))
                 .andExpect(jsonPath("$.expectedAmount").value(30.00));
 
-        mockMvc.perform(post("/api/membres/{memberId}/inscriptions", memberId)
+        mockMvc.perform(secured(post("/api/membres/{memberId}/inscriptions", memberId)
                         .contentType(APPLICATION_JSON)
                         .content("""
                                 {"campaignId":"%s","localFundId":"%s"}
-                                """.formatted(campaignId, localFundId)))
+                                """.formatted(campaignId, localFundId))))
                 .andExpect(status().isConflict());
     }
 
     @Test
     void rejectsLocalFundFromDifferentPrimaryFund() throws Exception {
-        String memberId = create("/api/membres", """
-                {"firstName":"Mamadou","lastName":"Cissé"}
-                """);
         String firstFundId = create("/api/caisses-principales", """
                 {"name":"Solidarité","objective":"Soutenir les membres"}
                 """);
@@ -83,25 +104,33 @@ class MemberCampaignControllerTest {
                 """);
         String localFundId = create("/api/caisses-principales/%s/caisses-locales".formatted(firstFundId),
                 "{\"name\":\"Caisse locale A\"}");
+        String memberId = create("/api/membres", """
+                {"firstName":"Mamadou","lastName":"Cissé","localFundId":"%s"}
+                """.formatted(localFundId));
         String campaignId = create("/api/campagnes", """
                 {"primaryFundId":"%s","name":"Année 2026","campaignType":"ANNUAL","campaignYear":2026,"expectedAmount":18.00}
                 """.formatted(secondFundId));
 
-        mockMvc.perform(post("/api/membres/{memberId}/inscriptions", memberId)
+        mockMvc.perform(secured(post("/api/membres/{memberId}/inscriptions", memberId)
                         .contentType(APPLICATION_JSON)
                         .content("""
                                 {"campaignId":"%s","localFundId":"%s"}
-                                """.formatted(campaignId, localFundId)))
+                                """.formatted(campaignId, localFundId))))
                 .andExpect(status().isBadRequest());
     }
 
     private String create(String path, String content) throws Exception {
-        MvcResult result = mockMvc.perform(post(path)
+        MvcResult result = mockMvc.perform(secured(post(path)
                         .contentType(APPLICATION_JSON)
-                        .content(content))
+                        .content(content)))
                 .andExpect(status().isCreated())
                 .andReturn();
         JsonNode response = objectMapper.readTree(result.getResponse().getContentAsString());
         return response.get("id").asText();
+    }
+
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder secured(
+            org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request) {
+        return request.with(TestSecurity.as(testAccount)).with(csrf());
     }
 }

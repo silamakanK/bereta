@@ -1,0 +1,4 @@
+node_modules/
+bereta-backend/bin/
+bereta-backend/target/
+.idea/workspace.xml

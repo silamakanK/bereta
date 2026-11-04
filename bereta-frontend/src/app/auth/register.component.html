@@ -1,0 +1,37 @@
+<main class="login-page">
+  <section class="login-card" aria-labelledby="register-title">
+    <a class="login-brand" routerLink="/" aria-label="BERETA, accueil"><span class="login-mark">B</span><span>bereta<span class="brand-dot">.</span></span></a>
+    <p class="login-eyebrow">VOTRE ESPACE ASSOCIATIF</p>
+    <h1 id="register-title">Créer un compte</h1>
+    <p class="login-intro">Créez votre accès personnel. Vous pourrez ensuite créer une caisse ou rejoindre une caisse sur invitation.</p>
+    @if (errorMessage()) { <p class="login-error" role="alert">{{ errorMessage() }}</p> }
+
+    <form novalidate (ngSubmit)="submit()">
+      <label for="register-first-name">Prénom</label>
+      <input id="register-first-name" name="firstName" [(ngModel)]="firstName" autocomplete="given-name" required maxlength="100" [attr.aria-invalid]="nameError(firstName)" [attr.aria-describedby]="nameError(firstName) ? 'first-name-error' : null" />
+      @if (nameError(firstName)) { <span class="field-error" id="first-name-error">Saisissez votre prénom.</span> }
+
+      <label for="register-last-name">Nom</label>
+      <input id="register-last-name" name="lastName" [(ngModel)]="lastName" autocomplete="family-name" required maxlength="100" [attr.aria-invalid]="nameError(lastName)" [attr.aria-describedby]="nameError(lastName) ? 'last-name-error' : null" />
+      @if (nameError(lastName)) { <span class="field-error" id="last-name-error">Saisissez votre nom.</span> }
+
+      <label for="register-email">Adresse e-mail</label>
+      <input id="register-email" name="email" type="email" [(ngModel)]="email" autocomplete="email" required maxlength="320" [attr.aria-invalid]="emailError()" [attr.aria-describedby]="emailError() ? 'email-error' : null" />
+      @if (emailError()) { <span class="field-error" id="email-error">Saisissez une adresse e-mail valide.</span> }
+
+      <label for="register-password">Mot de passe</label>
+      <div class="login-password-control"><input id="register-password" name="password" [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="password" autocomplete="new-password" required minlength="6" maxlength="72" [attr.aria-invalid]="passwordError()" [attr.aria-describedby]="passwordError() ? 'password-error' : 'password-rules'" /><button class="password-toggle" type="button" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [attr.aria-pressed]="showPassword()">{{ showPassword() ? 'Masquer' : 'Afficher' }}</button></div>
+      <small class="password-rules" id="password-rules">6 caractères minimum. Limite maximale : 72 octets UTF-8. Utilisez un mot de passe unique.</small>
+      @if (passwordError()) { <span class="field-error" id="password-error">Le mot de passe ne respecte pas les exigences affichées.</span> }
+
+      <label for="register-confirm-password">Confirmer le mot de passe</label>
+      <div class="login-password-control"><input id="register-confirm-password" name="confirmPassword" [type]="showConfirmPassword() ? 'text' : 'password'" [(ngModel)]="confirmPassword" autocomplete="new-password" required [attr.aria-invalid]="attemptedSubmit() && password !== confirmPassword" [attr.aria-describedby]="attemptedSubmit() && password !== confirmPassword ? 'confirm-password-error' : null" /><button class="password-toggle" type="button" (click)="showConfirmPassword.set(!showConfirmPassword())" [attr.aria-label]="showConfirmPassword() ? 'Masquer la confirmation' : 'Afficher la confirmation'" [attr.aria-pressed]="showConfirmPassword()">{{ showConfirmPassword() ? 'Masquer' : 'Afficher' }}</button></div>
+      @if (attemptedSubmit() && password !== confirmPassword) { <span class="field-error" id="confirm-password-error">Les deux mots de passe ne correspondent pas.</span> }
+
+      <button class="login-submit" type="submit" [disabled]="isSubmitting()">{{ isSubmitting() ? 'Création du compte…' : 'Créer mon compte' }}</button>
+    </form>
+    <p class="login-help">Déjà un compte ? <a routerLink="/connexion">Se connecter</a></p>
+    <p class="login-security"><span aria-hidden="true">▣</span> Connexion sécurisée</p>
+  </section>
+  <p class="login-footer">BERETA · Gestion des cotisations associatives</p>
+</main>

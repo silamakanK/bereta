@@ -1,5 +1,6 @@
 package com.bereta.members;
 
+import com.bereta.auth.BeretaUserDetails;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
@@ -28,18 +30,19 @@ public class MemberController {
     }
 
     @GetMapping
-    public List<MemberResponse> findAll() {
-        return memberService.findAll();
+    public List<MemberResponse> findAll(@AuthenticationPrincipal BeretaUserDetails user) {
+        return memberService.findAll(user.getId());
     }
 
     @GetMapping("/{id}")
-    public MemberResponse findById(@PathVariable UUID id) {
-        return memberService.findById(id);
+    public MemberResponse findById(@AuthenticationPrincipal BeretaUserDetails user, @PathVariable UUID id) {
+        return memberService.findById(user.getId(), id);
     }
 
     @PostMapping
-    public ResponseEntity<MemberResponse> create(@Valid @RequestBody MemberRequest request) {
-        MemberResponse created = memberService.create(request);
+    public ResponseEntity<MemberResponse> create(@AuthenticationPrincipal BeretaUserDetails user,
+                                                 @Valid @RequestBody MemberRequest request) {
+        MemberResponse created = memberService.create(user.getId(), request);
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(created.id())
@@ -48,7 +51,8 @@ public class MemberController {
     }
 
     @PutMapping("/{id}")
-    public MemberResponse update(@PathVariable UUID id, @Valid @RequestBody MemberRequest request) {
-        return memberService.update(id, request);
+    public MemberResponse update(@AuthenticationPrincipal BeretaUserDetails user,
+                                 @PathVariable UUID id, @Valid @RequestBody MemberRequest request) {
+        return memberService.update(user.getId(), id, request);
     }
 }

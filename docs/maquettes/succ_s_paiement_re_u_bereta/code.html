@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+
+<html lang="fr"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;font-family:'Plus Jakarta Sans',sans-serif;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { colors: { "primary": "#004c22", "outline": "#707a6f", "inverse-surface": "#283044", "error": "#ba1a1a", "outline-variant": "#bfc9bd", "on-primary-container": "#93e0a2", "surface-tint": "#1f6c3a", "error-container": "#ffdad6", "on-surface": "#131b2e", "primary-fixed": "#a6f4b5", "on-primary": "#ffffff", "on-error": "#ffffff", "surface-container": "#eaedff", "surface-container-lowest": "#ffffff", "on-surface-variant": "#404940", "secondary-container": "#316bf3", "on-tertiary-fixed-variant": "#6e3900", "secondary": "#0051d5", "on-primary-fixed-variant": "#005226", "on-error-container": "#93000a", "on-background": "#131b2e", "inverse-on-surface": "#eef0ff", "secondary-fixed-dim": "#b4c5ff", "surface-bright": "#faf8ff", "secondary-fixed": "#dbe1ff", "on-secondary-fixed-variant": "#003ea8", "background": "#faf8ff", "tertiary-fixed-dim": "#ffb77d", "on-secondary-container": "#fefcff", "on-tertiary-fixed": "#2f1500", "on-primary-fixed": "#00210b", "primary-fixed-dim": "#8bd79b", "inverse-primary": "#8bd79b", "surface": "#faf8ff", "on-tertiary-container": "#ffc292", "surface-container-low": "#f2f3ff", "surface-container-high": "#e2e7ff", "tertiary-container": "#874700", "surface-dim": "#d2d9f4", "tertiary": "#653400", "on-secondary-fixed": "#00174b", "tertiary-fixed": "#ffdcc3", "surface-variant": "#dae2fd", "on-secondary": "#ffffff", "on-tertiary": "#ffffff", "primary-container": "#166534", "surface-container-highest": "#dae2fd" }, borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, spacing: { "space-xl": "2.25rem", "space-sm": "0.75rem", "space-xs": "0.375rem", "margin-tablet": "2rem", "gutter-desktop": "2rem", "gutter": "1rem", "space-lg": "1.5rem", "space-md": "1rem", "margin-desktop": "3rem", "gutter-tablet": "1.5rem", "margin": "1rem" }, fontFamily: { "label-md": ["Plus Jakarta Sans"], "headline-lg-mobile": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "amount-display": ["Plus Jakarta Sans"], "body-bold": ["Plus Jakarta Sans"], "label-lg": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "body-md": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "headline-lg": ["Plus Jakarta Sans"] }, fontSize: { "label-md": ["14px", { "lineHeight": "20px", "fontWeight": "600" }], "headline-lg-mobile": ["26px", { "lineHeight": "34px", "fontWeight": "700" }], "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "500" }], "amount-display": ["36px", { "lineHeight": "44px", "fontWeight": "800" }], "body-bold": ["16px", { "lineHeight": "26px", "fontWeight": "600" }], "label-lg": ["16px", { "lineHeight": "24px", "fontWeight": "600" }], "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }], "body-md": ["16px", { "lineHeight": "26px", "fontWeight": "400" }], "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "700" }], "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }] } } } }</script><style>body { min-height: max(884px, 100dvh); }</style></head><body class="bg-surface font-body-md text-on-surface antialiased min-h-screen flex flex-col"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-xs"><button aria-label="Retour" class="w-11 h-11 -ml-2 rounded-full flex items-center justify-center text-on-surface hover:bg-surface-container-low transition-colors" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><h1 class="font-headline-sm text-headline-sm text-on-surface truncate max-w-[240px]">Succès Paiement &amp; Reçu   Bereta</h1></div><div class="flex items-center"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 bg-surface min-h-screen"><div class="flex flex-col w-full px-margin pb-space-xl">
+<!-- Bar d'action contextuelle / Fermeture rapide -->
+<div class="flex items-center justify-between py-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="inline-flex w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-md text-label-md text-on-surface-variant tracking-wider uppercase">Transaction Certifiée</span>
+</div>
+<button aria-label="Terminer" class="min-h-[44px] px-space-md py-space-xs rounded-full bg-surface-container-high text-on-surface hover:bg-surface-variant active:scale-95 transition-all flex items-center gap-1 font-label-md text-label-md" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" type="button">
+<span>Terminer</span>
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Section 1 : Bannière de succès immédiat -->
+<section class="flex flex-col items-center text-center mt-space-sm mb-space-lg relative">
+<div class="relative flex items-center justify-center mb-space-md">
+<!-- Halos concentriques d'accomplissement -->
+<div class="absolute w-28 h-28 rounded-full bg-primary-fixed opacity-40 animate-ping" style="animation-duration: 3s;"></div>
+<div class="w-24 h-24 rounded-full bg-primary-container text-on-primary flex items-center justify-center shadow-lg relative z-10 transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[52px]" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface mb- space-xs">Paiement enregistré avec succès !</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-[320px]">Le compte de <span class="font-body-bold text-body-bold text-on-surface">Bakary Camara</span> est désormais entièrement à jour.</p>
+</section>
+<!-- Section 2 : Carte Reçu de caisse officiel (style détachable certifié) -->
+<section class="relative bg-surface-container-lowest rounded-xl shadow-md overflow-hidden mb-space-lg">
+<!-- Motif décoratif de sécurité en filigrane -->
+<div class="p-space-md bg-surface-container-high flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<div class="w-8 h-8 rounded-lg bg-primary-container text-on-primary flex items-center justify-center font-headline-sm text-headline-sm">
+          B
+        </div>
+<div>
+<span class="font-label-lg text-label-lg text-on-surface tracking-tight block">BERETA</span>
+<span class="font-label-md text-[11px] leading-3 text-on-surface-variant uppercase tracking-wider block">Caisse Solidaire Niogoméra</span>
+</div>
+</div>
+<div class="text-right">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-md text-[11px]">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">lock</span> Scellé
+        </span>
+</div>
+</div>
+<!-- Corps du reçu -->
+<div class="p-space-md space-y-space-md">
+<div class="text-center pb-space-xs">
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Reçu Officiel de Cotisation</p>
+<p class="font-headline-sm text-headline-sm text-primary tracking-wide mt-0.5">#REC-2025-092</p>
+</div>
+<!-- Montant central -->
+<div class="bg-surface-container-low rounded-xl p-space-md text-center">
+<p class="font-label-md text-label-md text-on-surface-variant mb-1">Montant réglé (Éspèces)</p>
+<div class="font-amount-display text-amount-display text-primary-container">
+          30,00 €
+        </div>
+<!-- Badge de statut certifié avec 3 repères simultanés : puce pleine + icône + libellé clair -->
+<div class="mt-space-xs inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-fixed text-on-primary-fixed-variant">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-md text-label-md">Soldé intégralement (0 € restant)</span>
+</div>
+</div>
+<!-- Informations détaillées -->
+<div class="space-y-space-xs pt-space-xs text-on-surface">
+<div class="flex items-center justify-between py-1">
+<span class="font-body-md text-body-md text-on-surface-variant">Date &amp; Heure</span>
+<span class="font-body-bold text-body-bold text-right">24 Mai 2025 à 14:35</span>
+</div>
+<div class="flex items-start justify-between py-1">
+<span class="font-body-md text-body-md text-on-surface-variant">Cotisant</span>
+<span class="font-body-bold text-body-bold text-right">Bakary Camara<br/><span class="font-body-md text-[13px] text-on-surface-variant font-normal">Foyer Saint-Denis</span></span>
+</div>
+<div class="flex items-start justify-between py-1">
+<span class="font-body-md text-body-md text-on-surface-variant">Campagne</span>
+<span class="font-body-bold text-body-bold text-right max-w-[190px]">Cotisation Annuelle Niogoméra 2025</span>
+</div>
+</div>
+<!-- Séparateur cranté de ticket -->
+<div class="relative py-2 flex items-center justify-between">
+<span class="w-full h-[1px] bg-outline-variant opacity-40"></span>
+</div>
+<!-- Signature numérique certifiée -->
+<div class="flex items-center gap-space-sm p-space-sm bg-surface-container rounded-lg">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+</div>
+<div class="min-w-0">
+<p class="font-label-md text-[12px] text-on-surface-variant leading-tight">Signature numérique authentifiée</p>
+<p class="font-body-bold text-body-bold text-on-surface text-[14px] leading-snug truncate">Encaissé par Mamadou Sissoko</p>
+<p class="font-body-md text-[12px] text-primary flex items-center gap-1 font-semibold">
+<span class="material-symbols-outlined text-[14px]">verified</span> Trésorier local certifié
+          </p>
+</div>
+</div>
+</div>
+<!-- Dents de reçu détaché (effet perforé du ticket) -->
+<div aria-hidden="true" class="w-full h-3 bg-surface-container-high flex justify-between px-1 overflow-hidden">
+<div class="flex gap-2 w-full justify-between -mt-1.5">
+<span class="w-3 h-3 rounded-full bg-surface"></span>
+<span class="w-3 h-3 rounded-full bg-surface"></span>
+<span class="w-3 h-3 rounded-full bg-surface"></span>
+<span class="w-3 h-3 rounded-full bg-surface"></span>
+<span class="w-3 h-3 rounded-full bg-surface"></span>
+<span class="w-3 h-3 rounded-full bg-surface"></span>
+<span class="w-3 h-3 rounded-full bg-surface"></span>
+<span class="w-3 h-3 rounded-full bg-surface"></span>
+<span class="w-3 h-3 rounded-full bg-surface"></span>
+<span class="w-3 h-3 rounded-full bg-surface"></span>
+</div>
+</div>
+</section>
+<!-- Section 3 : Actions immédiates pour le cotisant -->
+<section class="space-y-space-sm mb-space-xl">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-space-xs px-1">Partager le reçu</h3>
+<!-- Bouton PDF (style tactile 52px min, bleu franc pour l'export document) -->
+<button class="w-full min-h-[52px] px-space-md py-space-sm rounded-xl bg-surface-container-lowest text-secondary shadow-sm hover:bg-secondary-fixed/30 active:scale-[0.98] transition-all flex items-center justify-center gap-space-xs font-label-lg text-label-lg" onclick="const toast=document.getElementById('feedback-toast'); toast.classList.remove('opacity-0','pointer-events-none'); setTimeout(()=&gt;toast.classList.add('opacity-0','pointer-events-none'), 2800);" type="button">
+<span class="material-symbols-outlined text-[24px]">download</span>
+<span>Télécharger le reçu en PDF</span>
+</button>
+<!-- Bouton SMS (style tactile 52px min, vert franc) -->
+<button class="w-full min-h-[52px] px-space-md py-space-sm rounded-xl bg-surface-container-lowest text-primary shadow-sm hover:bg-primary-fixed/40 active:scale-[0.98] transition-all flex items-center justify-center gap-space-xs font-label-lg text-label-lg" onclick="const toast=document.getElementById('sms-toast'); toast.classList.remove('opacity-0','pointer-events-none'); setTimeout(()=&gt;toast.classList.add('opacity-0','pointer-events-none'), 2800);" type="button">
+<span class="material-symbols-outlined text-[24px]">sms</span>
+<span class="truncate">Envoyer par SMS (06 55 44 33 22)</span>
+</button>
+<!-- Option de partage rapide WhatsApp -->
+<button class="w-full min-h-[48px] px-space-md py-space-xs rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-container-high active:scale-[0.98] transition-all flex items-center justify-center gap-space-xs font-label-md text-label-md" type="button">
+<span class="material-symbols-outlined text-[20px] text-primary">share</span>
+<span>Partager sur WhatsApp au cotisant</span>
+</button>
+</section>
+<!-- Section 4 : Prochaines étapes de tenue de caisse -->
+<section class="space-y-space-sm pt-space-xs">
+<!-- Bouton primaire Enregistrer un autre paiement (vert forêt haut contraste) -->
+<button class="w-full min-h-[52px] px-space-md py-space-sm rounded-xl bg-primary-container text-on-primary shadow-md hover:opacity-95 active:scale-[0.98] transition-all flex items-center justify-center gap-space-xs font-label-lg text-label-lg" onclick="window.location.reload()" type="button">
+<span class="material-symbols-outlined text-[22px]">add_circle</span>
+<span>Enregistrer un autre paiement</span>
+</button>
+<!-- Lien retour neutre avec cible tactile généreuse -->
+<button class="w-full min-h-[52px] px-space-md py-space-sm rounded-xl text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low active:scale-[0.98] transition-all flex items-center justify-center gap-1 font-label-lg text-label-lg" onclick="history.back()" type="button">
+<span class="material-symbols-outlined text-[20px]">home</span>
+<span>Retourner à l'accueil</span>
+</button>
+</section>
+<!-- Notification Flottante Feedback Micro-interaction PDF -->
+<div class="fixed bottom-6 left-4 right-4 max-w-sm mx-auto bg-inverse-surface text-inverse-on-surface px-space-md py-space-sm rounded-xl shadow-xl flex items-center gap-3 opacity-0 pointer-events-none transition-opacity duration-300 z-50" id="feedback-toast">
+<span class="material-symbols-outlined text-primary-fixed text-[24px]">task_alt</span>
+<span class="font-body-md text-body-md flex-1">Reçu #REC-2025-092 téléchargé avec succès.</span>
+</div>
+<!-- Notification Flottante Feedback SMS -->
+<div class="fixed bottom-6 left-4 right-4 max-w-sm mx-auto bg-inverse-surface text-inverse-on-surface px-space-md py-space-sm rounded-xl shadow-xl flex items-center gap-3 opacity-0 pointer-events-none transition-opacity duration-300 z-50" id="sms-toast">
+<span class="material-symbols-outlined text-primary-fixed text-[24px]">send</span>
+<span class="font-body-md text-body-md flex-1">Reçu envoyé par SMS au 06 55 44 33 22.</span>
+</div>
+</div></main></body></html>

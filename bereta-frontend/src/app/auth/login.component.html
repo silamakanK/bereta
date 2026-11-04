@@ -1,23 +1,45 @@
 <main class="login-page">
   <section class="login-card" aria-labelledby="login-title">
-    <a class="login-brand" href="/" aria-label="BERETA, accueil"><span class="login-mark">B</span><span>bereta<span class="brand-dot">.</span></span></a>
+    <a class="login-brand" routerLink="/" aria-label="BERETA, accueil"><span class="login-mark">B</span><span>bereta<span class="brand-dot">.</span></span></a>
     <p class="login-eyebrow">VOTRE ESPACE ASSOCIATIF</p>
-    <h1 id="login-title">Ravi de vous revoir</h1>
-    <p class="login-intro">Connectez-vous pour gérer les membres et les cotisations de votre association.</p>
+    <h1 id="login-title">{{ invitationToken ? 'Créer votre accès' : 'Ravi de vous revoir' }}</h1>
+    <p class="login-intro">{{ invitationToken ? 'Complétez votre profil pour rejoindre la caisse.' : 'Connectez-vous pour gérer les membres et les cotisations de votre association.' }}</p>
 
     @if (errorMessage()) { <p class="login-error" role="alert">{{ errorMessage() }}</p> }
 
-    <form (ngSubmit)="submit()">
-      <label for="login-email">Adresse e-mail</label>
-      <input id="login-email" name="email" type="email" [(ngModel)]="email" autocomplete="username" required autofocus />
+    @if (invitationToken) {
+      <form novalidate (ngSubmit)="submit()">
+        <label for="login-email">Adresse e-mail invitée</label>
+        <input id="login-email" name="email" type="email" [(ngModel)]="email" autocomplete="email" required autofocus [attr.aria-invalid]="emailError()" [attr.aria-describedby]="emailError() ? 'login-email-error' : null" />
+        @if (emailError()) { <span class="field-error" id="login-email-error">Saisissez une adresse e-mail valide.</span> }
 
-      <div class="password-label"><label for="login-password">Mot de passe</label></div>
-      <input id="login-password" name="password" type="password" [(ngModel)]="password" autocomplete="current-password" required />
+        <label for="display-name">Nom affiché</label>
+        <input id="display-name" name="displayName" [(ngModel)]="displayName" autocomplete="name" required minlength="2" maxlength="120" />
 
-      <button class="login-submit" type="submit" [disabled]="isSubmitting()">{{ isSubmitting() ? 'Connexion…' : 'Se connecter' }}</button>
-    </form>
+        <label for="login-password">Mot de passe <span>(6 caractères minimum)</span></label>
+        <div class="login-password-control"><input id="login-password" name="password" [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="password" autocomplete="new-password" required minlength="6" maxlength="72" /><button class="password-toggle" type="button" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [attr.aria-pressed]="showPassword()">{{ showPassword() ? 'Masquer' : 'Afficher' }}</button></div>
 
-    <p class="login-help">Votre accès est créé par le responsable de l’association. Contactez-le si vous n’avez pas encore de compte.</p>
+        <label for="confirm-password">Confirmer le mot de passe</label>
+        <div class="login-password-control"><input id="confirm-password" name="confirmPassword" [type]="showConfirmPassword() ? 'text' : 'password'" [(ngModel)]="confirmPassword" autocomplete="new-password" required /><button class="password-toggle" type="button" (click)="showConfirmPassword.set(!showConfirmPassword())" [attr.aria-label]="showConfirmPassword() ? 'Masquer la confirmation' : 'Afficher la confirmation'" [attr.aria-pressed]="showConfirmPassword()">{{ showConfirmPassword() ? 'Masquer' : 'Afficher' }}</button></div>
+        <button class="login-submit" type="submit" [disabled]="isSubmitting()">{{ isSubmitting() ? 'Création…' : 'Créer mon compte' }}</button>
+      </form>
+      <p class="login-help">Ce lien d’invitation est personnel et ne peut être utilisé qu’une fois.</p>
+    } @else {
+      <form novalidate (ngSubmit)="submit()">
+        <label for="login-email">Adresse e-mail</label>
+        <input id="login-email" name="email" type="email" [(ngModel)]="email" autocomplete="email" required autofocus [attr.aria-invalid]="emailError()" [attr.aria-describedby]="emailError() ? 'login-email-error' : null" />
+        @if (emailError()) { <span class="field-error" id="login-email-error">Saisissez une adresse e-mail valide.</span> }
+
+        <div class="password-label"><label for="login-password">Mot de passe</label><a routerLink="/mot-de-passe-oublie">Mot de passe oublié ?</a></div>
+        <div class="login-password-control"><input id="login-password" name="password" [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="password" autocomplete="current-password" required [attr.aria-invalid]="passwordError()" [attr.aria-describedby]="passwordError() ? 'login-password-error' : null" /><button class="password-toggle" type="button" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [attr.aria-pressed]="showPassword()">{{ showPassword() ? 'Masquer' : 'Afficher' }}</button></div>
+        @if (passwordError()) { <span class="field-error" id="login-password-error">Saisissez votre mot de passe.</span> }
+
+        <button class="login-submit" type="submit" [disabled]="isSubmitting()">{{ isSubmitting() ? 'Connexion…' : 'Se connecter' }}</button>
+      </form>
+      <div class="login-divider"><span>ou</span></div>
+      <a class="login-secondary" routerLink="/inscription">Créer un compte</a>
+      <p class="login-help">Vous avez reçu une invitation ? Ouvrez le lien transmis par votre responsable.</p>
+    }
     <p class="login-security"><span aria-hidden="true">▣</span> Connexion sécurisée</p>
   </section>
   <p class="login-footer">BERETA · Gestion des cotisations associatives</p>

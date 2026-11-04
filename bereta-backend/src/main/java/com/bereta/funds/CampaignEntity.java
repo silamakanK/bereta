@@ -1,5 +1,6 @@
 package com.bereta.funds;
 
+import com.bereta.associations.AssociationEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -30,6 +31,10 @@ public class CampaignEntity {
     @JoinColumn(name = "primary_fund_id", nullable = false)
     private PrimaryFundEntity primaryFund;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "association_id", nullable = false)
+    private AssociationEntity association;
+
     @Column(nullable = false, length = 120)
     private String name;
 
@@ -55,6 +60,7 @@ public class CampaignEntity {
     public CampaignEntity(PrimaryFundEntity primaryFund, String name, CampaignType campaignType,
                           Integer campaignYear, BigDecimal expectedAmount, LocalDate dueDate) {
         this.primaryFund = primaryFund;
+        this.association = primaryFund.getAssociation();
         this.name = name;
         this.campaignType = campaignType;
         this.campaignYear = campaignYear;
@@ -69,6 +75,7 @@ public class CampaignEntity {
 
     public UUID getId() { return id; }
     public PrimaryFundEntity getPrimaryFund() { return primaryFund; }
+    public AssociationEntity getAssociation() { return association; }
     public String getName() { return name; }
     public CampaignType getCampaignType() { return campaignType; }
     public Integer getCampaignYear() { return campaignYear; }

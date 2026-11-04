@@ -9,6 +9,7 @@
 .setup-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; }
 .setup-card { min-width: 0; padding: 15px; border: 1px solid #edf0eb; border-radius: 9px; background: #fcfdfb; }
 .campaigns-card { grid-column: 1 / -1; }
+.remittance-card { grid-column: 1 / -1; }
 .setup-card-heading { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 .setup-card-icon { display: grid; width: 32px; height: 32px; flex: 0 0 auto; place-items: center; border-radius: 8px; font-size: 17px; }
 .primary-icon { background: #edf4ee; color: #3c7551; }
@@ -51,14 +52,80 @@
 .setup-error { background: #fbefee; color: #974f4b; }
 .setup-success { background: #edf6ee; color: #42754c; }
 .setup-loading { display: grid; min-height: 100px; place-items: center; color: #858e84; font-size: 10px; }
+.remittance-balances { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+.remittance-balances > div { display: grid; gap: 6px; padding: 11px; border: 1px solid #e8ede6; border-radius: 7px; background: #fff; }
+.remittance-balances span { color: #858e84; font-size: 9px; }
+.remittance-balances strong { color: #385f43; font-size: 13px; }
+.remittance-balances > .setup-empty { grid-column: 1 / -1; }
+.remittance-form { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; margin-bottom: 12px; }
+.remittance-form .setup-submit { grid-column: 1 / -1; justify-self: end; min-width: 170px; }
+.remittance-list { display: grid; gap: 7px; margin-top: 13px; }
+.remittance-list h4 { margin: 0; padding-bottom: 7px; border-bottom: 1px solid #e9eee7; color: #424c43; font-size: 11px; }
+.remittance-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 7px 12px; padding: 10px 8px; border-bottom: 1px solid #edf0eb; background: #fff; }
+.remittance-main { display: grid; min-width: 0; gap: 4px; }
+.remittance-main strong { overflow-wrap: anywhere; color: #485149; font-size: 10px; }
+.remittance-main small, .remittance-audit { color: #90988f; font-size: 9px; line-height: 1.4; }
+.remittance-status { justify-self: end; padding: 5px 8px; border-radius: 12px; font-size: 8px; font-weight: 700; white-space: nowrap; }
+.remittance-status.status-pending { background: #fbf2e6; color: #a97736; }
+.remittance-status.status-confirmed { background: #edf6ee; color: #4d8056; }
+.remittance-status.status-cancelled { background: #f4eeee; color: #986d6b; }
+.remittance-actions { display: flex; grid-column: 1 / -1; justify-content: end; gap: 7px; }
+.remittance-actions button, .remittance-cancel-form button { min-height: 31px; padding: 0 9px; border: 1px solid #dfe9df; border-radius: 6px; background: #f7fbf6; color: #39704e; cursor: pointer; font: inherit; font-size: 9px; font-weight: 680; }
+.remittance-actions button + button { border-color: #eadbd8; background: #fff8f7; color: #965850; }
+.remittance-actions button:disabled, .remittance-cancel-form button:disabled { opacity: .55; cursor: wait; }
+.remittance-cancel-form { display: flex; grid-column: 1 / -1; align-items: end; gap: 8px; }
+.remittance-cancel-form label { display: grid; flex: 1; gap: 5px; color: #59645a; font-size: 9px; font-weight: 680; }
+.remittance-cancel-form input { width: 100%; min-height: 33px; padding: 6px 8px; border: 1px solid #e1e7df; border-radius: 5px; font: inherit; font-size: 10px; }
+.remittance-audit { grid-column: 1 / -1; }
 
 @media (max-width: 600px) {
   :host { margin-top: 12px; }
   .fund-setup { padding: 14px 12px; }
   .setup-grid { grid-template-columns: 1fr; gap: 10px; }
   .campaigns-card { grid-column: auto; }
+  .remittance-card { grid-column: auto; }
   .campaign-form { grid-template-columns: 1fr; }
   .campaign-submit { grid-column: auto; justify-self: stretch; }
   .campaign-row { grid-template-columns: 65px minmax(90px, 1fr); gap: 8px; }
   .campaign-amount { grid-column: 2; justify-items: start; text-align: left; }
+  .remittance-balances { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .remittance-form { grid-template-columns: 1fr; }
+  .remittance-form .setup-submit { grid-column: auto; justify-self: stretch; }
+  .remittance-cancel-form { align-items: stretch; flex-direction: column; }
+  .remittance-cancel-form button { min-height: 36px; }
+}
+.treasurer-access { display: grid; gap: 11px; margin-top: 18px; padding-top: 15px; border-top: 1px solid #e9eee7; }
+.access-heading h4 { margin: 0 0 4px; color: #3c483e; font-size: 12px; }
+.access-heading p { margin: 0; color: #899287; font-size: 10px; }
+.invite-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .9fr) auto; align-items: end; gap: 9px; }
+.invite-form label { display: grid; gap: 5px; color: #59645a; font-size: 10px; font-weight: 650; }
+.invite-form input, .invite-form select, .invitation-link input { width: 100%; min-width: 0; min-height: 37px; padding: 0 9px; border: 1px solid #e1e7df; border-radius: 6px; background: #fff; color: #313a32; font: inherit; font-size: 10px; }
+.invite-form input:focus, .invite-form select:focus { outline: 2px solid #83a98c; outline-offset: 1px; }
+.invite-form .setup-submit { min-height: 37px; white-space: nowrap; }
+.existing-access-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 9px; }
+.existing-access-form label { display: grid; gap: 5px; color: #59645a; font-size: 10px; font-weight: 650; }
+.existing-access-form input { min-height: 37px; padding: 0 9px; border: 1px solid #e1e7df; border-radius: 6px; background: #fff; color: #313a32; font: inherit; font-size: 10px; }
+.existing-access-form button { min-height: 37px; padding: 0 11px; border: 1px solid #dfe7de; border-radius: 6px; background: #f6faf5; color: #42634a; cursor: pointer; font-size: 9px; font-weight: 700; white-space: nowrap; }
+.existing-access-form button:disabled { opacity: .55; cursor: wait; }
+.access-list { display: grid; gap: 7px; }
+.access-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 10px; border: 1px solid #e8ede6; border-radius: 7px; background: #fff; }
+.access-row > span { display: grid; min-width: 0; gap: 3px; }
+.access-row strong { overflow: hidden; color: #465047; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.access-row small { overflow: hidden; color: #8b948a; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.access-row button, .invitation-link button { min-height: 32px; flex: 0 0 auto; padding: 0 10px; border: 1px solid #e7d9d6; border-radius: 6px; background: #fff8f7; color: #965850; cursor: pointer; font: inherit; font-size: 9px; font-weight: 700; }
+.access-row button:disabled { opacity: .55; cursor: wait; }
+.invitation-result { display: grid; gap: 8px; padding: 10px; border: 1px solid #dce9dc; border-radius: 7px; background: #f5faf5; }
+.invitation-result > div:first-child { display: grid; gap: 3px; }
+.invitation-result strong { color: #3c6246; font-size: 10px; }
+.invitation-result small { color: #748575; font-size: 9px; }
+.invitation-link { display: flex; gap: 7px; }
+.invitation-link input { min-height: 34px; color: #59645a; }
+.invitation-link button { border-color: #2e6248; background: #2e6248; color: #fff; }
+
+@media (max-width: 600px) {
+  .invite-form { grid-template-columns: 1fr; }
+  .invite-form .setup-submit { width: 100%; }
+  .existing-access-form { grid-template-columns: 1fr; }
+  .existing-access-form button { width: 100%; }
+  .invitation-link { align-items: stretch; flex-direction: column; }
 }

@@ -9,6 +9,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
+import java.util.Locale;
 import java.util.UUID;
 
 @Entity
@@ -21,6 +22,9 @@ public class UserAccountEntity {
 
     @Column(nullable = false, unique = true, length = 320)
     private String email;
+
+    @Column(name = "email_normalized", nullable = false, length = 320)
+    private String emailNormalized;
 
     @Column(name = "display_name", nullable = false, length = 120)
     private String displayName;
@@ -42,6 +46,7 @@ public class UserAccountEntity {
 
     public UserAccountEntity(String email, String displayName, String passwordHash, String role) {
         this.email = email;
+        this.emailNormalized = email.toLowerCase(Locale.ROOT);
         this.displayName = displayName;
         this.passwordHash = passwordHash;
         this.role = role;
@@ -59,4 +64,13 @@ public class UserAccountEntity {
     public String getPasswordHash() { return passwordHash; }
     public String getRole() { return role; }
     public boolean isEnabled() { return enabled; }
+    public Instant getCreatedAt() { return createdAt; }
+    public void changePasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public void updateProfile(String email, String displayName) {
+        this.email = email;
+        this.emailNormalized = email.toLowerCase(Locale.ROOT);
+        this.displayName = displayName;
+    }
+    public void changeRole(String role) { this.role = role; }
+    public void setEnabled(boolean enabled) { this.enabled = enabled; }
 }

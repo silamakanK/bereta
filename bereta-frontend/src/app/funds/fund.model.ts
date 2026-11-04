@@ -14,6 +14,24 @@ export interface LocalFund {
   createdAt: string;
 }
 
+export interface FundMembership {
+  id: string;
+  userId: string;
+  email: string;
+  displayName: string;
+  role: 'RESPONSABLE' | 'TRESORIER';
+  localFundId: string | null;
+  localFundName: string | null;
+  createdAt: string;
+}
+
+export interface TreasurerInvitation {
+  email: string;
+  localFundName: string;
+  token: string;
+  expiresAt: string;
+}
+
 export type CampaignType = 'ANNUAL' | 'EVENT';
 
 export interface Campaign {

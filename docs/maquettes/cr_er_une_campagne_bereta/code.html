@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+
+<html lang="fr"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"surface":"#faf8ff","outline-variant":"#bfc9bd","tertiary-fixed-dim":"#ffb77d","surface-variant":"#dae2fd","surface-dim":"#d2d9f4","secondary-fixed":"#dbe1ff","surface-container-low":"#f2f3ff","outline":"#707a6f","on-primary-fixed-variant":"#005226","tertiary":"#653400","on-secondary-fixed-variant":"#003ea8","surface-bright":"#faf8ff","on-error":"#ffffff","on-secondary":"#ffffff","secondary-container":"#316bf3","primary-container":"#166534","primary-fixed-dim":"#8bd79b","primary-fixed":"#a6f4b5","error":"#ba1a1a","error-container":"#ffdad6","primary":"#004c22","tertiary-fixed":"#ffdcc3","inverse-on-surface":"#eef0ff","on-secondary-fixed":"#00174b","on-surface-variant":"#404940","on-tertiary-fixed-variant":"#6e3900","on-secondary-container":"#fefcff","inverse-surface":"#283044","on-error-container":"#93000a","secondary-fixed-dim":"#b4c5ff","on-tertiary-container":"#ffc292","surface-container":"#eaedff","secondary":"#0051d5","on-primary-container":"#93e0a2","on-background":"#131b2e","surface-container-lowest":"#ffffff","surface-container-high":"#e2e7ff","surface-tint":"#1f6c3a","surface-container-highest":"#dae2fd","on-tertiary-fixed":"#2f1500","on-primary-fixed":"#00210b","inverse-primary":"#8bd79b","background":"#faf8ff","tertiary-container":"#874700","on-tertiary":"#ffffff","on-surface":"#131b2e","on-primary":"#ffffff"},borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},spacing:{"space-xl":"2.25rem","gutter-tablet":"1.5rem","margin-tablet":"2rem","gutter":"1rem","space-xs":"0.375rem","space-md":"1rem","space-sm":"0.75rem","space-lg":"1.5rem","gutter-desktop":"2rem","margin-desktop":"3rem","margin":"1rem"},fontFamily:{"label-md":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"body-bold":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"amount-display":["Plus Jakarta Sans"]},fontSize:{"label-md":["14px",{"lineHeight":"20px","fontWeight":"600"}],"label-lg":["16px",{"lineHeight":"24px","fontWeight":"600"}],"headline-lg":["32px",{"lineHeight":"40px","fontWeight":"700"}],"body-bold":["16px",{"lineHeight":"26px","fontWeight":"600"}],"headline-lg-mobile":["26px",{"lineHeight":"34px","fontWeight":"700"}],"body-md":["16px",{"lineHeight":"26px","fontWeight":"400"}],"body-lg":["18px",{"lineHeight":"28px","fontWeight":"500"}],"headline-md":["24px",{"lineHeight":"32px","fontWeight":"700"}],"headline-sm":["20px",{"lineHeight":"28px","fontWeight":"600"}],"amount-display":["36px",{"lineHeight":"44px","fontWeight":"800"}]}}}};</script><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#faf8ff;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-gutter flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-xs"><button aria-label="Retour" class="w-11 h-11 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors text-on-surface -ml-2" onclick="history.back()"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><img alt="Brand logo. - Primary color: #166534
+- Font: plusJakartaSans
+- Mode: light
+- Roundness: rounded-md
+" class="h-7 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VQIKpwXVoOA5VKNZPTCYn2JkXpoRSqsXUDDj9lU42mgNcOA6_vTlrkdajYpV3mDv93r9Z_0bn4t27xAyh5lPp25AeuYUAhp_iZdI56LEkh1NlJAt15xcqre2QWwsI7__l3EM-pxDhtzRLjLWfVULVEx-Joq58rLyS2-71PyXJZFIECPl5wgBO9QG_6cqRjaiigc2oNCSZLpR92k8SkwWQbsENa1R97kSh3jMphQjYt5a-LyPfGiZ9m4Nk"/></div><div class="flex-1 text-center px-space-xs min-w-0"><h1 class="font-headline-sm text-headline-sm text-on-surface truncate">Créer Une Campagne</h1></div><div class="flex items-center gap-space-xs"><button aria-label="Aide et informations" class="w-11 h-11 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors text-on-surface-variant"><span class="material-symbols-outlined text-[22px]">help_outline</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full bg-surface pt-16 pb-safe"><div class="flex flex-col w-full">
+<div class="px-margin pt-space-md pb-space-xl flex flex-col gap-space-lg max-w-xl mx-auto w-full">
+<!-- En-tête de section contextuelle -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-xs text-primary font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span>BERETA · Gestion de Caisse Solidaire</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Nouvelle Campagne</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">
+        Définissez les règles et le montant de la collecte communautaire.
+      </p>
+</div>
+<!-- Encadré Pédagogique Transparence -->
+<div class="bg-surface-container rounded-xl p-space-md shadow-sm flex items-start gap-space-sm text-on-surface">
+<div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center flex-shrink-0 text-on-primary-fixed">
+<span class="material-symbols-outlined text-[22px]">policy</span>
+</div>
+<div class="flex flex-col gap-1 min-w-0">
+<span class="font-body-bold text-body-bold text-primary">Transparence associative</span>
+<p class="font-label-md text-label-md text-on-surface-variant leading-relaxed">
+          La création d’une campagne génère une ligne de suivi dédiée, vérifiable et accessible en temps réel par tous les trésoriers de caisse locale.
+        </p>
+</div>
+</div>
+<!-- Formulaire Principal -->
+<form class="flex flex-col gap-space-lg" onsubmit="event.preventDefault();">
+<!-- 1. Nom de la campagne -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-body-bold text-body-bold text-on-surface flex items-center gap-1" for="campaign-name">
+          Nom de la campagne
+          <span class="text-error font-body-bold">*</span>
+</label>
+<div class="relative">
+<input class="w-full h-[52px] px-space-md bg-surface-container-lowest text-on-surface font-body-md text-body-md rounded-lg shadow-sm placeholder:text-outline focus:outline-none focus:bg-surface-container-low transition-all" id="campaign-name" placeholder="ex : Cotisation Annuelle 2026, Puits de Niogoméra..." type="text" value="Cotisation Annuelle 2026"/>
+<div class="absolute right-3 top-1/2 -translate-y-1/2 text-primary">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant">Ce titre figurera sur les reçus de paiement officiels.</p>
+</div>
+<!-- 2. Type de campagne -->
+<div class="flex flex-col gap-space-sm">
+<label class="font-body-bold text-body-bold text-on-surface flex items-center gap-1">
+          Type de campagne
+          <span class="text-error font-body-bold">*</span>
+</label>
+<div class="flex flex-col gap-space-xs" id="campaign-type-group">
+<!-- Option 1 : Régulière (sélectionnée par défaut) -->
+<div class="type-option-card relative p-space-md rounded-xl bg-primary text-on-primary shadow-md cursor-pointer transition-all duration-200 flex items-start gap-space-sm" data-type="reguliere" onclick="selectTypeCard(this)">
+<div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 text-white">
+<span class="material-symbols-outlined text-[20px]">event_repeat</span>
+</div>
+<div class="flex-1 min-w-0 pr-6">
+<div class="font-body-bold text-body-bold">Cotisation régulière</div>
+<p class="font-label-md text-label-md text-white/90 mt-0.5">Annuelle ou périodique, obligatoire pour les adhérents.</p>
+</div>
+<div class="absolute right-4 top-4 text-white">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<!-- Option 2 : Caisse de secours -->
+<div class="type-option-card relative p-space-md rounded-xl bg-surface-container-lowest text-on-surface shadow-sm cursor-pointer hover:bg-surface-container-low transition-all duration-200 flex items-start gap-space-sm" data-type="secours" onclick="selectTypeCard(this)">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center flex-shrink-0 text-primary">
+<span class="material-symbols-outlined text-[20px]">health_and_safety</span>
+</div>
+<div class="flex-1 min-w-0 pr-6">
+<div class="font-body-bold text-body-bold">Caisse de secours / Solidarité</div>
+<p class="font-label-md text-label-md text-on-surface-variant mt-0.5">Décès, rapatriement, fonds d'urgence et entraide.</p>
+</div>
+<div class="absolute right-4 top-4 text-outline-variant check-icon hidden">
+<span class="material-symbols-outlined text-[24px]">radio_button_unchecked</span>
+</div>
+</div>
+<!-- Option 3 : Collecte exceptionnelle -->
+<div class="type-option-card relative p-space-md rounded-xl bg-surface-container-lowest text-on-surface shadow-sm cursor-pointer hover:bg-surface-container-low transition-all duration-200 flex items-start gap-space-sm" data-type="projet" onclick="selectTypeCard(this)">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center flex-shrink-0 text-primary">
+<span class="material-symbols-outlined text-[20px]">handshake</span>
+</div>
+<div class="flex-1 min-w-0 pr-6">
+<div class="font-body-bold text-body-bold">Collecte exceptionnelle / Projet</div>
+<p class="font-label-md text-label-md text-on-surface-variant mt-0.5">Mariage, rénovation d’école du village, don ponctuel.</p>
+</div>
+<div class="absolute right-4 top-4 text-outline-variant check-icon hidden">
+<span class="material-symbols-outlined text-[24px]">radio_button_unchecked</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 3. Montant fixé par membre -->
+<div class="flex flex-col gap-space-sm bg-surface-container-lowest p-space-md rounded-xl shadow-sm">
+<label class="font-body-bold text-body-bold text-on-surface flex items-center gap-1">
+          Montant fixé par membre
+          <span class="text-error font-body-bold">*</span>
+</label>
+<!-- Toggle Montant fixe vs libre -->
+<div class="grid grid-cols-2 p-1 bg-surface-container rounded-lg gap-1">
+<button class="h-10 rounded font-label-md text-label-md text-on-primary bg-primary flex items-center justify-center gap-1 transition-all shadow-sm" id="tab-montant-fixe" onclick="setAmountMode('fixe')" type="button">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+<span>Montant fixe unique</span>
+</button>
+<button class="h-10 rounded font-label-md text-label-md text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-1 transition-all" id="tab-montant-libre" onclick="setAmountMode('libre')" type="button">
+<span class="material-symbols-outlined text-[18px]">volunteer_activism</span>
+<span>Montant libre</span>
+</button>
+</div>
+<div class="flex flex-col gap-space-sm pt-space-xs" id="montant-saisie-container">
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 font-headline-sm text-headline-sm text-primary">€</span>
+<input class="w-full h-[52px] pl-10 pr-space-md bg-surface text-on-surface font-headline-sm text-headline-sm rounded-lg shadow-sm focus:outline-none focus:bg-surface-container-low transition-all" id="amount-input" type="text" value="30,00"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 font-label-md text-label-md text-on-surface-variant">EUR / membre</span>
+</div>
+<!-- Raccourcis pilules -->
+<div class="flex flex-wrap items-center gap-2">
+<span class="font-label-md text-label-md text-on-surface-variant mr-1">Raccourcis :</span>
+<button class="h-9 px-3.5 rounded-full bg-surface-container font-label-md text-label-md text-on-surface active:bg-primary active:text-on-primary hover:bg-surface-container-high transition-colors" onclick="setQuickAmount('15,00')" type="button">
+              15 €
+            </button>
+<button class="h-9 px-3.5 rounded-full bg-surface-container font-label-md text-label-md text-on-surface active:bg-primary active:text-on-primary hover:bg-surface-container-high transition-colors" onclick="setQuickAmount('20,00')" type="button">
+              20 €
+            </button>
+<button class="h-9 px-3.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-md text-label-md transition-colors" onclick="setQuickAmount('30,00')" type="button">
+              30 €
+            </button>
+<button class="h-9 px-3.5 rounded-full bg-surface-container font-label-md text-label-md text-on-surface active:bg-primary active:text-on-primary hover:bg-surface-container-high transition-colors" onclick="setQuickAmount('50,00')" type="button">
+              50 €
+            </button>
+</div>
+</div>
+</div>
+<!-- 4. Date d'échéance -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-body-bold text-body-bold text-on-surface flex items-center justify-between" for="campaign-due-date">
+<span>Date d'échéance recommandée</span>
+<span class="font-label-md text-label-md text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+            Dans 10 mois
+          </span>
+</label>
+<div class="relative">
+<div class="w-full h-[52px] px-space-md bg-surface-container-lowest text-on-surface font-body-md text-body-md rounded-lg shadow-sm flex items-center justify-between cursor-pointer">
+<span class="font-body-bold text-body-bold text-on-surface">31 Décembre 2025</span>
+<span class="material-symbols-outlined text-primary text-[24px]">calendar_month</span>
+</div>
+<input class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" id="campaign-due-date" onchange="this.previousElementSibling.firstElementChild.innerText = this.value" type="date" value="2025-12-31"/>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant">Les rappels automatiques seront envoyés 15 jours avant cette date.</p>
+</div>
+<!-- 5. Périmètre des cotisants -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-body-bold text-body-bold text-on-surface">Périmètre des cotisants concernés</label>
+<div class="bg-surface-container-lowest rounded-xl shadow-sm divide-y-0 flex flex-col p-space-xs gap-1">
+<!-- Option Tout le monde -->
+<label class="flex items-center gap-space-sm p-space-sm rounded-lg hover:bg-surface-container-low cursor-pointer transition-colors">
+<input checked="" class="w-5 h-5 accent-[#166534] cursor-pointer" name="scope" type="radio"/>
+<div class="flex-1 min-w-0">
+<div class="font-body-bold text-body-bold text-on-surface flex items-center gap-2">
+<span>Tous les membres de l'association</span>
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-md text-label-md text-xs">60 inscrits</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant mt-0.5">Affectation universelle dans la caisse fédérale.</p>
+</div>
+</label>
+<!-- Option Caisse locale spécifique -->
+<label class="flex items-center gap-space-sm p-space-sm rounded-lg hover:bg-surface-container-low cursor-pointer transition-colors">
+<input class="w-5 h-5 accent-[#166534] cursor-pointer" name="scope" type="radio"/>
+<div class="flex-1 min-w-0">
+<div class="font-body-bold text-body-bold text-on-surface">Certaines caisses locales uniquement</div>
+<p class="font-label-md text-label-md text-on-surface-variant mt-0.5">Permet de cibler une antenne de ville ou un foyer spécifique.</p>
+</div>
+</label>
+</div>
+</div>
+<!-- 6. Alerte SMS automatique -->
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex items-center justify-between gap-space-sm">
+<div class="flex items-start gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-full bg-secondary-fixed text-secondary flex items-center justify-center flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">sms</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-body-bold text-body-bold text-on-surface">Alerte SMS de lancement</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Notifier immédiatement tous les membres de l'ouverture par SMS.</span>
+</div>
+</div>
+<!-- Custom Switch -->
+<label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
+<input checked="" class="sr-only peer" id="sms-toggle" onchange="toggleSmsState(this)" type="checkbox"/>
+<div class="w-13 h-7 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Note de validation solidaire -->
+<div class="flex items-center gap-2 px-space-xs text-on-surface-variant font-label-md text-label-md">
+<span class="material-symbols-outlined text-primary text-[18px]">verified</span>
+<span>Reçu conforme délivré instantanément après chaque virement.</span>
+</div>
+<!-- Actions CTA principales (hauteur 52px) -->
+<div class="flex flex-col gap-space-xs pt-space-sm">
+<!-- Bouton primaire vert foncé -->
+<button class="w-full h-[52px] bg-primary text-on-primary rounded-lg shadow-md font-body-bold text-body-bold flex items-center justify-center gap-2 hover:bg-primary-container active:scale-[0.99] transition-all" onclick="handlePublish()" type="submit">
+<span class="material-symbols-outlined text-[22px]">publish</span>
+<span>Lancer et publier la campagne</span>
+</button>
+<!-- Bouton secondaire -->
+<button class="w-full h-[52px] bg-surface-container-lowest text-on-surface rounded-lg shadow-sm font-body-bold text-body-bold flex items-center justify-center gap-2 hover:bg-surface-container transition-all" onclick="handleSaveDraft()" type="button">
+<span class="material-symbols-outlined text-[20px]">edit_note</span>
+<span>Enregistrer comme brouillon</span>
+</button>
+<!-- Bouton tertiaire -->
+<button class="w-full h-[52px] bg-transparent text-outline font-body-bold text-body-bold flex items-center justify-center hover:text-on-surface transition-colors" onclick="history.back()" type="button">
+<span>Annuler</span>
+</button>
+</div>
+</form>
+</div>
+</div>
+<script>
+  function selectTypeCard(element) {
+    const cards = document.querySelectorAll('.type-option-card');
+    cards.forEach(card => {
+      card.classList.remove('bg-primary', 'text-on-primary', 'shadow-md');
+      card.classList.add('bg-surface-container-lowest', 'text-on-surface', 'shadow-sm');
+      const iconWrap = card.querySelector('div:first-child');
+      if (iconWrap) {
+        iconWrap.classList.remove('bg-white/20', 'text-white');
+        iconWrap.classList.add('bg-surface-container-high', 'text-primary');
+      }
+      const desc = card.querySelector('p');
+      if (desc) {
+        desc.classList.remove('text-white/90');
+        desc.classList.add('text-on-surface-variant');
+      }
+      const statusIcon = card.querySelector('.absolute span');
+      if (statusIcon) {
+        statusIcon.innerText = 'radio_button_unchecked';
+        statusIcon.style.fontVariationSettings = "'FILL' 0";
+      }
+    });
+
+    element.classList.remove('bg-surface-container-lowest', 'text-on-surface', 'shadow-sm');
+    element.classList.add('bg-primary', 'text-on-primary', 'shadow-md');
+    const activeIconWrap = element.querySelector('div:first-child');
+    if (activeIconWrap) {
+      activeIconWrap.classList.remove('bg-surface-container-high', 'text-primary');
+      activeIconWrap.classList.add('bg-white/20', 'text-white');
+    }
+    const activeDesc = element.querySelector('p');
+    if (activeDesc) {
+      activeDesc.classList.remove('text-on-surface-variant');
+      activeDesc.classList.add('text-white/90');
+    }
+    const activeStatusIcon = element.querySelector('.absolute span');
+    if (activeStatusIcon) {
+      activeStatusIcon.innerText = 'check_circle';
+      activeStatusIcon.style.fontVariationSettings = "'FILL' 1";
+    }
+  }
+
+  function setAmountMode(mode) {
+    const btnFixe = document.getElementById('tab-montant-fixe');
+    const btnLibre = document.getElementById('tab-montant-libre');
+    const container = document.getElementById('montant-saisie-container');
+
+    if (mode === 'fixe') {
+      btnFixe.className = 'h-10 rounded font-label-md text-label-md text-on-primary bg-primary flex items-center justify-center gap-1 transition-all shadow-sm';
+      btnLibre.className = 'h-10 rounded font-label-md text-label-md text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-1 transition-all';
+      container.style.opacity = '1';
+      container.style.pointerEvents = 'auto';
+    } else {
+      btnLibre.className = 'h-10 rounded font-label-md text-label-md text-on-primary bg-primary flex items-center justify-center gap-1 transition-all shadow-sm';
+      btnFixe.className = 'h-10 rounded font-label-md text-label-md text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-1 transition-all';
+      container.style.opacity = '0.35';
+      container.style.pointerEvents = 'none';
+    }
+  }
+
+  function setQuickAmount(val) {
+    const input = document.getElementById('amount-input');
+    if (input) {
+      input.value = val;
+    }
+  }
+
+  function toggleSmsState(checkbox) {
+    // Micro-feedback visuel
+    if (!checkbox.checked) {
+      console.log('Alerte SMS désactivée');
+    }
+  }
+
+  function handlePublish() {
+    const name = document.getElementById('campaign-name').value;
+    alert('Campagne « ' + name + ' » publiée avec succès dans le registre BERETA !');
+  }
+
+  function handleSaveDraft() {
+    alert('Brouillon sauvegardé dans vos campagnes en attente.');
+  }
+</script></main></body></html>

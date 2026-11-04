@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+
+<html lang="fr"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"surface-container-low":"#f2f3ff","on-background":"#131b2e","on-secondary-container":"#fefcff","primary-fixed-dim":"#8bd79b","outline":"#707a6f","tertiary-fixed-dim":"#ffb77d","on-tertiary-fixed-variant":"#6e3900","primary-fixed":"#a6f4b5","error-container":"#ffdad6","on-primary-container":"#93e0a2","tertiary":"#653400","on-primary-fixed":"#00210b","secondary-fixed-dim":"#b4c5ff","on-secondary-fixed":"#00174b","surface-container-highest":"#dae2fd","primary":"#004c22","on-error":"#ffffff","on-error-container":"#93000a","on-secondary-fixed-variant":"#003ea8","secondary":"#0051d5","surface-tint":"#1f6c3a","outline-variant":"#bfc9bd","on-surface":"#131b2e","inverse-primary":"#8bd79b","surface-variant":"#dae2fd","surface-container-lowest":"#ffffff","on-primary-fixed-variant":"#005226","inverse-on-surface":"#eef0ff","surface":"#faf8ff","surface-bright":"#faf8ff","secondary-fixed":"#dbe1ff","background":"#faf8ff","tertiary-fixed":"#ffdcc3","secondary-container":"#316bf3","on-surface-variant":"#404940","on-tertiary":"#ffffff","tertiary-container":"#874700","on-tertiary-fixed":"#2f1500","on-primary":"#ffffff","on-secondary":"#ffffff","surface-container-high":"#e2e7ff","surface-dim":"#d2d9f4","inverse-surface":"#283044","primary-container":"#166534","surface-container":"#eaedff","error":"#ba1a1a","on-tertiary-container":"#ffc292"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"gutter":"1rem","space-sm":"0.75rem","space-xs":"0.375rem","space-xl":"2.25rem","space-md":"1rem","margin-desktop":"3rem","margin-tablet":"2rem","gutter-desktop":"2rem","margin":"1rem","space-lg":"1.5rem","gutter-tablet":"1.5rem"},"fontFamily":{"headline-lg":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"body-bold":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"amount-display":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"]},"fontSize":{"headline-lg":["32px",{"lineHeight":"40px","fontWeight":"700"}],"body-md":["16px",{"lineHeight":"26px","fontWeight":"400"}],"headline-md":["24px",{"lineHeight":"32px","fontWeight":"700"}],"body-bold":["16px",{"lineHeight":"26px","fontWeight":"600"}],"headline-lg-mobile":["26px",{"lineHeight":"34px","fontWeight":"700"}],"label-lg":["16px",{"lineHeight":"24px","fontWeight":"600"}],"headline-sm":["20px",{"lineHeight":"28px","fontWeight":"600"}],"amount-display":["36px",{"lineHeight":"44px","fontWeight":"800"}],"body-lg":["18px",{"lineHeight":"28px","fontWeight":"500"}],"label-md":["14px",{"lineHeight":"20px","fontWeight":"600"}]}}}};</script></head><body class="bg-surface font-body-md text-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-low z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col"><div class="h-16 px-space-lg flex items-center gap-space-sm bg-surface-container-lowest/80"><img alt="Brand logo. - Primary color: #166534
+- Font: plusJakartaSans
+- Mode: light
+- Roundness: rounded-md
+" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VQIKpwXVoOA5VKNZPTCYn2JkXpoRSqsXUDDj9lU42mgNcOA6_vTlrkdajYpV3mDv93r9Z_0bn4t27xAyh5lPp25AeuYUAhp_iZdI56LEkh1NlJAt15xcqre2QWwsI7__l3EM-pxDhtzRLjLWfVULVEx-Joq58rLyS2-71PyXJZFIECPl5wgBO9QG_6cqRjaiigc2oNCSZLpR92k8SkwWQbsENa1R97kSh3jMphQjYt5a-LyPfGiZ9m4Nk"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-primary leading-tight tracking-tight">BERETA</span><span class="font-label-md text-[11px] leading-tight text-on-surface-variant font-bold uppercase tracking-wider">Tontines &amp; Solidarité</span></div></div><div class="px-space-md py-space-sm"><div class="px-space-sm py-space-xs rounded-lg bg-surface-container-highest/60 flex items-center justify-between"><div class="flex items-center gap-space-xs"><span class="material-symbols-outlined text-[18px] text-primary">account_balance</span><span class="font-label-md text-label-md text-on-surface truncate">Foyer &amp; Gestion Fédérale</span></div><span class="material-symbols-outlined text-[18px] text-on-surface-variant">unfold_more</span></div></div><nav class="flex flex-col gap-1 px-space-md mt-space-xs" data-active-classes="bg-primary-container text-on-primary font-body-bold rounded-lg shadow-sm"><a class="flex items-center gap-space-sm px-space-md py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="tableau-de-bord" href="#"><span class="material-symbols-outlined text-[20px]">grid_view</span>Tableau de bord</a><a class="flex items-center gap-space-sm px-space-md py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="caisses-locales" href="#"><span class="material-symbols-outlined text-[20px]">savings</span>Caisses Locales</a><a class="flex items-center gap-space-sm px-space-md py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="campagnes-de-cotisation" href="#"><span class="material-symbols-outlined text-[20px]">event_repeat</span>Campagnes de Cotisation</a><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-3 transition-colors bg-primary-container text-on-primary font-body-bold rounded-lg shadow-sm" data-path="membres-et-cotisants" href="#"><span class="material-symbols-outlined text-[20px]">groups</span>Membres &amp; Cotisants</a><a class="flex items-center gap-space-sm px-space-md py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="imports-et-cahiers" href="#"><span class="material-symbols-outlined text-[20px]">menu_book</span>Imports &amp; Cahiers</a><a class="flex items-center gap-space-sm px-space-md py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="rapports-et-grand-livre" href="#"><span class="material-symbols-outlined text-[20px]">receipt_long</span>Rapports &amp; Grand Livre</a><a class="flex items-center gap-space-sm px-space-md py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors font-body-md text-body-md" data-path="parametres" href="#"><span class="material-symbols-outlined text-[20px]">settings</span>Paramètres</a></nav></div><div class="p-space-md"><div class="p-space-sm rounded-lg bg-surface-container-lowest flex flex-col gap-1 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-xs text-primary"><span class="material-symbols-outlined text-[16px]">verified_user</span><span class="font-label-md text-[12px] font-bold uppercase tracking-wider">Registre Immuable</span></div><div class="flex items-center justify-between text-on-surface-variant font-label-md text-[11px]"><span>Audit SHA-256</span><span class="font-mono text-primary font-bold">4b8a…f91c</span></div></div></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/85 backdrop-blur-xl z-40 shadow-[0_1px_8px_rgba(0,0,0,0.04)] flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs px-space-sm py-1.5 rounded-lg bg-surface-container-low text-on-surface"><span class="material-symbols-outlined text-[18px] text-primary">apartment</span><span class="font-body-bold text-body-md">Fédération Mandingue Paris-Sud</span><span class="material-symbols-outlined text-[18px] text-on-surface-variant">expand_more</span></div><div class="h-5 w-px bg-outline-variant/50"></div><div class="flex items-center gap-space-xs px-space-sm py-1 rounded-full bg-surface-container text-on-surface-variant"><span class="material-symbols-outlined text-[16px] text-secondary">calendar_today</span><span class="font-label-md text-label-md font-semibold text-on-surface">Exercice 2024-2025</span><span class="w-2 h-2 rounded-full bg-primary inline-block ml-1"></span></div></div><div class="flex items-center gap-space-md"><div class="hidden xl:flex items-center gap-space-xs px-space-sm py-1.5 rounded-lg bg-surface-container-low text-on-surface-variant"><span class="material-symbols-outlined text-[16px] text-primary">enhanced_encryption</span><span class="font-label-md text-[12px] font-mono text-on-surface">SHA: 7e29…c41b</span><span class="material-symbols-outlined text-[16px] text-outline hover:text-on-surface cursor-pointer">copy_all</span></div><div class="flex items-center gap-space-sm pl-space-sm"><div class="text-right hidden sm:flex flex-col"><span class="font-body-bold text-body-md text-on-surface leading-tight">Samba Diakité</span><span class="font-label-md text-[12px] text-on-surface-variant leading-tight">Trésorier Fédéral</span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 bg-surface px-space-lg py-space-lg min-h-screen"><div class="flex flex-col w-full gap-space-lg">
+<!-- En-tête de contenu & Barre d'actions globale -->
+<div class="flex flex-col xl:flex-row xl:items-center justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-highest text-primary font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+          Registre scellé SHA-256
+        </span>
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px]">diversity_3</span>
+          Assoc. Développement Niogoméra
+        </span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">
+        Membres &amp; Cotisants de l'Association
+      </h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-3xl">
+        Registre unifié des adhérents, ventilation par foyer/caisse locale et suivi individuel de solvabilité.
+      </p>
+</div>
+<!-- Actions directes -->
+<div class="flex items-center gap-space-sm flex-wrap">
+<button class="h-[52px] px-space-md rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container transition-colors flex items-center gap-2 font-label-lg text-label-lg">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant">file_download</span>
+<span>Exporter (Excel/PDF)</span>
+</button>
+<button class="h-[52px] px-space-md rounded-lg bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container transition-colors flex items-center gap-2 font-label-lg text-label-lg">
+<span class="material-symbols-outlined text-[20px] text-secondary">sms</span>
+<span>Envoyer SMS groupé</span>
+</button>
+<button class="h-[52px] px-space-lg rounded-lg bg-primary-container text-on-primary shadow-md hover:bg-primary transition-all flex items-center gap-2 font-label-lg text-label-lg">
+<span class="material-symbols-outlined text-[22px]">person_add</span>
+<span>Ajouter un membre</span>
+</button>
+</div>
+</div>
+<!-- Indicateurs Clés (KPIs) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- KPI 1 -->
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between gap-space-sm relative overflow-hidden">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-md text-label-md uppercase tracking-wider">Total Inscrits</span>
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[22px]">badge</span>
+</div>
+</div>
+<div>
+<div class="flex items-baseline gap-2">
+<span class="font-amount-display text-amount-display text-on-surface">60</span>
+<span class="font-body-md text-body-md text-on-surface-variant">membres</span>
+</div>
+<div class="flex items-center gap-1.5 mt-1 font-label-md text-label-md text-primary">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span>+4 ce trimestre</span>
+</div>
+</div>
+<div class="absolute -right-3 -bottom-3 w-16 h-16 bg-primary-fixed/20 rounded-full blur-xl pointer-events-none"></div>
+</div>
+<!-- KPI 2 -->
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between gap-space-sm relative overflow-hidden">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-md text-label-md uppercase tracking-wider">À jour de cotisation</span>
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[22px]">verified_user</span>
+</div>
+</div>
+<div>
+<div class="flex items-baseline gap-2">
+<span class="font-amount-display text-amount-display text-primary">48</span>
+<span class="font-body-md text-body-md text-on-surface-variant">/ 60</span>
+</div>
+<div class="flex items-center justify-between mt-2">
+<div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden mr-3">
+<div class="bg-primary h-full rounded-full" style="width: 80%;"></div>
+</div>
+<span class="font-label-md text-label-md text-primary font-bold">80,0%</span>
+</div>
+</div>
+<div class="absolute -right-3 -bottom-3 w-16 h-16 bg-primary-fixed/25 rounded-full blur-xl pointer-events-none"></div>
+</div>
+<!-- KPI 3 -->
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between gap-space-sm relative overflow-hidden">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-md text-label-md uppercase tracking-wider">En retard / Défaillants</span>
+<div class="w-10 h-10 rounded-lg bg-error-container flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-[22px]">warning</span>
+</div>
+</div>
+<div>
+<div class="flex items-baseline gap-2">
+<span class="font-amount-display text-amount-display text-error">12</span>
+<span class="font-body-md text-body-md text-on-surface-variant">membres</span>
+</div>
+<div class="flex items-center gap-1.5 mt-1 font-label-md text-label-md text-error">
+<span class="material-symbols-outlined text-[16px]">priority_high</span>
+<span>Reste à recouvrer: 450,00 €</span>
+</div>
+</div>
+<div class="absolute -right-3 -bottom-3 w-16 h-16 bg-error-container/40 rounded-full blur-xl pointer-events-none"></div>
+</div>
+<!-- KPI 4 -->
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between gap-space-sm relative overflow-hidden">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-label-md text-label-md uppercase tracking-wider">Cotisation Moyenne</span>
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[22px]">analytics</span>
+</div>
+</div>
+<div>
+<div class="flex items-baseline gap-2">
+<span class="font-amount-display text-amount-display text-on-surface">48,00 €</span>
+</div>
+<div class="flex items-center gap-1.5 mt-1 font-label-md text-label-md text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">sync</span>
+<span>Exercice 2024-2025</span>
+</div>
+</div>
+<div class="absolute -right-3 -bottom-3 w-16 h-16 bg-secondary-fixed/30 rounded-full blur-xl pointer-events-none"></div>
+</div>
+</div>
+<!-- Barre de Recherche, Filtres de Caisse & Options de Tri -->
+<div class="p-space-md rounded-xl bg-surface-container-lowest shadow-sm flex flex-col gap-space-md">
+<div class="flex flex-col lg:flex-row gap-space-md items-center justify-between">
+<!-- Champ Recherche Universelle -->
+<div class="relative w-full lg:max-w-md">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="w-full h-[52px] pl-12 pr-4 rounded-lg bg-surface-container-low text-on-surface placeholder:text-on-surface-variant/70 font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none focus:ring-2 focus:ring-primary transition-all" placeholder="Rechercher par nom, téléphone, ID membre, chambre..." type="text"/>
+</div>
+<!-- Filtres Déroulants & Tri -->
+<div class="flex items-center gap-space-sm w-full lg:w-auto flex-wrap sm:flex-nowrap">
+<!-- Caisse locale -->
+<div class="relative flex-1 sm:flex-initial">
+<select class="h-[52px] px-4 pr-10 rounded-lg bg-surface-container-low text-on-surface font-body-bold text-body-md appearance-none focus:outline-none focus:ring-2 focus:ring-primary w-full cursor-pointer">
+<option>Toutes les caisses (3)</option>
+<option>Foyer Saint-Denis (34)</option>
+<option>Foyer Montreuil (26)</option>
+<option>Paris Nord (0)</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">arrow_drop_down</span>
+</div>
+<!-- Sélecteur de Tri -->
+<div class="relative flex-1 sm:flex-initial">
+<select class="h-[52px] px-4 pr-10 rounded-lg bg-surface-container-low text-on-surface font-body-bold text-body-md appearance-none focus:outline-none focus:ring-2 focus:ring-primary w-full cursor-pointer">
+<option>Trier : Solde dû (décroissant)</option>
+<option>Trier : Nom alphabétique</option>
+<option>Trier : N° ID croissant</option>
+<option>Trier : Dernier versement</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">sort</span>
+</div>
+</div>
+</div>
+<!-- Filtres rapides en pilules -->
+<div class="flex items-center gap-2 overflow-x-auto pb-1">
+<button class="px-4 py-2 rounded-full bg-primary-container text-on-primary font-label-md text-label-md flex items-center gap-1.5 shadow-sm">
+<span>Tous</span>
+<span class="px-1.5 py-0.5 rounded-full bg-primary text-on-primary text-[11px] font-bold">60</span>
+</button>
+<button class="px-4 py-2 rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors font-label-md text-label-md flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span>À jour</span>
+<span class="text-on-surface-variant text-[12px] font-bold">48</span>
+</button>
+<button class="px-4 py-2 rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors font-label-md text-label-md flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span>En retard</span>
+<span class="text-error text-[12px] font-bold">12</span>
+</button>
+<button class="px-4 py-2 rounded-full bg-surface-container text-on-surface-variant hover:bg-surface-container-high transition-colors font-label-md text-label-md flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span>Nouveaux arrivants</span>
+<span class="text-on-surface-variant text-[12px] font-bold">3</span>
+</button>
+</div>
+</div>
+<!-- Zone Principale : Grille à Deux Volets (Tableau 65% + Tiroir d'inspection 35%) -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg items-start">
+<!-- VOLET GAUCHE (Tableau des Membres - 7 ou 8 colonnes desktop) -->
+<div class="xl:col-span-8 flex flex-col gap-space-md">
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden flex flex-col">
+<!-- En-tête de table informative -->
+<div class="px-space-lg py-space-md flex items-center justify-between bg-surface-container-low/50">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">Registre des Membres</span>
+<span class="text-on-surface-variant font-label-md text-label-md">Affichage 1 à 6 sur 60</span>
+</div>
+<span class="font-label-md text-[12px] text-on-surface-variant uppercase tracking-wider flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary">security</span>
+            Horodatage certifié
+          </span>
+</div>
+<!-- Table des membres -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-md text-[13px] uppercase tracking-wider">
+<th class="py-3 px-space-md font-semibold">Membre &amp; ID</th>
+<th class="py-3 px-space-md font-semibold">Caisse &amp; Foyer</th>
+<th class="py-3 px-space-md font-semibold">Campagnes Actives</th>
+<th class="py-3 px-space-md font-semibold">Solde Dû</th>
+<th class="py-3 px-space-md font-semibold">Dernier Versement</th>
+<th class="py-3 px-space-md text-right font-semibold">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<!-- Ligne 1 : Sélectionnée (Bakary Camara) -->
+<tr class="bg-primary-fixed/15 hover:bg-primary-fixed/25 transition-colors cursor-pointer group">
+<td class="py-4 px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-11 h-11 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-body-bold text-[14px] shadow-sm shrink-0">
+                      BC
+                    </div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-body-bold text-body-md text-on-surface group-hover:text-primary transition-colors">Bakary Camara</span>
+<span class="px-1.5 py-0.5 rounded text-[11px] font-mono font-bold bg-surface-container-highest text-primary">#42</span>
+</div>
+<span class="font-label-md text-[13px] text-on-surface-variant">06 12 34 56 78</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-space-md">
+<div class="flex flex-col">
+<span class="font-body-bold text-body-md text-on-surface">Foyer Saint-Denis</span>
+<span class="font-label-md text-[13px] text-on-surface-variant">Bât. B • Ch. 214</span>
+</div>
+</td>
+<td class="py-4 px-space-md">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-1.5 text-[12px] font-label-md">
+<span class="w-2 h-2 rounded-full bg-error shrink-0"></span>
+<span class="text-on-surface">Cotis. 2025: <strong class="text-error">0 / 30 €</strong></span>
+</div>
+<div class="flex items-center gap-1.5 text-[12px] font-label-md">
+<span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
+<span class="text-on-surface-variant">Solidarité: 18 / 18 €</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-space-md">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-error-container text-error font-body-bold text-label-md">
+<span class="material-symbols-outlined text-[16px]">priority_high</span>
+                    30,00 €
+                  </span>
+</td>
+<td class="py-4 px-space-md">
+<div class="flex flex-col">
+<span class="font-body-md text-[13px] text-on-surface">15 Janv. 2025</span>
+<span class="font-mono text-[11px] text-on-surface-variant">Reçu #REC-054</span>
+</div>
+</td>
+<td class="py-4 px-space-md text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="h-9 px-3 rounded-lg bg-primary-container text-on-primary font-label-md text-[13px] hover:bg-primary transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">point_of_sale</span>
+<span>Encaisser</span>
+</button>
+<button class="w-9 h-9 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Ligne 2 : Mamadou Diarra -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group">
+<td class="py-4 px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-11 h-11 rounded-full bg-surface-container-high text-primary flex items-center justify-center font-body-bold text-[14px] shrink-0">
+                      MD
+                    </div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-body-bold text-body-md text-on-surface">Mamadou Diarra</span>
+<span class="px-1.5 py-0.5 rounded text-[11px] font-mono font-bold bg-surface-container-highest text-on-surface-variant">#18</span>
+</div>
+<span class="font-label-md text-[13px] text-on-surface-variant">07 45 89 12 30</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-space-md">
+<div class="flex flex-col">
+<span class="font-body-bold text-body-md text-on-surface">Foyer Saint-Denis</span>
+<span class="font-label-md text-[13px] text-on-surface-variant">Bât. A • Ch. 102</span>
+</div>
+</td>
+<td class="py-4 px-space-md">
+<div class="flex items-center gap-1.5 text-[12px] font-label-md">
+<span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
+<span class="text-on-surface">Total 2025: <strong>48 / 48 €</strong> (Soldé)</span>
+</div>
+</td>
+<td class="py-4 px-space-md">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-fixed/40 text-primary font-body-bold text-label-md">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+                    0,00 €
+                  </span>
+</td>
+<td class="py-4 px-space-md">
+<div class="flex flex-col">
+<span class="font-body-md text-[13px] text-on-surface">28 Fév. 2025</span>
+<span class="font-mono text-[11px] text-on-surface-variant">Reçu #REC-098</span>
+</div>
+</td>
+<td class="py-4 px-space-md text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="h-9 px-3 rounded-lg bg-surface-container text-on-surface font-label-md text-[13px] hover:bg-surface-container-high transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">receipt</span>
+<span>Reçu</span>
+</button>
+<button class="w-9 h-9 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Ligne 3 : Samba Soumaré -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group">
+<td class="py-4 px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-11 h-11 rounded-full bg-tertiary-fixed text-tertiary-container flex items-center justify-center font-body-bold text-[14px] shrink-0">
+                      SS
+                    </div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-body-bold text-body-md text-on-surface">Samba Soumaré</span>
+<span class="px-1.5 py-0.5 rounded text-[11px] font-mono font-bold bg-surface-container-highest text-on-surface-variant">#07</span>
+</div>
+<span class="font-label-md text-[13px] text-on-surface-variant">06 98 76 54 32</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-space-md">
+<div class="flex flex-col">
+<span class="font-body-bold text-body-md text-on-surface">Foyer Montreuil</span>
+<span class="font-label-md text-[13px] text-on-surface-variant">Rez-de-chaussée • Ch. 04</span>
+</div>
+</td>
+<td class="py-4 px-space-md">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-1.5 text-[12px] font-label-md">
+<span class="w-2 h-2 rounded-full bg-tertiary-container shrink-0"></span>
+<span class="text-on-surface">Acompte Cotis: <strong>15 / 30 €</strong></span>
+</div>
+</div>
+</td>
+<td class="py-4 px-space-md">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant font-body-bold text-label-md">
+<span class="material-symbols-outlined text-[16px]">hourglass_top</span>
+                    15,00 €
+                  </span>
+</td>
+<td class="py-4 px-space-md">
+<div class="flex flex-col">
+<span class="font-body-md text-[13px] text-on-surface">14 Fév. 2025</span>
+<span class="font-mono text-[11px] text-on-surface-variant">Reçu #REC-081</span>
+</div>
+</td>
+<td class="py-4 px-space-md text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="h-9 px-3 rounded-lg bg-primary-container text-on-primary font-label-md text-[13px] hover:bg-primary transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">point_of_sale</span>
+<span>Encaisser</span>
+</button>
+<button class="w-9 h-9 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Ligne 4 : Cheick Tidiane Ba -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group">
+<td class="py-4 px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-11 h-11 rounded-full bg-surface-container-high text-primary flex items-center justify-center font-body-bold text-[14px] shrink-0">
+                      CB
+                    </div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-body-bold text-body-md text-on-surface">Cheick Tidiane Ba</span>
+<span class="px-1.5 py-0.5 rounded text-[11px] font-mono font-bold bg-surface-container-highest text-on-surface-variant">#19</span>
+</div>
+<span class="font-label-md text-[13px] text-on-surface-variant">07 11 22 33 44</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-space-md">
+<div class="flex flex-col">
+<span class="font-body-bold text-body-md text-on-surface">Foyer Saint-Denis</span>
+<span class="font-label-md text-[13px] text-on-surface-variant">Bât. C • Ch. 310</span>
+</div>
+</td>
+<td class="py-4 px-space-md">
+<div class="flex items-center gap-1.5 text-[12px] font-label-md">
+<span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
+<span class="text-on-surface">Total 2025: <strong>48 / 48 €</strong> (Soldé)</span>
+</div>
+</td>
+<td class="py-4 px-space-md">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-fixed/40 text-primary font-body-bold text-label-md">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+                    0,00 €
+                  </span>
+</td>
+<td class="py-4 px-space-md">
+<div class="flex flex-col">
+<span class="font-body-md text-[13px] text-on-surface">26 Fév. 2025</span>
+<span class="font-mono text-[11px] text-on-surface-variant">Reçu #REC-092</span>
+</div>
+</td>
+<td class="py-4 px-space-md text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="h-9 px-3 rounded-lg bg-surface-container text-on-surface font-label-md text-[13px] hover:bg-surface-container-high transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">receipt</span>
+<span>Reçu</span>
+</button>
+<button class="w-9 h-9 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Ligne 5 : Demba Diarra -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group">
+<td class="py-4 px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-11 h-11 rounded-full bg-error-container text-error flex items-center justify-center font-body-bold text-[14px] shrink-0">
+                      DD
+                    </div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-body-bold text-body-md text-on-surface">Demba Diarra</span>
+<span class="px-1.5 py-0.5 rounded text-[11px] font-mono font-bold bg-surface-container-highest text-on-surface-variant">#31</span>
+</div>
+<span class="font-label-md text-[13px] text-on-surface-variant">06 55 44 33 22</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-space-md">
+<div class="flex flex-col">
+<span class="font-body-bold text-body-md text-on-surface">Foyer Montreuil</span>
+<span class="font-label-md text-[13px] text-on-surface-variant">Étage 2 • Ch. 219</span>
+</div>
+</td>
+<td class="py-4 px-space-md">
+<div class="flex items-center gap-1.5 text-[12px] font-label-md">
+<span class="w-2 h-2 rounded-full bg-error shrink-0"></span>
+<span class="text-on-surface">Cotis. 2025: <strong class="text-error">0 / 30 €</strong></span>
+</div>
+</td>
+<td class="py-4 px-space-md">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-error-container text-error font-body-bold text-label-md">
+<span class="material-symbols-outlined text-[16px]">priority_high</span>
+                    30,00 €
+                  </span>
+</td>
+<td class="py-4 px-space-md">
+<div class="flex flex-col">
+<span class="font-body-md text-[13px] text-on-surface">12 Déc. 2024</span>
+<span class="font-mono text-[11px] text-on-surface-variant">Reçu #REC-2024-89</span>
+</div>
+</td>
+<td class="py-4 px-space-md text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="h-9 px-3 rounded-lg bg-primary-container text-on-primary font-label-md text-[13px] hover:bg-primary transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">point_of_sale</span>
+<span>Encaisser</span>
+</button>
+<button class="w-9 h-9 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Ligne 6 : Moussa Fofana -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group">
+<td class="py-4 px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-11 h-11 rounded-full bg-surface-container-high text-primary flex items-center justify-center font-body-bold text-[14px] shrink-0">
+                      MF
+                    </div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-body-bold text-body-md text-on-surface">Moussa Fofana</span>
+<span class="px-1.5 py-0.5 rounded text-[11px] font-mono font-bold bg-surface-container-highest text-on-surface-variant">#77</span>
+</div>
+<span class="font-label-md text-[13px] text-on-surface-variant">07 60 70 80 90</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-space-md">
+<div class="flex flex-col">
+<span class="font-body-bold text-body-md text-on-surface">Foyer Saint-Denis</span>
+<span class="font-label-md text-[13px] text-on-surface-variant">Bât. A • Ch. 118</span>
+</div>
+</td>
+<td class="py-4 px-space-md">
+<div class="flex items-center gap-1.5 text-[12px] font-label-md">
+<span class="w-2 h-2 rounded-full bg-primary shrink-0"></span>
+<span class="text-on-surface">Total 2025: <strong>48 / 48 €</strong> (Soldé)</span>
+</div>
+</td>
+<td class="py-4 px-space-md">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-fixed/40 text-primary font-body-bold text-label-md">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+                    0,00 €
+                  </span>
+</td>
+<td class="py-4 px-space-md">
+<div class="flex flex-col">
+<span class="font-body-md text-[13px] text-on-surface">26 Fév. 2025</span>
+<span class="font-mono text-[11px] text-on-surface-variant">Reçu #REC-095</span>
+</div>
+</td>
+<td class="py-4 px-space-md text-right">
+<div class="flex items-center justify-end gap-1.5">
+<button class="h-9 px-3 rounded-lg bg-surface-container text-on-surface font-label-md text-[13px] hover:bg-surface-container-high transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">receipt</span>
+<span>Reçu</span>
+</button>
+<button class="w-9 h-9 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pied de tableau & Pagination -->
+<div class="p-space-md bg-surface-container-low/30 flex flex-col sm:flex-row items-center justify-between gap-space-sm">
+<div class="flex items-center gap-2">
+<span class="font-body-md text-body-md text-on-surface-variant">Lignes par page :</span>
+<select class="px-2 py-1.5 rounded-lg bg-surface-container text-on-surface font-body-bold text-[14px] focus:outline-none">
+<option selected="">10</option>
+<option>25</option>
+<option>50</option>
+</select>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="font-label-md text-label-md text-on-surface-variant">Page <strong>1</strong> sur <strong>10</strong> (60 membres)</span>
+<div class="flex items-center gap-1">
+<button class="w-9 h-9 rounded-lg bg-surface-container-high text-outline cursor-not-allowed flex items-center justify-center" disabled="">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-9 h-9 rounded-lg bg-primary-container text-on-primary font-bold text-[13px] flex items-center justify-center shadow-sm">
+                1
+              </button>
+<button class="w-9 h-9 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold text-[13px] flex items-center justify-center transition-colors">
+                2
+              </button>
+<button class="w-9 h-9 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-semibold text-[13px] flex items-center justify-center transition-colors">
+                3
+              </button>
+<span class="px-1 text-on-surface-variant text-[13px]">…</span>
+<button class="w-9 h-9 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- VOLET DROIT (Tiroir d'inspection / Fiche Adhérent - 35% desktop) -->
+<div class="xl:col-span-4 flex flex-col gap-space-md sticky top-20">
+<!-- Fiche détaillée membre sélectionné -->
+<div class="bg-surface-container-lowest rounded-xl shadow-md p-space-lg flex flex-col gap-space-lg">
+<!-- En-tête Tiroir -->
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-md text-[12px] uppercase tracking-wider text-on-surface-variant font-bold">Fiche Adhérent &amp; Solvabilité</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">Inspection Individuelle</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-1 rounded-full bg-error-container text-error font-label-md text-[12px] flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+              1 retard
+            </span>
+<button class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+</div>
+<!-- Profil & Identité -->
+<div class="flex items-center gap-space-md p-space-md rounded-xl bg-surface-container-low">
+<div class="w-16 h-16 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-headline-md text-headline-md shadow-sm shrink-0">
+            BC
+          </div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-[18px] text-on-surface font-bold truncate">Bakary Camara</span>
+<span class="px-1.5 py-0.5 rounded text-[11px] font-mono font-bold bg-surface-container-highest text-primary">#42</span>
+</div>
+<span class="font-label-md text-[13px] text-on-surface-variant">Adhérent depuis Janv. 2023</span>
+<div class="flex items-center gap-1.5 mt-1 text-[12px] text-primary font-bold">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<span>Identité vérifiée &amp; Caisse rattachée</span>
+</div>
+</div>
+</div>
+<!-- Coordonnées et Affectation -->
+<div class="grid grid-cols-1 gap-2 p-space-sm rounded-lg bg-surface-container-lowest">
+<div class="flex items-center gap-2 text-on-surface-variant text-label-md">
+<span class="material-symbols-outlined text-[18px] text-primary">call</span>
+<span class="font-mono text-on-surface">06 12 34 56 78</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant text-label-md">
+<span class="material-symbols-outlined text-[18px] text-primary">mail</span>
+<span class="text-on-surface truncate">b.camara@email.com</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant text-label-md">
+<span class="material-symbols-outlined text-[18px] text-primary">apartment</span>
+<span class="text-on-surface">Foyer Saint-Denis • Bât. B • Ch. 214</span>
+</div>
+</div>
+<!-- Solde & Boutons d'Action Rapide -->
+<div class="p-space-md rounded-xl bg-error-container/30 flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-[13px] uppercase font-bold text-on-surface-variant">Reste à payer</span>
+<span class="px-2 py-0.5 rounded bg-error-container text-error text-[11px] font-bold">Retard J-7</span>
+</div>
+<div class="flex items-baseline justify-between">
+<span class="font-amount-display text-[32px] text-error font-extrabold">30,00 €</span>
+<span class="font-label-md text-[13px] text-on-surface-variant">sur 48,00 € annuels</span>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-md text-[12px] text-on-surface-variant">Taux d'assiduité historique :</span>
+<span class="font-body-bold text-[13px] text-primary">89% (3 ans)</span>
+</div>
+</div>
+<!-- Boutons d'action directs (Hauteur 52px requise) -->
+<div class="flex flex-col gap-2">
+<button class="w-full h-[52px] rounded-lg bg-primary-container text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-2 shadow-sm hover:bg-primary transition-all">
+<span class="material-symbols-outlined text-[20px]">bolt</span>
+<span>Encaisser 30,00 € maintenant</span>
+</button>
+<button class="w-full h-[52px] rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container font-label-lg text-label-lg flex items-center justify-center gap-2 transition-all">
+<span class="material-symbols-outlined text-[20px] text-secondary">chat</span>
+<span>Envoyer rappel SMS personnalisé</span>
+</button>
+</div>
+<!-- Campagnes en cours pour ce membre -->
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-md text-[12px] uppercase font-bold tracking-wider text-on-surface-variant">Campagnes de l'Exercice</span>
+<div class="flex flex-col gap-2">
+<!-- Campagne 1 -->
+<div class="p-3 rounded-lg bg-surface-container-low flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-body-bold text-[14px] text-on-surface">Cotisation Annuelle 2025</span>
+<span class="font-body-bold text-[14px] text-error">0 / 30 €</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-error h-full rounded-full" style="width: 0%;"></div>
+</div>
+<div class="flex items-center justify-between text-[11px] text-on-surface-variant">
+<span>Échéance : 31 Mars 2025</span>
+<span class="text-error font-semibold">Non acquitté</span>
+</div>
+</div>
+<!-- Campagne 2 -->
+<div class="p-3 rounded-lg bg-surface-container-low flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-body-bold text-[14px] text-on-surface">Caisse Solidarité Rapatriement</span>
+<span class="font-body-bold text-[14px] text-primary">18 / 18 €</span>
+</div>
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 100%;"></div>
+</div>
+<div class="flex items-center justify-between text-[11px] text-on-surface-variant">
+<span>Payé le 15 Janv. 2025</span>
+<span class="text-primary font-semibold">Soldé ✓</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Dernières Transactions Scellées (Mini Journal d'Audit) -->
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-md text-[12px] uppercase font-bold tracking-wider text-on-surface-variant">Dernières Transactions Scellées</span>
+<div class="flex flex-col divide-y divide-surface-container">
+<div class="py-2.5 flex items-start justify-between">
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-primary text-[18px] mt-0.5">check_circle</span>
+<div class="flex flex-col">
+<span class="font-body-bold text-[13px] text-on-surface">+18,00 € (Espèces)</span>
+<span class="text-[11px] text-on-surface-variant">15 Janv. 2025 • Reçu #REC-2025-012</span>
+</div>
+</div>
+<span class="font-mono text-[10px] text-primary px-1.5 py-0.5 rounded bg-surface-container-highest">SHA OK</span>
+</div>
+<div class="py-2.5 flex items-start justify-between">
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-primary text-[18px] mt-0.5">check_circle</span>
+<div class="flex flex-col">
+<span class="font-body-bold text-[13px] text-on-surface">+30,00 € (Virement)</span>
+<span class="text-[11px] text-on-surface-variant">12 Déc. 2024 • Reçu #REC-2024-884</span>
+</div>
+</div>
+<span class="font-mono text-[10px] text-primary px-1.5 py-0.5 rounded bg-surface-container-highest">SHA OK</span>
+</div>
+</div>
+</div>
+<!-- Actions Administratives Secondaires -->
+<div class="pt-2 border-t border-surface-container flex flex-col gap-1.5">
+<button class="w-full py-2.5 px-3 rounded-lg hover:bg-surface-container-low text-on-surface text-left font-label-md text-[13px] flex items-center justify-between transition-colors">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">swap_horiz</span>
+              Réaffecter à une autre caisse locale
+            </span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">chevron_right</span>
+</button>
+<button class="w-full py-2.5 px-3 rounded-lg hover:bg-surface-container-low text-on-surface text-left font-label-md text-[13px] flex items-center justify-between transition-colors">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">edit</span>
+              Modifier les coordonnées
+            </span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">chevron_right</span>
+</button>
+<button class="w-full py-2.5 px-3 rounded-lg hover:bg-surface-container-low text-on-surface text-left font-label-md text-[13px] flex items-center justify-between transition-colors">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">picture_as_pdf</span>
+              Télécharger l'attestation de cotisations (PDF)
+            </span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">download</span>
+</button>
+<button class="w-full py-2.5 px-3 rounded-lg hover:bg-error-container/30 text-error text-left font-label-md text-[13px] flex items-center justify-between transition-colors mt-1">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">archive</span>
+              Archiver / Suspendre le membre
+            </span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

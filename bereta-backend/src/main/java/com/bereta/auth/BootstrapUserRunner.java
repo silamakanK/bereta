@@ -7,6 +7,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Locale;
 
@@ -36,24 +37,32 @@ public class BootstrapUserRunner implements ApplicationRunner {
     }
 
     @Override
+    @Transactional
     public void run(ApplicationArguments args) {
         if (email.isBlank() && password.isBlank()) return;
         if (email.isBlank() || password.isBlank()) {
             throw new IllegalStateException("Configurez ensemble BOOTSTRAP_USER_EMAIL et BOOTSTRAP_USER_PASSWORD.");
         }
-        if (password.length() < 12) {
-            throw new IllegalStateException("Le mot de passe initial doit contenir au moins 12 caractères.");
+        if (password.length() < 6) {
+            throw new IllegalStateException("Le mot de passe initial doit contenir au moins 6 caractères.");
+        }
+        if (password.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72) {
+            throw new IllegalStateException("Le mot de passe initial ne peut pas dépasser 72 octets UTF-8.");
         }
 
         String normalizedEmail = email.trim().toLowerCase(Locale.ROOT);
-        if (userAccountRepository.existsByEmailIgnoreCase(normalizedEmail)) return;
-
-        userAccountRepository.save(new UserAccountEntity(
-                normalizedEmail,
-                displayName.isBlank() ? "Responsable BERETA" : displayName.trim(),
-                passwordEncoder.encode(password),
-                "RESPONSABLE"
-        ));
-        logger.info("Le compte responsable initial a été créé à partir de la configuration locale.");
+        UserAccountEntity account = userAccountRepository.findByEmailIgnoreCase(normalizedEmail).orElse(null);
+        if (account == null) {
+            account = userAccountRepository.save(new UserAccountEntity(
+                    normalizedEmail,
+                    displayName.isBlank() ? "Responsable BERETA" : displayName.trim(),
+                    passwordEncoder.encode(password),
+                    "RESPONSABLE"
+            ));
+            logger.info("Le compte responsable initial a été créé à partir de la configuration locale.");
+        }
+        if (!"RESPONSABLE".equals(account.getRole())) {
+            throw new IllegalStateException("BOOTSTRAP_USER_EMAIL doit correspondre à un compte responsable.");
+        }
     }
 }
