@@ -36,8 +36,12 @@ public class PaymentEntity {
     @JoinColumn(name = "member_campaign_id", nullable = false, updatable = false)
     private MemberCampaignEntity memberCampaign;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "local_fund_id", nullable = false, updatable = false)
+    /**
+     * Caisse qui a encaissé, figée au moment du paiement (null = caisse principale) :
+     * réaffecter le membre ensuite ne modifie pas les anciens paiements.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "local_fund_id", updatable = false)
     private LocalFundEntity localFund;
 
     @Column(nullable = false, precision = 12, scale = 2, updatable = false)

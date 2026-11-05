@@ -11,6 +11,7 @@ public record MemberCampaignResponse(
         CampaignType campaignType,
         Integer campaignYear,
         String primaryFundName,
+        /** null = suivie par la caisse principale. */
         UUID localFundId,
         String localFundName,
         BigDecimal expectedAmount,
@@ -21,6 +22,7 @@ public record MemberCampaignResponse(
         LocalFundEntity localFund = enrollment.getLocalFund();
         return new MemberCampaignResponse(enrollment.getId(), campaign.getId(), campaign.getName(),
                 campaign.getCampaignType(), campaign.getCampaignYear(), campaign.getPrimaryFund().getName(),
-                localFund.getId(), localFund.getName(), enrollment.getExpectedAmount(), enrollment.getCreatedAt());
+                PaymentService.fundId(localFund), PaymentService.fundLabel(localFund),
+                enrollment.getExpectedAmount(), enrollment.getCreatedAt());
     }
 }

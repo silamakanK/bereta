@@ -29,10 +29,13 @@ public class MemberService {
     private final FundAccessService fundAccessService;
     private final LocalFundRepository localFundRepository;
     private final AssociationRequestContext associationContext;
+    private final com.bereta.funds.PrimaryFundRepository primaryFundRepository;
 
     public MemberService(MemberRepository memberRepository, MemberCampaignRepository memberCampaignRepository,
                          UserAccountRepository userAccountRepository, FundAccessService fundAccessService,
-                         LocalFundRepository localFundRepository, AssociationRequestContext associationContext) {
+                         LocalFundRepository localFundRepository, AssociationRequestContext associationContext,
+                         com.bereta.funds.PrimaryFundRepository primaryFundRepository) {
+        this.primaryFundRepository = primaryFundRepository;
         this.memberRepository = memberRepository;
         this.memberCampaignRepository = memberCampaignRepository;
         this.userAccountRepository = userAccountRepository;
@@ -42,10 +45,14 @@ public class MemberService {
     }
 
     public List<MemberResponse> findAll(UUID userId) {
+        return visibleMembers(userId).stream().map(MemberResponse::from).toList();
+    }
+
+    /** Membres visibles dans l'association active : tous pour le responsable, ceux de ses caisses pour le trésorier. */
+    public List<MemberEntity> visibleMembers(UUID userId) {
         UUID associationId = associationContext.requireId();
         if (fundAccessService.isAssociationManager(userId, associationId)) {
-            return memberRepository.findAllByAssociationIdOrderByLastNameAscFirstNameAsc(associationId).stream()
-                    .map(MemberResponse::from).toList();
+            return memberRepository.findAllByAssociationIdOrderByLastNameAscFirstNameAsc(associationId);
         }
         Set<UUID> visibleIds = new HashSet<>();
         List<UUID> localFundIds = fundAccessService.accessibleLocalFundIds(userId);
@@ -55,17 +62,19 @@ public class MemberService {
             memberCampaignRepository.findDistinctByLocalFundIdIn(localFundIds)
                     .forEach(enrollment -> visibleIds.add(enrollment.getMember().getId()));
         }
-        List<UUID> managerFundIds = fundAccessService.managerPrimaryFundIds(userId);
-        if (!managerFundIds.isEmpty()) {
-            memberRepository.findAllByCreatedInPrimaryFundIdIn(managerFundIds)
-                    .forEach(member -> visibleIds.add(member.getId()));
-        }
         return memberRepository.findAllById(visibleIds).stream()
                 .filter(member -> member.getAssociation().getId().equals(associationId))
                 .sorted(Comparator.comparing(MemberEntity::getLastName, String.CASE_INSENSITIVE_ORDER)
                         .thenComparing(MemberEntity::getFirstName, String.CASE_INSENSITIVE_ORDER))
-                .map(MemberResponse::from)
                 .toList();
+    }
+
+    /** Archiver : le membre reste visible (filtre), mais n'est plus inscrit aux nouvelles campagnes. */
+    @Transactional
+    public MemberResponse setActive(UUID userId, UUID id, boolean active) {
+        MemberEntity member = getMember(userId, id);
+        if (active) member.reactivate(); else member.archive();
+        return MemberResponse.from(memberRepository.save(member));
     }
 
     public MemberResponse findById(UUID userId, UUID id) {
@@ -74,22 +83,33 @@ public class MemberService {
 
     @Transactional
     public MemberResponse create(UUID userId, MemberRequest request) {
-        if (request.localFundId() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Choisissez une caisse locale.");
-        }
-        LocalFundEntity candidate = localFundRepository.findById(request.localFundId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Caisse locale introuvable"));
-        LocalFundEntity localFund = fundAccessService.requireLocalAccess(
-                userId, candidate.getPrimaryFund().getId(), candidate.getId());
         UserAccountEntity creator = userAccountRepository.findById(userId).filter(UserAccountEntity::isEnabled)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session invalide"));
+        com.bereta.funds.PrimaryFundEntity primaryFund;
+        LocalFundEntity localFund = null;
+        if (request.localFundId() == null) {
+            // Sans caisse locale : membre suivi directement par la caisse principale (responsable uniquement).
+            UUID associationId = associationContext.requireId();
+            if (!fundAccessService.isAssociationManager(userId, associationId)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Choisissez une caisse locale.");
+            }
+            primaryFund = primaryFundRepository.findActiveByAssociationId(associationId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT,
+                            "L’association n’a pas encore de caisse principale."));
+        } else {
+            LocalFundEntity candidate = localFundRepository.findById(request.localFundId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Caisse locale introuvable"));
+            localFund = fundAccessService.requireLocalAccess(
+                    userId, candidate.getPrimaryFund().getId(), candidate.getId());
+            primaryFund = localFund.getPrimaryFund();
+        }
         MemberEntity member = new MemberEntity(
-                localFund.getAssociation(),
+                primaryFund.getAssociation(),
                 request.firstName().trim(),
                 request.lastName().trim(),
                 cleanPhone(request.phone()),
                 creator,
-                localFund.getPrimaryFund(),
+                primaryFund,
                 localFund
         );
         return MemberResponse.from(memberRepository.save(member));
@@ -120,7 +140,8 @@ public class MemberService {
                 && fundAccessService.hasManagerAccess(userId, member.getCreatedInPrimaryFund().getId())) return member;
 
         boolean enrolledInAccessibleLocalFund = memberCampaignRepository.findAllByMemberIdOrderByCreatedAtDesc(id)
-                .stream().anyMatch(enrollment -> fundAccessService.hasLocalAccess(
+                .stream().filter(enrollment -> enrollment.getLocalFund() != null)
+                .anyMatch(enrollment -> fundAccessService.hasLocalAccess(
                         userId,
                         enrollment.getCampaign().getPrimaryFund().getId(),
                         enrollment.getLocalFund().getId()));

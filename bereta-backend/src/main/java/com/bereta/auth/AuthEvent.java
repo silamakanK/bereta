@@ -1,13 +1,10 @@
 package com.bereta.auth;
 
+/** Événements écrits dans auth_audit_log (colonne texte : les anciens événements restent lisibles). */
 public enum AuthEvent {
     REGISTERED,
-    PHONE_VERIFIED,
-    EMAIL_VERIFIED,
-    LOGIN_PASSWORD_ACCEPTED,
     LOGIN_FAILED,
     LOGIN_SUCCEEDED,
-    OTP_FAILED,
     ACCOUNT_LOCKED,
     REFRESH_REUSE_DETECTED,
     LOGOUT,
@@ -16,5 +13,6 @@ public enum AuthEvent {
     PASSWORD_RESET_COMPLETED,
     PASSWORD_CHANGED,
     TEMPORARY_PASSWORD_ISSUED,
-    TREASURER_ACCOUNT_CREATED
+    TREASURER_ACCOUNT_CREATED,
+    PROFILE_COMPLETED
 }

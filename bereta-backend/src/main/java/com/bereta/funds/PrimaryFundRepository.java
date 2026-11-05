@@ -9,4 +9,10 @@ public interface PrimaryFundRepository extends JpaRepository<PrimaryFundEntity, 
     List<PrimaryFundEntity> findAllByOrderByNameAsc();
     List<PrimaryFundEntity> findAllByAssociationIdOrderByNameAsc(UUID associationId);
     long countByAssociationId(UUID associationId);
+    /** L'unique caisse principale active de l'association. */
+    java.util.Optional<PrimaryFundEntity> findFirstByAssociationIdAndStatusOrderByCreatedAtAsc(UUID associationId, String status);
+    default java.util.Optional<PrimaryFundEntity> findActiveByAssociationId(UUID associationId) {
+        return findFirstByAssociationIdAndStatusOrderByCreatedAtAsc(associationId, "ACTIVE");
+    }
+    boolean existsByAssociationIdAndStatus(UUID associationId, String status);
 }

@@ -41,10 +41,22 @@ class AssociationIsolationControllerTest {
     @Autowired private PasswordEncoder passwordEncoder;
 
     @Test
+    void treasurerAccountCannotCreateAnAssociation() throws Exception {
+        UserAccountEntity treasurer = TestSecurity.account(users, passwordEncoder,
+                "association-treasurer-" + UUID.randomUUID() + "@test.local", "TRESORIER");
+        mockMvc.perform(post("/api/associations").with(
+                        org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors
+                                .user(new BeretaUserDetails(treasurer))).with(csrf())
+                        .contentType(APPLICATION_JSON)
+                        .content("{\"name\":\"Association interdite\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void authenticatedUserCanCreateAssociationAndBecomesItsResponsible() throws Exception {
         String suffix = UUID.randomUUID().toString();
         UserAccountEntity manager = TestSecurity.account(users, passwordEncoder,
-                "association-create-" + suffix + "@test.local", "TRESORIER");
+                "association-create-" + suffix + "@test.local", "RESPONSABLE");
         var result = mockMvc.perform(post("/api/associations").with(
                         org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors
                                 .user(new BeretaUserDetails(manager))).with(csrf())
@@ -75,7 +87,8 @@ class AssociationIsolationControllerTest {
                                 .user(new BeretaUserDetails(manager))).with(csrf())
                         .contentType(APPLICATION_JSON)
                         .content("{\"name\":\"Caisse initiale\",\"objective\":\"Test\"}"))
-                .andExpect(status().isCreated());
+                // La caisse principale existe déjà : elle est créée avec l'association.
+                .andExpect(status().isConflict());
     }
 
     @Test

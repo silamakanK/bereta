@@ -24,8 +24,6 @@ public class RateLimiterService {
         LOGIN_PER_IP(20, Duration.ofMinutes(1)),
         LOGIN_PER_IDENTIFIER(10, Duration.ofMinutes(15)),
         REGISTER_PER_IP(5, Duration.ofHours(1)),
-        OTP_VERIFY_PER_IP(30, Duration.ofMinutes(1)),
-        OTP_SEND_PER_IP(10, Duration.ofMinutes(15)),
         FORGOT_PER_IP(5, Duration.ofMinutes(15)),
         FORGOT_PER_IDENTIFIER(3, Duration.ofMinutes(15));
 

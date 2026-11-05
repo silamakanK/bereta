@@ -51,6 +51,13 @@ public class CampaignEntity {
     @Column(name = "due_date")
     private LocalDate dueDate;
 
+    /** OUVERTE ou CLOTUREE : une campagne clôturée n'accepte plus d'inscription. */
+    @Column(nullable = false, length = 20)
+    private String status = "OUVERTE";
+
+    @Column(name = "closed_at")
+    private Instant closedAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -74,6 +81,10 @@ public class CampaignEntity {
     }
 
     public UUID getId() { return id; }
+    public String getStatus() { return status; }
+    public boolean isOpen() { return "OUVERTE".equals(status); }
+    public Instant getClosedAt() { return closedAt; }
+    public void close() { status = "CLOTUREE"; closedAt = Instant.now(); }
     public PrimaryFundEntity getPrimaryFund() { return primaryFund; }
     public AssociationEntity getAssociation() { return association; }
     public String getName() { return name; }

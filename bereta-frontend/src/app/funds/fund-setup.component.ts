@@ -1,9 +1,9 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, EventEmitter, Output, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
-import { Campaign, CampaignType, FundMembership, LocalFund, PrimaryFund } from './fund.model';
+import { Campaign, CampaignType, PrimaryFund } from './fund.model';
 import { FundService } from './fund.service';
 import { CashRemittanceSummary, Remittance, RemittanceStatus } from './remittance.model';
 
@@ -16,37 +16,26 @@ import { CashRemittanceSummary, Remittance, RemittanceStatus } from './remittanc
 })
 export class FundSetupComponent {
   @Output() readonly close = new EventEmitter<void>();
+  /** Responsable de l'association : peut créer la caisse principale si elle manque (anciennes associations). */
+  @Input() manager = false;
 
   private readonly fundService = inject(FundService);
 
   protected readonly primaryFunds = signal<PrimaryFund[]>([]);
-  protected readonly localFunds = signal<LocalFund[]>([]);
   protected readonly campaigns = signal<Campaign[]>([]);
-  protected readonly memberships = signal<FundMembership[]>([]);
   protected readonly remittances = signal<Remittance[]>([]);
   protected readonly remittanceSummary = signal<CashRemittanceSummary | null>(null);
   protected readonly canManageSelectedFund = signal(false);
-  /** Mot de passe provisoire à remettre au trésorier : affiché une seule fois. */
-  protected readonly issuedPassword = signal<{ name: string; password: string } | null>(null);
   protected readonly isLoading = signal(true);
   protected readonly saving = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly successMessage = signal<string | null>(null);
-  protected readonly primaryFormOpen = signal(true);
-  protected readonly localFormOpen = signal(false);
   protected readonly campaignFormOpen = signal(false);
   protected readonly remittanceFormOpen = signal(false);
   protected readonly cancellingRemittanceId = signal<string | null>(null);
 
-  protected primaryName = '';
   protected primaryObjective = '';
-  protected primaryDescription = '';
   protected selectedPrimaryFundId = '';
-  protected localFundName = '';
-  protected treasurerPhone = '';
-  protected treasurerFirstName = '';
-  protected treasurerLastName = '';
-  protected selectedTreasurerLocalFundId = '';
   protected campaignName = '';
   protected campaignType: CampaignType = 'ANNUAL';
   protected campaignYear = new Date().getFullYear();
@@ -76,7 +65,6 @@ export class FundSetupComponent {
         if (!funds.some((fund) => fund.id === this.selectedPrimaryFundId)) {
           this.selectedPrimaryFundId = funds[0]?.id ?? '';
         }
-        this.loadLocalFunds();
         this.loadMemberships();
         this.loadRemittances();
         this.isLoading.set(false);
@@ -88,103 +76,21 @@ export class FundSetupComponent {
     });
   }
 
-  protected onPrimaryFundChange(id: string): void {
-    this.selectedPrimaryFundId = id;
-    this.issuedPassword.set(null);
-    this.loadLocalFunds();
-    this.loadMemberships();
-    this.loadRemittances();
-  }
-
   protected createPrimaryFund(): void {
     if (this.saving()) return;
     this.startSave();
     this.fundService.createPrimaryFund({
-      name: this.primaryName.trim(),
+      name: 'Caisse principale',
       objective: this.primaryObjective.trim(),
-      description: this.primaryDescription.trim() || null,
+      description: null,
     }).subscribe({
       next: (fund) => {
-        this.primaryFunds.update((funds) => [...funds, fund].sort((a, b) => a.name.localeCompare(b.name, 'fr')));
+        this.primaryFunds.set([fund]);
         this.selectedPrimaryFundId = fund.id;
-        this.primaryName = '';
         this.primaryObjective = '';
-        this.primaryDescription = '';
-        this.primaryFormOpen.set(false);
-        this.loadLocalFunds();
         this.loadMemberships();
         this.loadRemittances();
         this.saved('Caisse principale créée.');
-      },
-      error: (error: HttpErrorResponse) => this.failed(error),
-    });
-  }
-
-  protected createLocalFund(): void {
-    if (this.saving() || !this.selectedPrimaryFundId || !this.canManageSelectedFund()) return;
-    this.startSave();
-    this.fundService.createLocalFund(this.selectedPrimaryFundId, this.localFundName.trim()).subscribe({
-      next: (fund) => {
-        this.localFunds.update((funds) => [...funds, fund].sort((a, b) => a.name.localeCompare(b.name, 'fr')));
-        this.localFundName = '';
-        this.localFormOpen.set(false);
-        this.saved('Caisse locale créée.');
-      },
-      error: (error: HttpErrorResponse) => this.failed(error),
-    });
-  }
-
-  protected designateTreasurer(): void {
-    if (this.saving() || !this.canManageSelectedFund() || !this.selectedTreasurerLocalFundId) return;
-    if (!this.treasurerPhone.trim()) {
-      this.errorMessage.set('Saisissez le numéro de téléphone portable du trésorier.');
-      return;
-    }
-    this.startSave();
-    this.issuedPassword.set(null);
-    this.fundService.designateTreasurer(this.selectedPrimaryFundId, {
-      localFundId: this.selectedTreasurerLocalFundId,
-      phone: this.treasurerPhone.trim(),
-      firstName: this.treasurerFirstName.trim() || undefined,
-      lastName: this.treasurerLastName.trim() || undefined,
-    }).subscribe({
-      next: (designation) => {
-        const membership = designation.membership;
-        this.treasurerPhone = '';
-        this.treasurerFirstName = '';
-        this.treasurerLastName = '';
-        this.memberships.update((items) => [...items.filter((item) => item.id !== membership.id), membership]);
-        if (designation.temporaryPassword) {
-          this.issuedPassword.set({ name: membership.displayName ?? membership.phone ?? "le trésorier", password: designation.temporaryPassword });
-        }
-        this.saved(designation.accountCreated
-          ? `Compte créé pour ${membership.displayName}. Remettez-lui le mot de passe provisoire ci-dessous.`
-          : `${membership.displayName} utilise son compte existant et a accès à ${membership.localFundName}.`);
-      },
-      error: (error: HttpErrorResponse) => this.failed(error),
-    });
-  }
-
-  protected issueTemporaryPassword(membership: FundMembership): void {
-    if (this.saving() || membership.role !== 'TRESORIER') return;
-    this.startSave();
-    this.issuedPassword.set(null);
-    this.fundService.issueTemporaryPassword(this.selectedPrimaryFundId, membership.id).subscribe({
-      next: (result) => {
-        this.issuedPassword.set({ name: membership.displayName ?? membership.phone ?? "le trésorier", password: result.temporaryPassword });
-        this.saved(`Nouveau mot de passe provisoire pour ${membership.displayName} : ses appareils sont déconnectés.`);
-      },
-      error: (error: HttpErrorResponse) => this.failed(error),
-    });
-  }
-
-  protected deactivateTreasurer(membership: FundMembership): void {
-    if (this.saving() || membership.role !== 'TRESORIER') return;
-    this.startSave();
-    this.fundService.deactivateFundAccess(this.selectedPrimaryFundId, membership.id).subscribe({
-      next: () => {
-        this.memberships.update((items) => items.filter((item) => item.id !== membership.id));
-        this.saved(`Accès de ${membership.displayName} désactivé.`);
       },
       error: (error: HttpErrorResponse) => this.failed(error),
     });
@@ -208,7 +114,21 @@ export class FundSetupComponent {
         this.campaignAmount = '';
         this.campaignDueDate = '';
         this.campaignFormOpen.set(false);
-        this.saved('Campagne créée.');
+        this.saved(`Campagne créée, ${campaign.enrolledCount} membre${campaign.enrolledCount > 1 ? 's' : ''} inscrit${campaign.enrolledCount > 1 ? 's' : ''}.`);
+      },
+      error: (error: HttpErrorResponse) => this.failed(error),
+    });
+  }
+
+  /** Clôture : plus aucune inscription ; les restes dus peuvent encore être encaissés. */
+  protected closeCampaign(campaign: Campaign): void {
+    if (this.saving() || !this.canManageSelectedFund() || campaign.status !== 'OUVERTE') return;
+    if (!confirm(`Clôturer « ${campaign.name} » ? Plus aucun membre ne pourra y être inscrit.`)) return;
+    this.startSave();
+    this.fundService.closeCampaign(campaign.id).subscribe({
+      next: (closed) => {
+        this.campaigns.update((items) => items.map((item) => item.id === closed.id ? closed : item));
+        this.saved(`Campagne « ${closed.name} » clôturée.`);
       },
       error: (error: HttpErrorResponse) => this.failed(error),
     });
@@ -279,35 +199,16 @@ export class FundSetupComponent {
     return type === 'ANNUAL' ? 'Annuelle' : 'Événement';
   }
 
-  private loadLocalFunds(): void {
-    if (!this.selectedPrimaryFundId) {
-      this.localFunds.set([]);
-      return;
-    }
-    this.fundService.listLocalFunds(this.selectedPrimaryFundId).subscribe({
-      next: (funds) => {
-        this.localFunds.set(funds);
-        if (!funds.some((fund) => fund.id === this.selectedTreasurerLocalFundId)) {
-          this.selectedTreasurerLocalFundId = funds[0]?.id ?? '';
-        }
-      },
-      error: (error: HttpErrorResponse) => this.errorMessage.set(this.describeError(error)),
-    });
-  }
-
   private loadMemberships(): void {
     if (!this.selectedPrimaryFundId) {
-      this.memberships.set([]);
       this.canManageSelectedFund.set(false);
       return;
     }
     this.fundService.listFundAccess(this.selectedPrimaryFundId).subscribe({
-      next: (memberships) => {
-        this.memberships.set(memberships);
+      next: () => {
         this.canManageSelectedFund.set(true);
       },
       error: (error: HttpErrorResponse) => {
-        this.memberships.set([]);
         this.canManageSelectedFund.set(false);
         if (error.status !== 403) this.errorMessage.set(this.describeError(error));
       },

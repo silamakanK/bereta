@@ -3,7 +3,8 @@
     <h2 id="board-title">Mes associations</h2>
     <div class="board-actions">
       <button class="board-button" type="button" (click)="createAssociation.emit()">＋ Association</button>
-      <button class="board-button primary" type="button" [disabled]="cards().length === 0" (click)="openFundDialog()">＋ Caisse locale</button>
+      <button class="board-button primary" type="button" [disabled]="!activeCard()" (click)="openNewFund()"
+        [attr.title]="activeCard() ? 'Nouvelle caisse locale dans ' + activeCard()!.association.name : null">＋ Caisse locale</button>
     </div>
   </header>
 
@@ -24,7 +25,6 @@
           <div class="card-actions">
             <button type="button" class="link" [attr.aria-expanded]="expandedId() === card.association.id" (click)="toggleDetail(card)">
               {{ expandedId() === card.association.id ? 'Masquer le détail' : 'Voir le détail' }}</button>
-            <button type="button" class="link" (click)="openFundDialog(card.association.id)">＋ Caisse locale</button>
           </div>
 
           @if (expandedId() === card.association.id) {
@@ -42,6 +42,7 @@
                     @for (treasurer of fund.treasurers; track treasurer.membershipId) {
                       <span class="treasurer">{{ treasurer.displayName || treasurer.phone || treasurer.email }}</span>
                       <button type="button" class="small-button" (click)="openDesignation(card, fund, treasurer)">Changer</button>
+                      <button type="button" class="small-button" (click)="resetPassword(card, fund, treasurer)">Mot de passe</button>
                       <button type="button" class="small-button danger" (click)="removeTreasurer(card, fund, treasurer)">Retirer</button>
                     }
                   }
@@ -59,70 +60,72 @@
   }
 </section>
 
-@if (fundDialogOpen()) {
-  <div class="dialog-backdrop" (click)="fundDialogOpen.set(false)"></div>
-  <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="fund-dialog-title">
-    <h2 id="fund-dialog-title">Nouvelle caisse locale</h2>
-    @if (fundError()) { <p class="board-message ko" role="alert">{{ fundError() }}</p> }
-    <form class="dialog-form" novalidate (ngSubmit)="saveFund()">
-      <label>Association
-        <select name="fundAssociation" [(ngModel)]="fundAssociationId" required>
-          <option value="" disabled>Choisir…</option>
-          @for (card of cards(); track card.association.id) { <option [value]="card.association.id">{{ card.association.name }}</option> }
-        </select>
-      </label>
-      <label>Nom de la caisse<input name="fundName" [(ngModel)]="fundName" maxlength="100" required placeholder="Foyer Saint-Denis" /></label>
-      <label>Lieu <span class="optional">(facultatif)</span><input name="fundLocation" [(ngModel)]="fundLocation" maxlength="200" placeholder="Adresse ou lieu de réunion" /></label>
-      <label>Objectif <span class="optional">(facultatif)</span><input name="fundDescription" [(ngModel)]="fundDescription" maxlength="500" /></label>
-      <div class="dialog-buttons">
-        <button type="button" class="board-button" (click)="fundDialogOpen.set(false)">Annuler</button>
-        <button type="submit" class="board-button primary" [disabled]="savingFund()">{{ savingFund() ? 'Création…' : 'Créer la caisse' }}</button>
-      </div>
-    </form>
-  </section>
-}
+@if (wizard(); as w) {
+  <div class="dialog-backdrop" (click)="closeWizard()"></div>
+  <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="wizard-title">
+    @if (!w.replace && !issued()) {
+      <ol class="steps" aria-label="Étapes">
+        <li [class.current]="w.step === 'fund'" [class.done]="w.step === 'treasurer'">1. Caisse</li>
+        <li [class.current]="w.step === 'treasurer'">2. Trésorier</li>
+      </ol>
+    }
 
-@if (designation(); as target) {
-  <div class="dialog-backdrop" (click)="closeDesignation()"></div>
-  <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="designation-title">
-    <h2 id="designation-title">{{ target.replace ? 'Changer le responsable' : 'Désigner le responsable' }}</h2>
-    <p class="dialog-sub">{{ target.fund.name }}</p>
-
-    @if (issued(); as account) {
-      <p class="board-message ok">Compte créé pour {{ account.name }}.</p>
-      <div class="password-box">
-        <span>Identifiant : <strong>{{ account.identifier }}</strong></span>
-        <span>Mot de passe provisoire : <strong class="mono">{{ account.password }}</strong></span>
-        <button type="button" class="small-button" (click)="copyPassword()">{{ copied() ? 'Copié ✓' : 'Copier' }}</button>
-      </div>
-      <p class="dialog-note">Transmettez-le vous-même : il ne sera plus affiché. Il devra le changer à sa première connexion.</p>
-      <div class="dialog-buttons"><button type="button" class="board-button primary" (click)="closeDesignation()">Terminé</button></div>
-    } @else {
-      @if (designationError()) { <p class="board-message ko" role="alert">{{ designationError() }}</p> }
-      <form class="dialog-form" novalidate (ngSubmit)="lookup() ? designate() : check()">
-        <label>Téléphone ou e-mail
-          <input name="identifier" [(ngModel)]="identifier" (ngModelChange)="lookup.set(null)" maxlength="320" required autofocus placeholder="06 12 34 56 78" />
-        </label>
-        @if (lookup(); as found) {
-          @if (found.exists) {
-            <p class="board-message ok">Compte existant : <strong>{{ found.displayName || 'Sans nom' }}</strong>{{ found.maskedPhone ? ' (' + found.maskedPhone + ')' : '' }}.
-              Il gardera ses identifiants.</p>
-          } @else {
-            <p class="dialog-note">Aucun compte : un compte sera créé avec un mot de passe provisoire.</p>
-            <div class="two-cols">
-              <label>Prénom<input name="firstName" [(ngModel)]="firstName" maxlength="100" required /></label>
-              <label>Nom<input name="lastName" [(ngModel)]="lastName" maxlength="100" required /></label>
-            </div>
-            <label>{{ identifier.includes('@') ? 'Téléphone' : 'E-mail' }} <span class="optional">(facultatif)</span>
-              <input name="otherContact" [(ngModel)]="otherContact" maxlength="320" /></label>
-          }
-        }
+    @if (w.step === 'fund') {
+      <h2 id="wizard-title">Nouvelle caisse locale</h2>
+      <p class="dialog-sub">Dans « {{ w.card.association.name }} »</p>
+      @if (wizardError()) { <p class="board-message ko" role="alert">{{ wizardError() }}</p> }
+      <form class="dialog-form" novalidate (ngSubmit)="saveFund()">
+        <label>Nom de la caisse<input name="fundName" [(ngModel)]="fundName" maxlength="100" required autofocus placeholder="Foyer Saint-Denis" /></label>
+        <label>Lieu <span class="optional">(facultatif)</span><input name="fundLocation" [(ngModel)]="fundLocation" maxlength="200" placeholder="Adresse ou lieu de réunion" /></label>
         <div class="dialog-buttons">
-          <button type="button" class="board-button" (click)="closeDesignation()">Annuler</button>
-          <button type="submit" class="board-button primary" [disabled]="designating()">
-            {{ designating() ? '…' : !lookup() ? 'Vérifier' : lookup()!.exists ? 'Rattacher ce compte' : 'Créer le compte' }}</button>
+          <button type="button" class="board-button" (click)="closeWizard()">Annuler</button>
+          <button type="submit" class="board-button primary" [disabled]="busy()">{{ busy() ? 'Création…' : 'Continuer' }}</button>
         </div>
       </form>
+    } @else {
+      <h2 id="wizard-title">{{ w.replace ? 'Changer le trésorier' : 'Trésorier de la caisse' }}</h2>
+      <p class="dialog-sub">{{ w.fund?.name }}</p>
+
+      @if (issued(); as account) {
+        <p class="board-message ok">Compte prêt pour {{ account.name }}.</p>
+        <div class="password-box">
+          @if (account.identifier) { <span>Identifiant : <strong>{{ account.identifier }}</strong></span> }
+          <span>Mot de passe provisoire : <strong class="mono">{{ account.password }}</strong></span>
+          <button type="button" class="small-button" (click)="copyPassword()">{{ copied() ? 'Copié ✓' : 'Copier' }}</button>
+        </div>
+        <p class="dialog-note">Transmettez-le vous-même : il ne sera plus affiché. Il devra le changer à sa première connexion.</p>
+        <div class="dialog-buttons"><button type="button" class="board-button primary" (click)="closeWizard()">Terminé</button></div>
+      } @else {
+        @if (wizardError()) { <p class="board-message ko" role="alert">{{ wizardError() }}</p> }
+        <form class="dialog-form" novalidate (ngSubmit)="lookup() ? designate() : check()">
+          <label>Téléphone ou e-mail
+            <input name="identifier" [(ngModel)]="identifier" (ngModelChange)="lookup.set(null)" maxlength="320" required autofocus inputmode="tel" placeholder="06 12 34 56 78" />
+          </label>
+          @if (lookup(); as found) {
+            @if (found.exists) {
+              <p class="board-message ok">Compte existant : <strong>{{ found.displayName || 'Sans nom' }}</strong>{{ found.maskedPhone ? ' (' + found.maskedPhone + ')' : '' }}.
+                Il gardera ses identifiants.</p>
+            } @else {
+              <p class="dialog-note">Aucun compte : il sera créé avec un mot de passe provisoire.</p>
+              <div class="two-cols">
+                <label>Prénom<input name="firstName" [(ngModel)]="firstName" maxlength="100" required /></label>
+                <label>Nom<input name="lastName" [(ngModel)]="lastName" maxlength="100" required /></label>
+              </div>
+              <label>{{ identifier.includes('@') ? 'Téléphone' : 'E-mail' }} <span class="optional">(facultatif)</span>
+                <input name="otherContact" [(ngModel)]="otherContact" maxlength="320" /></label>
+            }
+          }
+          <div class="dialog-buttons">
+            @if (w.replace) {
+              <button type="button" class="board-button" (click)="closeWizard()">Annuler</button>
+            } @else {
+              <button type="button" class="board-button" (click)="skipTreasurer()">Plus tard</button>
+            }
+            <button type="submit" class="board-button primary" [disabled]="busy()">
+              {{ busy() ? '…' : !lookup() ? 'Vérifier' : lookup()!.exists ? 'Rattacher ce compte' : 'Créer le compte' }}</button>
+          </div>
+        </form>
+      }
     }
   </section>
 }

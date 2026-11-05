@@ -31,12 +31,15 @@ public class AdminService {
     private final AdminAuditRepository audit;
     private final AdminAuditService auditService;
     private final PasswordEncoder passwordEncoder;
+    private final com.bereta.auth.PasswordService passwordService;
+    private final com.bereta.associations.AssociationAccessService associationAccess;
 
     public AdminService(UserAccountRepository users, AssociationRepository associations,
                         AssociationMembershipRepository associationMemberships,
                         PrimaryFundRepository primaryFunds, LocalFundRepository localFunds,
                         MemberRepository members, AdminAuditRepository audit, AdminAuditService auditService,
-                        PasswordEncoder passwordEncoder) {
+                        PasswordEncoder passwordEncoder, com.bereta.auth.PasswordService passwordService,
+                        com.bereta.associations.AssociationAccessService associationAccess) {
         this.users = users;
         this.associations = associations;
         this.associationMemberships = associationMemberships;
@@ -46,6 +49,8 @@ public class AdminService {
         this.audit = audit;
         this.auditService = auditService;
         this.passwordEncoder = passwordEncoder;
+        this.passwordService = passwordService;
+        this.associationAccess = associationAccess;
     }
 
     public AdminOverviewResponse overview() {
@@ -108,6 +113,17 @@ public class AdminService {
         return AdminUserResponse.from(target);
     }
 
+    /** Mot de passe provisoire généré pour l'utilisateur (à changer à sa prochaine connexion). */
+    @Transactional
+    public String resetPassword(UUID actorId, UUID id) {
+        UserAccountEntity target = requireUser(id);
+        UserAccountEntity actor = requireUser(actorId);
+        String temporaryPassword = passwordService.resetByAdministrator(actorId, target.getId());
+        auditService.record(actor, "USER_PASSWORD_RESET", "USER", id, null,
+                "Mot de passe provisoire généré, sessions révoquées");
+        return temporaryPassword;
+    }
+
     @Transactional
     public AdminUserResponse setEnabled(UUID actorId, UUID id, boolean enabled) {
         UserAccountEntity target = requireUser(id);
@@ -148,6 +164,7 @@ public class AdminService {
         AssociationEntity association = associations.save(new AssociationEntity(request.name().trim(), clean(request.description()),
                 clean(request.contactEmail()), clean(request.contactPhone()), clean(request.address())));
         associationMemberships.save(new AssociationMembershipEntity(association, responsible));
+        associationAccess.createPrimaryFund(association, null);
         auditService.record(actor, "ASSOCIATION_CREATED", "ASSOCIATION", association.getId(), association,
                 "Association créée avec un responsable désigné");
         return associationResponse(association);

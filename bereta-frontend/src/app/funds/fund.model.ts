@@ -85,8 +85,14 @@ export interface Campaign {
   campaignYear: number | null;
   expectedAmount: number | null;
   dueDate: string | null;
+  status: CampaignStatus;
+  closedAt: string | null;
+  /** Membres inscrits (à la création : inscrits automatiquement). */
+  enrolledCount: number;
   createdAt: string;
 }
+
+export type CampaignStatus = 'OUVERTE' | 'CLOTUREE';
 
 export interface CreatePrimaryFundRequest {
   name: string;

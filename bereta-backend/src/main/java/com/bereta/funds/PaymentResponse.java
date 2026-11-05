@@ -12,6 +12,7 @@ public record PaymentResponse(
         String memberName,
         UUID campaignId,
         String campaignName,
+        /** Caisse qui a encaissé (null = caisse principale), figée au moment du paiement. */
         UUID localFundId,
         String localFundName,
         BigDecimal amount,
@@ -25,8 +26,8 @@ public record PaymentResponse(
         MemberCampaignEntity enrollment = payment.getMemberCampaign();
         return new PaymentResponse(payment.getId(), enrollment.getId(), enrollment.getMember().getId(),
                 enrollment.getMember().getFirstName() + " " + enrollment.getMember().getLastName(),
-                enrollment.getCampaign().getId(), enrollment.getCampaign().getName(), payment.getLocalFund().getId(),
-                payment.getLocalFund().getName(), payment.getAmount(), payment.getPaidOn(),
+                enrollment.getCampaign().getId(), enrollment.getCampaign().getName(),
+                PaymentService.fundId(payment.getLocalFund()), PaymentService.fundLabel(payment.getLocalFund()), payment.getAmount(), payment.getPaidOn(),
                 payment.getPaymentMethod(), payment.getNote(), payment.getRecordedBy().getDisplayName(),
                 payment.getCreatedAt());
     }

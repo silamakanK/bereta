@@ -62,7 +62,6 @@ h1 span { color: #d2a14f; font-size: 19px; vertical-align: 4px; }
 .campaign-info { min-width: 132px; }
 .change-campaign { display: flex; width: 162px; min-height: 42px; flex: 0 0 162px; align-items: center; justify-content: center; gap: 7px; margin-left: auto; padding: 0 12px; border: 1px solid #2e6248; border-radius: 8px; background: #2e6248; color: #fff; cursor: pointer; font: inherit; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .change-campaign:hover { background: #244e39; }
-.change-campaign::after { content: 'Gérer les caisses'; }
 .change-campaign-icon { font-size: 16px; }
 
 .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; margin-top: 18px; }

@@ -87,14 +87,15 @@ class FundAccessControllerTest {
         String campaignId = create("/api/campagnes", """
                 {"primaryFundId":"%s","name":"Cotisation 2026","campaignType":"ANNUAL","campaignYear":2026,"expectedAmount":30}
                 """.formatted(primaryId), manager);
+        // Campagnes créées avant le membre : il n'y est pas inscrit automatiquement.
+        String otherCampaignId = create("/api/campagnes", """
+                {"primaryFundId":"%s","name":"Événement","campaignType":"EVENT"}
+                """.formatted(primaryId), manager);
         String memberId = create("/api/membres", """
                 {"firstName":"Awa","lastName":"Traoré","localFundId":"%s"}
                 """.formatted(assignedLocalId), manager);
         create("/api/membres/%s/inscriptions".formatted(memberId),
                 "{\"campaignId\":\"%s\",\"localFundId\":\"%s\"}".formatted(campaignId, assignedLocalId), manager);
-        String otherCampaignId = create("/api/campagnes", """
-                {"primaryFundId":"%s","name":"Événement","campaignType":"EVENT"}
-                """.formatted(primaryId), manager);
         create("/api/membres/%s/inscriptions".formatted(memberId),
                 "{\"campaignId\":\"%s\",\"localFundId\":\"%s\"}".formatted(otherCampaignId, otherLocalId), manager);
 

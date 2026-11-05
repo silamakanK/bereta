@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { CreateMemberCampaignRequest, CreateMemberRequest, Member, MemberCampaign } from './member.model';
+import { CreateMemberCampaignRequest, CreateMemberRequest, Member, MemberCampaign, MemberTracking } from './member.model';
 
 @Injectable({ providedIn: 'root' })
 export class MemberService {
@@ -10,6 +10,15 @@ export class MemberService {
 
   list(): Observable<Member[]> {
     return this.http.get<Member[]>(this.endpoint);
+  }
+
+  /** Tableau de suivi : membres, caisse, inscriptions, payé / dû, statut. */
+  tracking(): Observable<MemberTracking[]> {
+    return this.http.get<MemberTracking[]>(`${this.endpoint}/suivi`);
+  }
+
+  setActive(id: string, active: boolean): Observable<Member> {
+    return this.http.post<Member>(`${this.endpoint}/${id}/${active ? 'reactiver' : 'archiver'}`, {});
   }
 
   create(request: CreateMemberRequest): Observable<Member> {

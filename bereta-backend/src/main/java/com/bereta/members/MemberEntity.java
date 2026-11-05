@@ -52,6 +52,10 @@ public class MemberEntity {
     @JoinColumn(name = "created_in_local_fund_id")
     private LocalFundEntity createdInLocalFund;
 
+    /** Membre archivé : conservé, mais plus inscrit automatiquement aux nouvelles campagnes. */
+    @Column(nullable = false)
+    private boolean active = true;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -106,6 +110,10 @@ public class MemberEntity {
     public UserAccountEntity getCreatedBy() { return createdBy; }
     public PrimaryFundEntity getCreatedInPrimaryFund() { return createdInPrimaryFund; }
     public LocalFundEntity getCreatedInLocalFund() { return createdInLocalFund; }
+
+    public boolean isActive() { return active; }
+    public void archive() { active = false; }
+    public void reactivate() { active = true; }
 
     public void updateDetails(String firstName, String lastName, String phone) {
         this.firstName = firstName;

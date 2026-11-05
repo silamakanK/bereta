@@ -1,22 +1,13 @@
 package com.bereta.auth;
 
 import com.bereta.auth.AuthRequests.ChangePassword;
-import com.bereta.auth.AuthRequests.EmailCode;
 import com.bereta.auth.AuthRequests.ForgotPassword;
 import com.bereta.auth.AuthRequests.Login;
-import com.bereta.auth.AuthRequests.PhoneEnrollment;
 import com.bereta.auth.AuthRequests.Register;
-import com.bereta.auth.AuthRequests.ResendCode;
-import com.bereta.auth.AuthRequests.ResetPasswordWithCode;
 import com.bereta.auth.AuthRequests.ResetPasswordWithLink;
-import com.bereta.auth.AuthRequests.VerifyCode;
-import com.bereta.auth.AuthResponses.CodeSentResponse;
-import com.bereta.auth.AuthResponses.ForgotPasswordResponse;
-import com.bereta.auth.AuthResponses.LoginStepResponse;
+import com.bereta.auth.AuthRequests.UpdateProfile;
 import com.bereta.auth.AuthResponses.MessageResponse;
-import com.bereta.auth.AuthResponses.RegistrationResponse;
 import com.bereta.auth.AuthResponses.TokenResponse;
-import com.bereta.auth.otp.OtpService;
 import com.bereta.auth.token.RefreshTokenService;
 import com.bereta.auth.token.SessionTokenIssuer;
 import com.bereta.auth.token.SessionTokenIssuer.IssuedSession;
@@ -28,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -44,55 +36,34 @@ public class AuthController {
     private final RegistrationService registration;
     private final LoginService login;
     private final PasswordService passwords;
-    private final EmailVerificationService emailVerification;
-    private final OtpService otp;
+    private final ProfileService profiles;
     private final SessionTokenIssuer sessions;
     private final RefreshTokenService refreshTokens;
     private final UserAccountRepository users;
     private final AuthAuditService audit;
 
     public AuthController(RegistrationService registration, LoginService login, PasswordService passwords,
-                          EmailVerificationService emailVerification, OtpService otp, SessionTokenIssuer sessions,
-                          RefreshTokenService refreshTokens, UserAccountRepository users, AuthAuditService audit) {
+                          ProfileService profiles, SessionTokenIssuer sessions, RefreshTokenService refreshTokens,
+                          UserAccountRepository users, AuthAuditService audit) {
         this.registration = registration;
         this.login = login;
         this.passwords = passwords;
-        this.emailVerification = emailVerification;
-        this.otp = otp;
+        this.profiles = profiles;
         this.sessions = sessions;
         this.refreshTokens = refreshTokens;
         this.users = users;
         this.audit = audit;
     }
 
+    /** Compte actif immédiatement : la session est ouverte dans la foulée. */
     @PostMapping("/register")
-    public ResponseEntity<RegistrationResponse> register(@Valid @RequestBody Register request) {
-        return noStore(HttpStatus.CREATED).body(registration.register(request));
-    }
-
-    @PostMapping("/register/verify")
-    public ResponseEntity<TokenResponse> verifyRegistration(@Valid @RequestBody VerifyCode request) {
-        return withSession(sessions.issue(registration.verifyPhone(request.challengeId(), request.code())));
+    public ResponseEntity<TokenResponse> register(@Valid @RequestBody Register request) {
+        return withSession(HttpStatus.CREATED, sessions.issue(registration.register(request)));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginStepResponse> login(@Valid @RequestBody Login request) {
-        return noStore(HttpStatus.OK).body(login.start(request.identifier(), request.password()));
-    }
-
-    @PostMapping("/login/phone")
-    public ResponseEntity<LoginStepResponse> enrollPhone(@Valid @RequestBody PhoneEnrollment request) {
-        return noStore(HttpStatus.OK).body(login.enrollPhone(request.enrollmentToken(), request.phone()));
-    }
-
-    @PostMapping("/login/verify")
-    public ResponseEntity<TokenResponse> verifyLogin(@Valid @RequestBody VerifyCode request) {
-        return withSession(sessions.issue(login.complete(request.challengeId(), request.code())));
-    }
-
-    @PostMapping("/otp/resend")
-    public ResponseEntity<CodeSentResponse> resend(@Valid @RequestBody ResendCode request) {
-        return noStore(HttpStatus.OK).body(CodeSentResponse.from(otp.resend(request.challengeId())));
+    public ResponseEntity<TokenResponse> login(@Valid @RequestBody Login request) {
+        return withSession(HttpStatus.OK, sessions.issue(login.login(request.identifier(), request.password())));
     }
 
     @PostMapping("/refresh")
@@ -108,7 +79,7 @@ public class AuthController {
                     .header(HttpHeaders.SET_COOKIE, refreshTokens.clearedCookie().toString())
                     .body(null);
         }
-        return withSession(sessions.withRefreshToken(rotation.user(), rotation.refreshToken()));
+        return withSession(HttpStatus.OK, sessions.withRefreshToken(rotation.user(), rotation.refreshToken()));
     }
 
     @PostMapping("/logout")
@@ -139,45 +110,32 @@ public class AuthController {
         return AuthUserResponse.from(user);
     }
 
+    /** « Complète ton profil » : prénom, nom, e-mail. */
+    @PatchMapping("/profile")
+    public AuthUserResponse updateProfile(@AuthenticationPrincipal BeretaUserDetails user,
+                                          @Valid @RequestBody UpdateProfile request) {
+        return AuthUserResponse.from(profiles.update(user.getId(), request));
+    }
+
+    /** Désactivé tant que BERETA_FORGOT_PASSWORD_ENABLED=false (503 FORGOT_PASSWORD_DISABLED). */
     @PostMapping("/password/forgot")
-    public ResponseEntity<ForgotPasswordResponse> forgotPassword(@Valid @RequestBody ForgotPassword request) {
-        return noStore(HttpStatus.OK).body(passwords.forgot(request.identifier()));
+    public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody ForgotPassword request) {
+        return noStore(HttpStatus.OK).body(new MessageResponse(passwords.forgot(request.identifier())));
     }
 
     @PostMapping("/password/reset")
     public ResponseEntity<MessageResponse> resetWithLink(@Valid @RequestBody ResetPasswordWithLink request) {
         passwords.resetWithLink(request.token(), request.password());
-        return noStore(HttpStatus.OK).body(passwordResetDone());
-    }
-
-    @PostMapping("/password/reset/code")
-    public ResponseEntity<MessageResponse> resetWithCode(@Valid @RequestBody ResetPasswordWithCode request) {
-        passwords.resetWithCode(request.challengeId(), request.code(), request.password());
-        return noStore(HttpStatus.OK).body(passwordResetDone());
+        return noStore(HttpStatus.OK).body(new MessageResponse(
+                "Votre mot de passe a été modifié et vos appareils ont été déconnectés. Vous pouvez vous connecter."));
     }
 
     /** Changement depuis le profil ou remplacement du mot de passe provisoire : nouvelle session. */
     @PostMapping("/password/change")
     public ResponseEntity<TokenResponse> changePassword(@AuthenticationPrincipal BeretaUserDetails user,
                                                         @Valid @RequestBody ChangePassword request) {
-        return withSession(sessions.issue(
+        return withSession(HttpStatus.OK, sessions.issue(
                 passwords.change(user.getId(), request.currentPassword(), request.newPassword())));
-    }
-
-    @PostMapping("/email/send-code")
-    public ResponseEntity<CodeSentResponse> sendEmailCode(@AuthenticationPrincipal BeretaUserDetails user) {
-        return noStore(HttpStatus.OK).body(CodeSentResponse.from(emailVerification.send(user.getId())));
-    }
-
-    @PostMapping("/email/verify")
-    public AuthUserResponse verifyEmail(@AuthenticationPrincipal BeretaUserDetails user,
-                                        @Valid @RequestBody EmailCode request) {
-        return AuthUserResponse.from(emailVerification.verify(user.getId(), request.code()));
-    }
-
-    private static MessageResponse passwordResetDone() {
-        return new MessageResponse("Votre mot de passe a été modifié et vos appareils ont été déconnectés. "
-                + "Vous pouvez vous connecter.");
     }
 
     private static void requireMarker(String marker) {
@@ -190,8 +148,7 @@ public class AuthController {
         return ResponseEntity.status(status).cacheControl(CacheControl.noStore());
     }
 
-    private static ResponseEntity<TokenResponse> withSession(IssuedSession session) {
-        return noStore(HttpStatus.OK).header(HttpHeaders.SET_COOKIE, session.refreshCookie().toString())
-                .body(session.body());
+    private static ResponseEntity<TokenResponse> withSession(HttpStatus status, IssuedSession session) {
+        return noStore(status).header(HttpHeaders.SET_COOKIE, session.refreshCookie().toString()).body(session.body());
     }
 }

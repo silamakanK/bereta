@@ -1,0 +1,130 @@
+<div class="mt-head">
+  <div>
+    <h2>Membres et cotisations</h2>
+    <p>{{ memberCount() }} membre{{ memberCount() > 1 ? 's' : '' }}{{ chips().length ? ' (filtrés)' : '' }}</p>
+  </div>
+  <div class="mt-head-actions">
+    <button type="button" class="mt-button mt-filters-toggle" (click)="filtersOpen.set(true)" [attr.aria-expanded]="filtersOpen()">
+      Filtres{{ chips().length ? ' (' + chips().length + ')' : '' }}</button>
+    <button type="button" class="mt-button primary" (click)="add.emit()">＋ Ajouter un membre</button>
+  </div>
+</div>
+
+@if (filtersOpen()) { <div class="mt-sheet-backdrop" (click)="filtersOpen.set(false)"></div> }
+<div class="mt-filters" [class.open]="filtersOpen()" role="search" aria-label="Filtres des membres">
+  <div class="mt-sheet-title"><strong>Filtres</strong><button type="button" class="mt-icon" aria-label="Fermer les filtres" (click)="filtersOpen.set(false)">×</button></div>
+  <label class="mt-search">Recherche
+    <input type="search" placeholder="Nom ou téléphone…" [ngModel]="search()" (ngModelChange)="set(search, $event)" />
+  </label>
+  <label>Caisse
+    <select [ngModel]="fund()" (ngModelChange)="set(fund, $event)">
+      <option value="">Toutes</option>
+      @if (responsible()) { <option [value]="primaryChoice">Caisse principale</option> }
+      @for (item of localFunds(); track item.id) { <option [value]="item.id">{{ item.name }}</option> }
+    </select>
+  </label>
+  <label>Campagne
+    <select [ngModel]="campaign()" (ngModelChange)="setCampaign($event)">
+      <option value="">Toutes</option>
+      @for (item of campaigns(); track item.id) { <option [value]="item.id">{{ campaignLabel(item) }}</option> }
+    </select>
+  </label>
+  <label>Statut
+    <select [ngModel]="status()" (ngModelChange)="set(status, $event)">
+      <option value="">Tous</option>
+      <option value="PAYE">Payé</option>
+      <option value="PARTIELLEMENT_PAYE">Partiellement payé</option>
+      <option value="A_PAYER">À payer</option>
+      <option value="EN_RETARD">En retard</option>
+    </select>
+  </label>
+  <label>Inscription
+    <select [ngModel]="enrolled()" (ngModelChange)="set(enrolled, $event)">
+      <option value="">Tous</option>
+      <option value="oui">Inscrits</option>
+      <option value="non">Non inscrits</option>
+    </select>
+  </label>
+  <label>Tri
+    <select [ngModel]="sort()" (ngModelChange)="set(sort, $event)">
+      <option value="nom">Nom</option>
+      <option value="reste">Reste dû</option>
+      <option value="statut">Statut</option>
+    </select>
+  </label>
+  <label class="mt-check"><input type="checkbox" [ngModel]="showArchived()" (ngModelChange)="set(showArchived, $event)" /> Afficher les archivés</label>
+  <button type="button" class="mt-button primary mt-sheet-done" (click)="filtersOpen.set(false)">Voir {{ memberCount() }} membre{{ memberCount() > 1 ? 's' : '' }}</button>
+</div>
+
+@if (chips().length) {
+  <div class="mt-chips" aria-label="Filtres actifs">
+    @for (chip of chips(); track chip.key) {
+      <button type="button" class="mt-chip" (click)="chip.clear()" [attr.aria-label]="'Retirer le filtre ' + chip.label">{{ chip.label }} <span aria-hidden="true">×</span></button>
+    }
+    <button type="button" class="mt-reset" (click)="resetFilters()">Réinitialiser</button>
+  </div>
+}
+
+@if (message()) { <p class="mt-message ok" role="status">{{ message() }}<button type="button" aria-label="Fermer" (click)="message.set(null)">×</button></p> }
+@if (error()) { <p class="mt-message ko" role="alert">{{ error() }}</p> }
+
+@if (loading()) {
+  <p class="mt-empty">Chargement des membres…</p>
+} @else if (members().length === 0) {
+  <div class="mt-empty"><strong>La liste est encore vide</strong><p>Ajoutez le premier membre de votre caisse.</p></div>
+} @else if (filtered().length === 0) {
+  <div class="mt-empty"><strong>Aucun membre ne correspond à ces filtres</strong><button type="button" class="mt-reset" (click)="resetFilters()">Réinitialiser les filtres</button></div>
+} @else {
+  <table class="mt-table">
+    <thead>
+      <tr><th scope="col">Membre</th><th scope="col">Caisse</th><th scope="col">Campagne</th><th scope="col" class="num">Payé / Dû</th><th scope="col">Statut</th><th scope="col" class="actions"><span class="sr-only">Actions</span></th></tr>
+    </thead>
+    <tbody>
+      @for (row of pageRows(); track row.key) {
+        <tr [class.archived]="!row.member.active">
+          <td class="member">
+            <span class="avatar" aria-hidden="true">{{ initials(row.member) }}</span>
+            <span class="who"><strong>{{ row.member.firstName }} {{ row.member.lastName }}</strong>
+              <small>{{ row.member.phone || 'Sans téléphone' }}{{ row.member.active ? '' : ' · archivé' }}</small></span>
+          </td>
+          <td data-label="Caisse"><span class="fund" [class.primary]="!row.member.localFundId">{{ row.member.fundName ?? '—' }}</span></td>
+          <td data-label="Campagne">{{ row.enrollment ? row.enrollment.campaignName : (selectedCampaign()?.name ?? '—') }}</td>
+          <td data-label="Payé / Dû" class="num">
+            <span>@if (row.enrollment) { <strong>{{ money(row.enrollment.paidAmount) }}</strong> / {{ money(row.enrollment.expectedAmount) }} } @else { — }</span>
+          </td>
+          <td data-label="Statut">
+            <span [class]="'status status-' + row.status">
+              <span class="status-icon" aria-hidden="true">{{ statusInfo(row.status).icon }}</span>{{ row.status === 'NON_INSCRIT' ? notEnrolledLabel() : statusInfo(row.status).label }}
+            </span>
+          </td>
+          <td class="actions">
+            @if (row.enrollment && (row.enrollment.remainingAmount ?? 0) > 0) {
+              <button type="button" class="mt-button primary small" (click)="pay.emit(row.enrollment.id)">Encaisser</button>
+            } @else if (!row.enrollment && row.member.active) {
+              <button type="button" class="mt-button small" [disabled]="busyKey() === row.key" (click)="enroll(row)">{{ busyKey() === row.key ? '…' : 'Inscrire' }}</button>
+            }
+            <span class="menu-wrap">
+              <button type="button" class="mt-icon" [attr.aria-expanded]="menuFor() === row.key" aria-haspopup="menu"
+                [attr.aria-label]="'Plus d’actions pour ' + row.member.firstName + ' ' + row.member.lastName" (click)="toggleMenu(row.key, $event)">⋯</button>
+              @if (menuFor() === row.key) {
+                <span class="menu" role="menu" (click)="$event.stopPropagation()">
+                  <button type="button" role="menuitem" (click)="menuFor.set(null); edit.emit(row.member)">Modifier</button>
+                  <button type="button" role="menuitem" (click)="menuFor.set(null); history.emit(row.member)">Historique et inscriptions</button>
+                  <button type="button" role="menuitem" (click)="toggleArchive(row)">{{ row.member.active ? 'Archiver' : 'Réactiver' }}</button>
+                </span>
+              }
+            </span>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  @if (pageCount() > 1) {
+    <nav class="mt-pages" aria-label="Pagination">
+      <button type="button" class="mt-button small" [disabled]="page() <= 1" (click)="page.set(page() - 1)">← Précédent</button>
+      <span>Page {{ page() }} / {{ pageCount() }}</span>
+      <button type="button" class="mt-button small" [disabled]="page() >= pageCount()" (click)="page.set(page() + 1)">Suivant →</button>
+    </nav>
+  }
+}

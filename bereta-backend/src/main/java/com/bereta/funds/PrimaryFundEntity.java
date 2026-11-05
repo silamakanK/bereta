@@ -36,6 +36,10 @@ public class PrimaryFundEntity {
     @Column(length = 1000)
     private String description;
 
+    /** ACTIVE, ou ARCHIVED pour une caisse principale en double fusionnée par V22. */
+    @Column(nullable = false, length = 20)
+    private String status = "ACTIVE";
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -60,4 +64,5 @@ public class PrimaryFundEntity {
     public String getObjective() { return objective; }
     public String getDescription() { return description; }
     public Instant getCreatedAt() { return createdAt; }
+    public boolean isActive() { return "ACTIVE".equals(status); }
 }

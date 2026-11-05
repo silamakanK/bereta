@@ -44,4 +44,9 @@ public class CampaignController {
         URI location = URI.create("/api/campagnes/" + created.id());
         return ResponseEntity.created(location).body(created);
     }
+
+    @PostMapping("/{id}/cloture")
+    public CampaignResponse close(@AuthenticationPrincipal BeretaUserDetails user, @PathVariable UUID id) {
+        return campaignService.close(user.getId(), id);
+    }
 }

@@ -2,7 +2,6 @@ package com.bereta.funds;
 
 import com.bereta.associations.AssociationMembershipRepository;
 import com.bereta.associations.AssociationRequestContext;
-import com.bereta.auth.AccountStatus;
 import com.bereta.auth.AuthAuditService;
 import com.bereta.auth.AuthEvent;
 import com.bereta.auth.PasswordService;
@@ -10,13 +9,9 @@ import com.bereta.auth.PhoneNumberService;
 import com.bereta.auth.UserAccountEntity;
 import com.bereta.auth.UserAccountRepository;
 import com.bereta.auth.token.RefreshTokenService;
-import com.bereta.notifications.AuthMessages;
-import com.bereta.notifications.SmsSender;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,13 +24,11 @@ import java.util.UUID;
  * Comptes trésoriers selon la maquette « Créer une caisse — étape 2 » : le responsable
  * désigne le trésorier par son téléphone. Un compte existant est rattaché ; sinon un
  * compte est créé avec un mot de passe provisoire (affiché une seule fois au responsable,
- * à changer à la première connexion). Le trésorier vérifie son numéro par le code SMS
- * de sa première connexion.
+ * à changer à la première connexion).
  */
 @Service
 public class TreasurerAccountService {
 
-    private static final Logger logger = LoggerFactory.getLogger(TreasurerAccountService.class);
 
     private final FundAccessService fundAccess;
     private final FundMembershipRepository memberships;
@@ -47,17 +40,17 @@ public class TreasurerAccountService {
     private final PasswordService passwordService;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokens;
-    private final SmsSender smsSender;
     private final AuthAuditService audit;
     private final AssociationRequestContext context;
+    private final com.bereta.admin.AdminAuditService adminAudit;
 
     public TreasurerAccountService(FundAccessService fundAccess, FundMembershipRepository memberships,
                                    AssociationMembershipRepository associationMemberships,
                                    PrimaryFundRepository primaryFunds, LocalFundRepository localFunds,
                                    UserAccountRepository users, PhoneNumberService phoneNumbers,
                                    PasswordService passwordService, PasswordEncoder passwordEncoder,
-                                   RefreshTokenService refreshTokens, SmsSender smsSender, AuthAuditService audit,
-                                   AssociationRequestContext context) {
+                                   RefreshTokenService refreshTokens, AuthAuditService audit,
+                                   AssociationRequestContext context, com.bereta.admin.AdminAuditService adminAudit) {
         this.fundAccess = fundAccess;
         this.memberships = memberships;
         this.associationMemberships = associationMemberships;
@@ -68,13 +61,23 @@ public class TreasurerAccountService {
         this.passwordService = passwordService;
         this.passwordEncoder = passwordEncoder;
         this.refreshTokens = refreshTokens;
-        this.smsSender = smsSender;
         this.audit = audit;
         this.context = context;
+        this.adminAudit = adminAudit;
     }
 
-    public record DesignateTreasurerRequest(@NotNull UUID localFundId, @NotBlank @Size(max = 30) String phone,
-                                            @Size(max = 100) String firstName, @Size(max = 100) String lastName) {
+    /**
+     * phone et/ou email (au moins un) : compte existant rattaché, sinon créé avec mot de passe provisoire
+     * (prénom et nom requis). replaceMembershipId : trésorier actuel à remplacer (« Changer »).
+     */
+    public record DesignateTreasurerRequest(@NotNull UUID localFundId, @Size(max = 30) String phone,
+                                            @jakarta.validation.constraints.Email @Size(max = 320) String email,
+                                            @Size(max = 100) String firstName, @Size(max = 100) String lastName,
+                                            UUID replaceMembershipId) {
+    }
+
+    /** Résultat d'une recherche exacte : jamais de liste, seulement le compte correspondant. */
+    public record AccountLookupResponse(boolean exists, String displayName, String maskedPhone, boolean alreadyTreasurer) {
     }
 
     /** temporaryPassword n'est renseigné que pour un compte créé à l'instant. */
@@ -97,21 +100,29 @@ public class TreasurerAccountService {
                 .filter(fund -> fund.getAssociation().getId().equals(associationId))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "La caisse locale ne dépend pas de cette association et caisse principale."));
-        String phone = phoneNumbers.normalize(request.phone());
+        String phone = blank(request.phone()) ? null : phoneNumbers.normalize(request.phone());
+        String email = blank(request.email()) ? null : request.email().trim().toLowerCase(java.util.Locale.ROOT);
+        if (phone == null && email == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Indiquez le téléphone ou l’e-mail du trésorier.");
+        }
 
         String temporaryPassword = null;
-        UserAccountEntity account = users.findByPhoneE164(phone).orElse(null);
+        UserAccountEntity account = findAccount(phone, email);
         if (account == null) {
             String displayName = displayName(request);
+            if ((phone != null && users.existsByPhoneE164(phone)) || (email != null && users.existsByEmailIgnoreCase(email))) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "Ce téléphone et cet e-mail correspondent à deux comptes différents : n’en indiquez qu’un.");
+            }
             temporaryPassword = passwordService.generateTemporaryPassword();
-            account = new UserAccountEntity(null, phone, displayName, passwordEncoder.encode(temporaryPassword),
-                    "TRESORIER", AccountStatus.ACTIVE);
+            account = new UserAccountEntity(email, phone, displayName, passwordEncoder.encode(temporaryPassword),
+                    "TRESORIER");
             account.setTemporaryPasswordHash(account.getPasswordHash());
             account = users.save(account);
-            audit.record(AuthEvent.TREASURER_ACCOUNT_CREATED, account.getId(), AuthAuditService.hint(phone),
-                    "Créé par le responsable " + managerId);
+            audit.record(AuthEvent.TREASURER_ACCOUNT_CREATED, account.getId(),
+                    AuthAuditService.hint(phone != null ? phone : email), "Créé par le responsable " + managerId);
         } else if (!account.isEnabled()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Le compte lié à ce numéro est désactivé.");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ce compte est désactivé.");
         }
         if (fundAccess.isAssociationManager(account.getId(), associationId)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Un responsable ne peut pas être affecté comme trésorier.");
@@ -121,16 +132,62 @@ public class TreasurerAccountService {
                 .orElseGet(() -> new FundMembershipEntity(treasurer, primaryFund, localFund, FundRole.TRESORIER));
         membership.assignTo(localFund);
         membership = memberships.save(membership);
-        notify(phone, AuthMessages.treasurerDesignated(localFund.getName(), localFund.getAssociation().getName()));
+
+        UserAccountEntity manager = users.findById(managerId).orElseThrow();
+        if (request.replaceMembershipId() != null && !request.replaceMembershipId().equals(membership.getId())) {
+            FundMembershipEntity previous = memberships.findByIdAndPrimaryFundIdAndActiveTrue(request.replaceMembershipId(), primaryFundId)
+                    .filter(m -> m.getRole() == FundRole.TRESORIER)
+                    .filter(m -> m.getLocalFund() != null && m.getLocalFund().getId().equals(localFund.getId()))
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trésorier à remplacer introuvable."));
+            previous.deactivate();
+            adminAudit.record(manager, "TREASURER_REMOVED", "LOCAL_FUND", localFund.getId(), localFund.getAssociation(),
+                    "Remplacé : " + label(previous.getUserAccount()) + " (caisse " + localFund.getName() + ")");
+        }
+        adminAudit.record(manager, "TREASURER_ASSIGNED", "LOCAL_FUND", localFund.getId(), localFund.getAssociation(),
+                label(treasurer) + (temporaryPassword != null ? " (compte créé)" : " (compte existant)")
+                        + " · caisse " + localFund.getName());
+        // Emplacement réservé : invitation par e-mail via fund_invitations, à activer avec l'envoi d'e-mails.
         return new TreasurerDesignationResponse(FundMembershipResponse.from(membership), temporaryPassword != null,
                 temporaryPassword);
+    }
+
+    /** Recherche exacte par téléphone ou e-mail (réservée au responsable), pour proposer le rattachement. */
+    @Transactional(readOnly = true)
+    public AccountLookupResponse lookup(UUID managerId, UUID primaryFundId, String identifier) {
+        fundAccess.requireManager(managerId, primaryFundId);
+        String value = identifier == null ? "" : identifier.trim();
+        UserAccountEntity account = value.contains("@")
+                ? users.findByEmailIgnoreCase(value).orElse(null)
+                : phoneNumbers.tryNormalize(value).flatMap(users::findByPhoneE164).orElse(null);
+        if (account == null || !account.isEnabled()) return new AccountLookupResponse(false, null, null, false);
+        boolean treasurerHere = memberships.findAllByUserAccountIdAndAssociationIdAndActiveTrueOrderByCreatedAtAsc(
+                account.getId(), context.requireId()).stream().anyMatch(m -> m.getRole() == FundRole.TRESORIER);
+        return new AccountLookupResponse(true, account.getDisplayName(),
+                account.getPhoneE164() == null ? null : phoneNumbers.mask(account.getPhoneE164()), treasurerHere);
+    }
+
+    private UserAccountEntity findAccount(String phone, String email) {
+        if (phone != null) {
+            UserAccountEntity byPhone = users.findByPhoneE164(phone).orElse(null);
+            if (byPhone != null) return byPhone;
+        }
+        return email == null ? null : users.findByEmailIgnoreCase(email).orElse(null);
+    }
+
+    private static boolean blank(String value) {
+        return value == null || value.isBlank();
+    }
+
+    private static String label(UserAccountEntity account) {
+        String name = account.getDisplayName() == null ? "Sans nom" : account.getDisplayName();
+        return name + " [" + account.getId() + "]";
     }
 
     /**
      * Le responsable remet un nouveau mot de passe provisoire à un trésorier qui l'a oublié.
      * Refusé si le compte sert aussi ailleurs (autre association, responsable, admin) : un
      * responsable ne doit pas pouvoir prendre la main sur un compte qu'il ne gère pas seul.
-     * Le trésorier passe alors par « Mot de passe oublié » (code SMS).
+     * L'administrateur BERETA réinitialise alors le mot de passe.
      */
     @Transactional
     public TemporaryPasswordResponse issueTemporaryPassword(UUID managerId, UUID primaryFundId, UUID membershipId) {
@@ -148,7 +205,7 @@ public class TreasurerAccountService {
                 .anyMatch(m -> !m.getAssociation().getId().equals(associationId));
         if (usedElsewhere) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Ce compte est aussi utilisé dans une autre "
-                    + "association : le trésorier doit utiliser « Mot de passe oublié » (code SMS).");
+                    + "association : demandez à l’administrateur BERETA de réinitialiser son mot de passe.");
         }
         String temporaryPassword = passwordService.generateTemporaryPassword();
         account.setTemporaryPasswordHash(passwordEncoder.encode(temporaryPassword));
@@ -157,7 +214,6 @@ public class TreasurerAccountService {
         refreshTokens.revokeAll(account.getId(), "TEMPORARY_PASSWORD");
         audit.record(AuthEvent.TEMPORARY_PASSWORD_ISSUED, account.getId(),
                 AuthAuditService.hint(account.getPhoneE164()), "Par le responsable " + managerId);
-        if (account.getPhoneE164() != null) notify(account.getPhoneE164(), AuthMessages.TEMPORARY_PASSWORD_ISSUED);
         return new TemporaryPasswordResponse(temporaryPassword, phoneNumbers.mask(account.getPhoneE164()));
     }
 
@@ -166,16 +222,8 @@ public class TreasurerAccountService {
         String last = request.lastName() == null ? "" : request.lastName().trim();
         if (first.isEmpty() || last.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Aucun compte n’existe pour ce numéro : indiquez le prénom et le nom du trésorier.");
+                    "Aucun compte n’existe pour ce téléphone ou cet e-mail : indiquez le prénom et le nom du trésorier.");
         }
         return first + " " + last;
-    }
-
-    private void notify(String phone, String message) {
-        try {
-            smsSender.send(phone, message);
-        } catch (RuntimeException deliveryFailure) {
-            logger.warn("SMS au trésorier non envoyé : {}", deliveryFailure.getMessage());
-        }
     }
 }

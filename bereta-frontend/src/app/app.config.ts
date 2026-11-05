@@ -7,6 +7,7 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { associationInterceptor } from './associations/association.interceptor';
 import { authInterceptor } from './auth/auth.interceptor';
+import { dataRefreshInterceptor } from './shared/data-refresh';
 
 // Les pipes date/currency utilisent 'fr-FR' : sans ces données, le tableau de bord plante (NG0701).
 registerLocaleData(localeFr);
@@ -15,7 +16,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     { provide: LOCALE_ID, useValue: 'fr-FR' },
-    provideHttpClient(withInterceptors([associationInterceptor, authInterceptor])),
+    provideHttpClient(withInterceptors([associationInterceptor, authInterceptor, dataRefreshInterceptor])),
     provideRouter(routes)
   ]
 };
