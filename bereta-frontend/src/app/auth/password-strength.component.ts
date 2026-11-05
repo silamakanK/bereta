@@ -1,33 +1,30 @@
 import { Component, Input } from '@angular/core';
 import { PASSWORD_RULE, passwordStrength } from './password-rules';
 
+/** Jauge discrète : la règle tant que rien n'est saisi, puis le niveau atteint. */
 @Component({
   selector: 'app-password-strength',
   standalone: true,
   template: `
     <div class="strength" [attr.data-level]="level()">
-      <div class="strength-head">
-        <span>Force du mot de passe :</span><strong>{{ labels[level()] }}</strong>
-      </div>
       <div class="strength-bars" aria-hidden="true"><span></span><span></span><span></span></div>
-      <p>{{ rule }}</p>
+      <span class="strength-text">{{ level() === 0 ? rule : labels[level()] }}</span>
     </div>
   `,
   styles: `
-    .strength { margin: 4px 0 12px; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; }
-    .strength-head { display: flex; justify-content: space-between; color: #475569; }
-    .strength-bars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 8px 0; }
-    .strength-bars span { height: 6px; border-radius: 99px; background: #e2e8f0; }
-    .strength p { margin: 0; color: #475569; }
+    .strength { display: grid; gap: 6px; margin: 6px 0 4px; font-size: 14px; color: #64748b; }
+    .strength-bars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+    .strength-bars span { height: 4px; border-radius: 99px; background: #e2e8f0; }
     [data-level='1'] .strength-bars span:nth-child(-n + 1) { background: #dc2626; }
     [data-level='2'] .strength-bars span:nth-child(-n + 2) { background: #d97706; }
     [data-level='3'] .strength-bars span { background: #15803d; }
+    [data-level='1'] .strength-text { color: #b91c1c; }
   `,
 })
 export class PasswordStrengthComponent {
   @Input() password = '';
   protected readonly rule = PASSWORD_RULE;
-  protected readonly labels = ['À renseigner', 'Insuffisant', 'Conforme', 'Solide'];
+  protected readonly labels = ['', 'Trop faible : 8 caractères et 1 chiffre', 'Mot de passe correct', 'Mot de passe solide'];
 
   protected level(): 0 | 1 | 2 | 3 {
     return passwordStrength(this.password);

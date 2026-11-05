@@ -1,10 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, catchError, finalize, map, of, shareReplay, tap } from 'rxjs';
-import {
-  AuthMessage, AuthUser, CodeSent, ForgotPasswordResponse, LoginStep, RegisterRequest, RegistrationResponse,
-  TokenResponse,
-} from './auth.model';
+import { AuthMessage, AuthUser, RegisterRequest, TokenResponse, UpdateProfileRequest } from './auth.model';
 
 /** En-tête exigé par le backend sur les routes qui lisent le cookie de rafraîchissement. */
 const REFRESH_HEADERS = new HttpHeaders({ 'X-Bereta-Refresh': '1' });
@@ -22,8 +19,6 @@ export class AuthService {
   private refreshInFlight: Observable<TokenResponse> | null = null;
 
   readonly currentUser = signal<AuthUser | null>(null);
-  /** Après l'inscription : proposer de vérifier l'e-mail saisi. */
-  readonly pendingEmailVerification = signal(false);
 
   token(): string | null {
     return this.accessToken;
@@ -49,43 +44,18 @@ export class AuthService {
     return this.refreshInFlight;
   }
 
-  login(identifier: string, password: string): Observable<LoginStep> {
-    return this.http.post<LoginStep>(`${this.endpoint}/login`, { identifier, password });
-  }
-
-  enrollPhone(enrollmentToken: string, phone: string): Observable<LoginStep> {
-    return this.http.post<LoginStep>(`${this.endpoint}/login/phone`, { enrollmentToken, phone });
-  }
-
-  verifyLogin(challengeId: string, code: string): Observable<AuthUser> {
-    return this.http.post<TokenResponse>(`${this.endpoint}/login/verify`, { challengeId, code })
+  login(identifier: string, password: string): Observable<AuthUser> {
+    return this.http.post<TokenResponse>(`${this.endpoint}/login`, { identifier, password }, { withCredentials: true })
       .pipe(tap((response) => this.apply(response)), map((response) => response.user));
   }
 
-  register(request: RegisterRequest): Observable<RegistrationResponse> {
-    return this.http.post<RegistrationResponse>(`${this.endpoint}/register`, request);
+  register(request: RegisterRequest): Observable<AuthUser> {
+    return this.http.post<TokenResponse>(`${this.endpoint}/register`, request, { withCredentials: true })
+      .pipe(tap((response) => this.apply(response)), map((response) => response.user));
   }
 
-  verifyRegistration(challengeId: string, code: string, emailToVerify: boolean): Observable<AuthUser> {
-    return this.http.post<TokenResponse>(`${this.endpoint}/register/verify`, { challengeId, code }).pipe(
-      tap((response) => {
-        this.pendingEmailVerification.set(emailToVerify && !!response.user.email && !response.user.emailVerified);
-        this.apply(response);
-      }),
-      map((response) => response.user),
-    );
-  }
-
-  resendCode(challengeId: string): Observable<CodeSent> {
-    return this.http.post<CodeSent>(`${this.endpoint}/otp/resend`, { challengeId });
-  }
-
-  forgotPassword(identifier: string): Observable<ForgotPasswordResponse> {
-    return this.http.post<ForgotPasswordResponse>(`${this.endpoint}/password/forgot`, { identifier });
-  }
-
-  resetPasswordWithCode(challengeId: string, code: string, password: string): Observable<AuthMessage> {
-    return this.http.post<AuthMessage>(`${this.endpoint}/password/reset/code`, { challengeId, code, password });
+  updateProfile(request: UpdateProfileRequest): Observable<AuthUser> {
+    return this.http.patch<AuthUser>(`${this.endpoint}/profile`, request).pipe(tap((user) => this.currentUser.set(user)));
   }
 
   resetPasswordWithLink(token: string, password: string): Observable<AuthMessage> {
@@ -93,19 +63,9 @@ export class AuthService {
   }
 
   changePassword(currentPassword: string, newPassword: string): Observable<AuthUser> {
-    return this.http.post<TokenResponse>(`${this.endpoint}/password/change`, { currentPassword, newPassword })
+    return this.http.post<TokenResponse>(`${this.endpoint}/password/change`, { currentPassword, newPassword },
+      { withCredentials: true })
       .pipe(tap((response) => this.apply(response)), map((response) => response.user));
-  }
-
-  sendEmailCode(): Observable<CodeSent> {
-    return this.http.post<CodeSent>(`${this.endpoint}/email/send-code`, {});
-  }
-
-  verifyEmail(code: string): Observable<AuthUser> {
-    return this.http.post<AuthUser>(`${this.endpoint}/email/verify`, { code }).pipe(tap((user) => {
-      this.currentUser.set(user);
-      this.pendingEmailVerification.set(false);
-    }));
   }
 
   logout(): Observable<void> {
@@ -121,7 +81,6 @@ export class AuthService {
   clearSession(): void {
     this.accessToken = null;
     this.currentUser.set(null);
-    this.pendingEmailVerification.set(false);
   }
 
   private apply(response: TokenResponse): void {

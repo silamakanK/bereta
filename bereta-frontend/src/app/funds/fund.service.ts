@@ -1,8 +1,10 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
+  AccountLookup,
   Campaign,
+  CreateLocalFundRequest,
   CreateCampaignRequest,
   CreatePrimaryFundRequest,
   FundMembership,
@@ -20,23 +22,27 @@ export class FundService {
   private readonly primaryFundsEndpoint = '/api/caisses-principales';
   private readonly campaignsEndpoint = '/api/campagnes';
 
-  listPrimaryFunds(): Observable<PrimaryFund[]> {
-    return this.http.get<PrimaryFund[]>(this.primaryFundsEndpoint);
+  listPrimaryFunds(associationId?: string): Observable<PrimaryFund[]> {
+    return this.http.get<PrimaryFund[]>(this.primaryFundsEndpoint, scoped(associationId));
   }
 
   createPrimaryFund(request: CreatePrimaryFundRequest): Observable<PrimaryFund> {
     return this.http.post<PrimaryFund>(this.primaryFundsEndpoint, request);
   }
 
-  listLocalFunds(primaryFundId: string): Observable<LocalFund[]> {
-    return this.http.get<LocalFund[]>(`${this.primaryFundsEndpoint}/${primaryFundId}/caisses-locales`);
+  listLocalFunds(primaryFundId: string, associationId?: string): Observable<LocalFund[]> {
+    return this.http.get<LocalFund[]>(`${this.primaryFundsEndpoint}/${primaryFundId}/caisses-locales`, scoped(associationId));
   }
 
-  createLocalFund(primaryFundId: string, name: string): Observable<LocalFund> {
-    return this.http.post<LocalFund>(
-      `${this.primaryFundsEndpoint}/${primaryFundId}/caisses-locales`,
-      { name },
-    );
+  createLocalFund(primaryFundId: string, request: string | CreateLocalFundRequest, associationId?: string): Observable<LocalFund> {
+    const body = typeof request === 'string' ? { name: request } : request;
+    return this.http.post<LocalFund>(`${this.primaryFundsEndpoint}/${primaryFundId}/caisses-locales`, body,
+      scoped(associationId));
+  }
+
+  lookupAccount(primaryFundId: string, identifier: string, associationId?: string): Observable<AccountLookup> {
+    return this.http.get<AccountLookup>(`${this.primaryFundsEndpoint}/${primaryFundId}/acces/compte`,
+      { ...scoped(associationId), params: { identifiant: identifier } });
   }
 
   listCampaigns(): Observable<Campaign[]> {
@@ -51,8 +57,10 @@ export class FundService {
     return this.http.get<FundMembership[]>(`${this.primaryFundsEndpoint}/${primaryFundId}/acces`);
   }
 
-  designateTreasurer(primaryFundId: string, request: DesignateTreasurerRequest): Observable<TreasurerDesignation> {
-    return this.http.post<TreasurerDesignation>(`${this.primaryFundsEndpoint}/${primaryFundId}/acces`, request);
+  designateTreasurer(primaryFundId: string, request: DesignateTreasurerRequest, associationId?: string):
+    Observable<TreasurerDesignation> {
+    return this.http.post<TreasurerDesignation>(`${this.primaryFundsEndpoint}/${primaryFundId}/acces`, request,
+      scoped(associationId));
   }
 
   issueTemporaryPassword(primaryFundId: string, membershipId: string): Observable<TemporaryPassword> {
@@ -60,8 +68,9 @@ export class FundService {
       `${this.primaryFundsEndpoint}/${primaryFundId}/acces/${membershipId}/mot-de-passe-provisoire`, {});
   }
 
-  deactivateFundAccess(primaryFundId: string, membershipId: string): Observable<void> {
-    return this.http.delete<void>(`${this.primaryFundsEndpoint}/${primaryFundId}/acces/${membershipId}`);
+  deactivateFundAccess(primaryFundId: string, membershipId: string, associationId?: string): Observable<void> {
+    return this.http.delete<void>(`${this.primaryFundsEndpoint}/${primaryFundId}/acces/${membershipId}`,
+      scoped(associationId));
   }
 
   listRemittances(primaryFundId: string): Observable<Remittance[]> {
@@ -83,4 +92,9 @@ export class FundService {
   cancelRemittance(primaryFundId: string, remittanceId: string, reason: string): Observable<Remittance> {
     return this.http.post<Remittance>(`${this.primaryFundsEndpoint}/${primaryFundId}/remises/${remittanceId}/annuler`, { reason });
   }
+}
+
+/** Cible explicitement une association (sinon l'intercepteur utilise l'association active). */
+function scoped(associationId?: string): { headers?: HttpHeaders } {
+  return associationId ? { headers: new HttpHeaders({ 'X-Association-Id': associationId }) } : {};
 }

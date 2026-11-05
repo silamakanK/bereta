@@ -155,7 +155,7 @@ export class FundSetupComponent {
         this.treasurerLastName = '';
         this.memberships.update((items) => [...items.filter((item) => item.id !== membership.id), membership]);
         if (designation.temporaryPassword) {
-          this.issuedPassword.set({ name: membership.displayName, password: designation.temporaryPassword });
+          this.issuedPassword.set({ name: membership.displayName ?? membership.phone ?? "le trésorier", password: designation.temporaryPassword });
         }
         this.saved(designation.accountCreated
           ? `Compte créé pour ${membership.displayName}. Remettez-lui le mot de passe provisoire ci-dessous.`
@@ -171,7 +171,7 @@ export class FundSetupComponent {
     this.issuedPassword.set(null);
     this.fundService.issueTemporaryPassword(this.selectedPrimaryFundId, membership.id).subscribe({
       next: (result) => {
-        this.issuedPassword.set({ name: membership.displayName, password: result.temporaryPassword });
+        this.issuedPassword.set({ name: membership.displayName ?? membership.phone ?? "le trésorier", password: result.temporaryPassword });
         this.saved(`Nouveau mot de passe provisoire pour ${membership.displayName} : ses appareils sont déconnectés.`);
       },
       error: (error: HttpErrorResponse) => this.failed(error),

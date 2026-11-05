@@ -18,6 +18,10 @@ export class AdminApiService {
   updateUser(id: string, request: { email: string; displayName: string; role: string }): Observable<AdminUser> {
     return this.http.put<AdminUser>(`${this.endpoint}/users/${id}`, request);
   }
+  /** Mot de passe provisoire (affiché une seule fois), à changer à la prochaine connexion. */
+  resetUserPassword(id: string): Observable<{ temporaryPassword: string }> {
+    return this.http.post<{ temporaryPassword: string }>(`${this.endpoint}/users/${id}/password`, {});
+  }
   setUserEnabled(id: string, enabled: boolean): Observable<AdminUser> {
     return this.http.patch<AdminUser>(`${this.endpoint}/users/${id}/activation`, { enabled });
   }

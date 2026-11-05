@@ -16,4 +16,6 @@ export interface CreateAssociationRequest {
   contactEmail?: string;
   contactPhone?: string;
   address?: string;
+  /** Objectif principal de la caisse principale créée avec l'association. */
+  objective?: string;
 }

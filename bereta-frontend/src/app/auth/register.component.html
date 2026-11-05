@@ -1,54 +1,25 @@
 <main class="login-page">
   <section class="login-card" aria-labelledby="register-title">
     <a class="login-brand" routerLink="/" aria-label="BERETA, accueil"><span class="login-mark">B</span><span>bereta<span class="brand-dot">.</span></span></a>
+    <h1 id="register-title">Créer un compte responsable</h1>
+    @if (errorMessage()) { <p class="login-error" role="alert">{{ errorMessage() }}</p> }
 
-    @if (phoneChallenge(); as challenge) {
-      <p class="login-eyebrow">VÉRIFICATION DU TÉLÉPHONE</p>
-      <h1 id="register-title">Confirmez votre numéro</h1>
-      <p class="login-intro">Votre compte sera activé dès que vous aurez saisi le code reçu par SMS.</p>
-      @if (errorMessage()) { <p class="login-error" role="alert">{{ errorMessage() }}</p> }
-      <app-otp-step [challengeId]="challenge.challengeId" [destination]="challenge.maskedDestination"
-                    [resendInSeconds]="challenge.resendAvailableInSeconds" [busy]="isSubmitting()"
-                    [error]="errorMessage()" submitLabel="Activer mon compte"
-                    (verify)="verifyPhone($event)" (challengeRenewed)="renewChallenge($event)" />
-    } @else {
-      <p class="login-eyebrow">ESPACE RESPONSABLE</p>
-      <h1 id="register-title">Créer un compte responsable</h1>
-      <p class="login-intro">En tant que responsable, vous pourrez créer vos associations, ouvrir des caisses et désigner vos trésoriers.</p>
-      @if (errorMessage()) { <p class="login-error" role="alert">{{ errorMessage() }}</p> }
+    <form novalidate (ngSubmit)="submit()">
+      <label for="register-phone">Téléphone</label>
+      <input id="register-phone" name="phone" type="tel" [(ngModel)]="phone" autocomplete="tel" inputmode="tel" required autofocus maxlength="30" placeholder="06 12 34 56 78" [attr.aria-invalid]="phoneError()" aria-describedby="register-phone-help" />
+      <span class="field-help" id="register-phone-help">Il vous servira pour vous connecter.</span>
 
-      <form novalidate (ngSubmit)="submit()">
-        <label for="register-first-name">Prénom *</label>
-        <input id="register-first-name" name="firstName" [(ngModel)]="firstName" autocomplete="given-name" required maxlength="100" [attr.aria-invalid]="nameError(firstName)" />
-        @if (nameError(firstName)) { <span class="field-error">Saisissez votre prénom.</span> }
+      <label for="register-password">Mot de passe</label>
+      <div class="login-password-control"><input id="register-password" name="password" [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="password" autocomplete="new-password" required maxlength="72" [attr.aria-invalid]="passwordError()" /><button class="password-toggle" type="button" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? 'Masquer les mots de passe' : 'Afficher les mots de passe'" [attr.aria-pressed]="showPassword()">{{ showPassword() ? 'Masquer' : 'Afficher' }}</button></div>
+      <app-password-strength [password]="password" />
 
-        <label for="register-last-name">Nom *</label>
-        <input id="register-last-name" name="lastName" [(ngModel)]="lastName" autocomplete="family-name" required maxlength="100" [attr.aria-invalid]="nameError(lastName)" />
-        @if (nameError(lastName)) { <span class="field-error">Saisissez votre nom.</span> }
+      <label for="register-confirm-password">Confirmer le mot de passe</label>
+      <input id="register-confirm-password" name="confirmPassword" [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="confirmPassword" autocomplete="new-password" required [attr.aria-invalid]="confirmError()" />
 
-        <label for="register-phone">Numéro de téléphone *</label>
-        <input id="register-phone" name="phone" type="tel" [(ngModel)]="phone" autocomplete="tel" inputmode="tel" required maxlength="30" placeholder="06 12 34 56 78" [attr.aria-invalid]="phoneError()" aria-describedby="register-phone-help" />
-        <span class="field-help" id="register-phone-help">Il sert à vous connecter : un code vous sera envoyé par SMS. Pour un numéro étranger, commencez par l’indicatif (+223…).</span>
-        @if (phoneError()) { <span class="field-error">Saisissez votre numéro de téléphone portable.</span> }
+      <label class="terms-choice"><input type="checkbox" name="acceptTerms" [(ngModel)]="acceptTerms" /> J’accepte les conditions d’utilisation.</label>
 
-        <label for="register-email">Adresse e-mail <span>(facultatif)</span></label>
-        <input id="register-email" name="email" type="email" [(ngModel)]="email" autocomplete="email" maxlength="320" placeholder="nom@exemple.org" [attr.aria-invalid]="emailError()" aria-describedby="register-email-help" />
-        <span class="field-help" id="register-email-help">Recommandé pour recevoir les bilans de caisse.</span>
-        @if (emailError()) { <span class="field-error">L’adresse e-mail n’est pas valide.</span> }
-
-        <label for="register-password">Mot de passe *</label>
-        <div class="login-password-control"><input id="register-password" name="password" [type]="showPassword() ? 'text' : 'password'" [(ngModel)]="password" autocomplete="new-password" required maxlength="72" [attr.aria-invalid]="passwordError()" /><button class="password-toggle" type="button" (click)="showPassword.set(!showPassword())" [attr.aria-label]="showPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [attr.aria-pressed]="showPassword()">{{ showPassword() ? 'Masquer' : 'Afficher' }}</button></div>
-        <app-password-strength [password]="password" />
-
-        <label for="register-confirm-password">Confirmer le mot de passe *</label>
-        <div class="login-password-control"><input id="register-confirm-password" name="confirmPassword" [type]="showConfirmPassword() ? 'text' : 'password'" [(ngModel)]="confirmPassword" autocomplete="new-password" required /><button class="password-toggle" type="button" (click)="showConfirmPassword.set(!showConfirmPassword())" [attr.aria-label]="showConfirmPassword() ? 'Masquer la confirmation' : 'Afficher la confirmation'" [attr.aria-pressed]="showConfirmPassword()">{{ showConfirmPassword() ? 'Masquer' : 'Afficher' }}</button></div>
-
-        <label class="terms-choice"><input type="checkbox" name="acceptTerms" [(ngModel)]="acceptTerms" /> J’accepte les conditions d’utilisation de BERETA pour mon association.</label>
-
-        <button class="login-submit" type="submit" [disabled]="isSubmitting()">{{ isSubmitting() ? 'Création…' : 'Créer mon compte responsable' }}</button>
-      </form>
-      <p class="login-help">Déjà un compte ? <a routerLink="/connexion">Se connecter</a></p>
-    }
+      <button class="login-submit" type="submit" [disabled]="isSubmitting()">{{ isSubmitting() ? 'Création…' : 'Créer mon compte' }}</button>
+    </form>
+    <p class="login-help">Déjà un compte ? <a routerLink="/connexion">Se connecter</a></p>
   </section>
-  <p class="login-footer">BERETA · Rigueur, Transparence &amp; Solidarité</p>
 </main>

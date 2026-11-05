@@ -164,6 +164,17 @@ export class AdminComponent implements OnInit {
     });
   }
 
+  protected resetUserPassword(user: AdminUser): void {
+    if (!confirm(`Réinitialiser le mot de passe de ${user.displayName || user.email} ? Ses sessions seront fermées.`)) return;
+    this.busyUserId.set(user.id); this.error.set(null);
+    this.api.resetUserPassword(user.id).subscribe({
+      next: ({ temporaryPassword }) => {
+        this.success.set(`Mot de passe provisoire de ${user.displayName || user.email} : ${temporaryPassword} — à transmettre, il devra le changer à la connexion.`);
+        this.busyUserId.set(null); this.loadAudit();
+      }, error: (e) => { this.busyUserId.set(null); this.fail(e); },
+    });
+  }
+
   protected setUserEnabled(user: AdminUser, enabled: boolean): void {
     this.busyUserId.set(user.id); this.error.set(null);
     this.api.setUserEnabled(user.id, enabled).subscribe({

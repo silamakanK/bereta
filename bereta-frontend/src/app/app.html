@@ -2,9 +2,9 @@
   <main class="session-check" role="status"><span class="session-spinner"></span>Vérification de votre connexion…</main>
 } @else if (currentUser()?.mustChangePassword) {
   <app-first-login />
-} @else if (currentUser() && pendingEmailVerification()) {
-  <app-email-verification />
 } @else if (currentUser()?.role === 'ADMIN' && isAdminRoute()) {
+  <router-outlet />
+} @else if (currentUser() && isAccountRoute()) {
   <router-outlet />
 } @else if (currentUser() && (isCheckingAssociations() || (activeAssociationId() && isCheckingFunds()))) {
   <main class="session-check" role="status"><span class="session-spinner"></span>Vérification de votre connexion…</main>
@@ -75,7 +75,7 @@
         @if (associations().length > 0) {
           <label class="active-association-picker"><span>Association active</span><select [ngModel]="activeAssociationId()" (ngModelChange)="selectAssociation($event)" aria-label="Association active">@for (association of associations(); track association.id) { <option [value]="association.id">{{ association.name }}</option> }</select></label>
         }
-        <button class="association-add-button" type="button" (click)="showAssociationForm.set(!showAssociationForm())">＋ Association</button>
+        @if (canCreateAssociation()) { <button class="association-add-button" type="button" (click)="showAssociationForm.set(!showAssociationForm())">＋ Association</button> }
         <span class="demo-badge"><span></span> Démonstration</span>
         <button class="icon-button notification-button" type="button" aria-label="Notifications">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></svg>
@@ -107,7 +107,7 @@
           <span aria-hidden="true">⌂</span>
           <strong id="empty-association-title">Votre tableau de bord est prêt</strong>
           <p>Créez une association pour gérer ses caisses, ses membres et ses cotisations. Vous pouvez aussi ouvrir un lien d’invitation reçu de son responsable.</p>
-          <button class="primary-button" type="button" (click)="showAssociationForm.set(true)">＋ Créer mon association</button>
+          @if (canCreateAssociation()) { <button class="primary-button" type="button" (click)="showAssociationForm.set(true)">＋ Créer mon association</button> }
         </section>
       } @else {
       <section class="welcome-row" aria-labelledby="page-title">
@@ -121,13 +121,27 @@
         </button>
       </section>
 
+      @if (isResponsible()) {
+        <app-association-board (createAssociation)="showAssociationForm.set(true)" (changed)="onFundSetupClosed()" />
+      }
+
       <section class="fund-banner" aria-label="Caisse et campagne sélectionnées">
         <div class="fund-icon" aria-hidden="true">
           <svg viewBox="0 0 40 40"><path d="M20 4 4 12v3h32v-3L20 4Zm-12 14v11m8-11v11m8-11v11m8-11v11M5 33h30v3H5z" /></svg>
         </div>
         <div class="fund-info">
-          <span class="fund-label">VOTRE CAISSE LOCALE</span>
-          <strong>{{ selectedFund() }}</strong>
+          @if (isResponsible()) {
+            <span class="fund-label">CAISSE PRINCIPALE</span>
+            <strong>{{ activeAssociation()?.name }}</strong>
+          } @else if (accessibleLocalFunds().length > 1) {
+            <label class="fund-label" for="treasurer-fund">VOTRE CAISSE LOCALE</label>
+            <select id="treasurer-fund" class="fund-select" [ngModel]="activeLocalFundId()" (ngModelChange)="activeLocalFundId.set($event)">
+              @for (fund of accessibleLocalFunds(); track fund.id) { <option [value]="fund.id">{{ fund.name }}</option> }
+            </select>
+          } @else {
+            <span class="fund-label">VOTRE CAISSE LOCALE</span>
+            <strong>{{ accessibleLocalFunds()[0]?.name ?? 'Aucune caisse' }}</strong>
+          }
         </div>
         <span class="fund-divider" aria-hidden="true"></span>
         <div class="campaign-info"><span class="fund-label">CAMPAGNE EN COURS</span><strong>Année 2026</strong></div>
@@ -284,7 +298,7 @@
       <section class="panel payments-panel" id="paiements" aria-labelledby="payments-title">
         <div class="panel-heading"><div><h2 id="payments-title">Derniers paiements</h2><p>Les 10 versements les plus récents dans vos caisses.</p></div><button class="text-button" type="button" (click)="openPaymentForm()">＋ Enregistrer un paiement</button></div>
         @if (paymentSuccessMessage()) { <p class="api-message api-success" role="status">{{ paymentSuccessMessage() }}</p> }
-        @for (payment of recentPayments(); track payment.id) {
+        @for (payment of visiblePayments(); track payment.id) {
           <article class="payment-row">
             <span class="payment-avatar" aria-hidden="true">€</span>
             <div class="payment-copy"><strong>{{ payment.memberName }}</strong><span>{{ payment.campaignName }} · {{ payment.localFundName }}</span></div>
