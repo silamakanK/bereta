@@ -1,4 +1,4 @@
-import { Component, DestroyRef, EventEmitter, OnInit, Output, computed, effect, inject, signal, untracked } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, Output, computed, effect, inject, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin, of, switchMap, map, catchError } from 'rxjs';
 import { AssociationService } from './association.service';
@@ -6,6 +6,7 @@ import { Association } from './association.model';
 import { FundService } from '../funds/fund.service';
 import { AccountLookup, LocalFund, TreasurerSummary } from '../funds/fund.model';
 import { apiErrorMessage } from '../shared/api-error';
+import { DataRefreshService } from '../shared/data-refresh';
 
 interface AssociationCard {
   association: Association;
@@ -13,9 +14,11 @@ interface AssociationCard {
   localFunds: LocalFund[];
 }
 
-interface DesignationTarget {
+/** Parcours unique : étape 1 la caisse locale, étape 2 son trésorier. */
+interface Wizard {
   card: AssociationCard;
-  fund: LocalFund;
+  step: 'fund' | 'treasurer';
+  fund: LocalFund | null;
   replace: TreasurerSummary | null;
 }
 
@@ -31,14 +34,13 @@ interface DesignationTarget {
   templateUrl: './association-board.component.html',
   styleUrl: './association-board.component.scss',
 })
-export class AssociationBoardComponent implements OnInit {
+export class AssociationBoardComponent {
   private readonly associationService = inject(AssociationService);
   private readonly fundService = inject(FundService);
+  private readonly refresh = inject(DataRefreshService);
 
   /** Demande à l'écran parent d'ouvrir le formulaire « Nouvelle association ». */
   @Output() readonly createAssociation = new EventEmitter<void>();
-  /** Une caisse ou un trésorier a changé : le tableau de bord recharge ses données. */
-  @Output() readonly changed = new EventEmitter<void>();
 
   protected readonly cards = signal<AssociationCard[]>([]);
   protected readonly loading = signal(true);
@@ -48,33 +50,39 @@ export class AssociationBoardComponent implements OnInit {
   protected readonly error = signal<string | null>(null);
   protected readonly managed = computed(() =>
     this.associationService.associations().filter((item) => item.currentUserResponsible && item.status === 'ACTIVE'));
+  /** Carte de l'association active : c'est là que « ＋ Caisse locale » crée la caisse. */
+  protected readonly activeCard = computed(() => {
+    const cards = this.cards();
+    return cards.find((card) => card.association.id === this.associationService.activeAssociationId()) ?? cards[0] ?? null;
+  });
 
-  // Création d'une caisse locale
-  protected readonly fundDialogOpen = signal(false);
-  protected fundAssociationId = '';
+  protected readonly wizard = signal<Wizard | null>(null);
+  protected readonly busy = signal(false);
+  protected readonly wizardError = signal<string | null>(null);
+  // Étape 1
   protected fundName = '';
   protected fundLocation = '';
-  protected fundDescription = '';
-  protected readonly savingFund = signal(false);
-  protected readonly fundError = signal<string | null>(null);
-
-  // Désignation du trésorier
-  protected readonly designation = signal<DesignationTarget | null>(null);
+  // Étape 2
   protected identifier = '';
   protected readonly lookup = signal<AccountLookup | null>(null);
   protected firstName = '';
   protected lastName = '';
   protected otherContact = '';
-  protected readonly designating = signal(false);
-  protected readonly designationError = signal<string | null>(null);
   protected readonly issued = signal<{ name: string; identifier: string; password: string } | null>(null);
   protected readonly copied = signal(false);
 
   private highlightTimer: ReturnType<typeof setTimeout> | null = null;
+  private loadSequence = 0;
 
   constructor() {
     inject(DestroyRef).onDestroy(() => { if (this.highlightTimer) clearTimeout(this.highlightTimer); });
-    // Nouvelle association créée depuis le tableau de bord : on recharge et on la met en évidence.
+    // Rechargement unique : associations gérées modifiées, ou écriture réussie n'importe où (DataRefreshService).
+    effect(() => {
+      this.managed();
+      this.refresh.version();
+      untracked(() => this.reload());
+    });
+    // Nouvelle association créée depuis le tableau de bord : on la met en évidence.
     effect(() => {
       const created = this.associationService.lastCreatedId();
       if (!created) return;
@@ -86,12 +94,9 @@ export class AssociationBoardComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    this.reload();
-  }
-
   protected reload(after?: () => void): void {
     const associations = this.managed();
+    const sequence = ++this.loadSequence;
     this.loading.set(true);
     if (associations.length === 0) {
       this.cards.set([]);
@@ -101,13 +106,14 @@ export class AssociationBoardComponent implements OnInit {
     }
     forkJoin(associations.map((association) => this.fundService.listPrimaryFunds(association.id).pipe(
       switchMap((funds) => {
-        const primary = funds[0];
+        const primary = funds[0]; // unique par association (V22)
         if (!primary) return of<AssociationCard>({ association, primaryFundId: null, localFunds: [] });
         return this.fundService.listLocalFunds(primary.id, association.id).pipe(
           map((localFunds) => ({ association, primaryFundId: primary.id, localFunds })));
       }),
       catchError(() => of<AssociationCard>({ association, primaryFundId: null, localFunds: [] })),
     ))).subscribe((cards) => {
+      if (sequence !== this.loadSequence) { after?.(); return; } // une réponse plus récente arrive
       this.cards.set(cards);
       this.loading.set(false);
       after?.();
@@ -122,46 +128,30 @@ export class AssociationBoardComponent implements OnInit {
     this.expandedId.set(this.expandedId() === card.association.id ? null : card.association.id);
   }
 
-  // ---- Caisse locale --------------------------------------------------------------------
+  // ---- Parcours : ouverture ----------------------------------------------------------------
 
-  protected openFundDialog(associationId?: string): void {
-    this.fundAssociationId = associationId ?? (this.cards().length === 1 ? this.cards()[0].association.id : '');
+  /** « ＋ Caisse locale » : étape 1, dans l'association active. */
+  protected openNewFund(): void {
+    const card = this.activeCard();
+    if (!card) return;
     this.fundName = '';
     this.fundLocation = '';
-    this.fundDescription = '';
-    this.fundError.set(null);
-    this.fundDialogOpen.set(true);
+    this.resetTreasurerStep();
+    this.wizard.set({ card, step: 'fund', fund: null, replace: null });
   }
 
-  protected saveFund(): void {
-    const card = this.cards().find((item) => item.association.id === this.fundAssociationId);
-    if (this.savingFund()) return;
-    if (!card) { this.fundError.set('Choisissez l’association de rattachement.'); return; }
-    if (!this.fundName.trim()) { this.fundError.set('Indiquez le nom de la caisse locale.'); return; }
-    if (!card.primaryFundId) { this.fundError.set('Cette association n’a pas encore de caisse principale.'); return; }
-    this.savingFund.set(true);
-    this.fundError.set(null);
-    this.fundService.createLocalFund(card.primaryFundId, {
-      name: this.fundName.trim(), location: this.fundLocation.trim() || null, description: this.fundDescription.trim() || null,
-    }, card.association.id).subscribe({
-      next: (fund) => {
-        this.savingFund.set(false);
-        this.fundDialogOpen.set(false);
-        this.expandedId.set(card.association.id);
-        this.reload(() => this.flash(card.association.id, `Caisse « ${fund.name} » créée. Désignez son trésorier quand vous voulez.`));
-        this.changed.emit();
-      },
-      error: (error: unknown) => {
-        this.savingFund.set(false);
-        this.fundError.set(apiErrorMessage(error, 'La caisse n’a pas pu être créée.'));
-      },
-    });
-  }
-
-  // ---- Trésorier ------------------------------------------------------------------------
-
+  /** « Désigner » / « Changer » sur une caisse existante : directement l'étape 2. */
   protected openDesignation(card: AssociationCard, fund: LocalFund, replace: TreasurerSummary | null = null): void {
-    this.designation.set({ card, fund, replace });
+    this.resetTreasurerStep();
+    this.wizard.set({ card, step: 'treasurer', fund, replace });
+  }
+
+  protected closeWizard(): void {
+    this.wizard.set(null);
+    this.issued.set(null);
+  }
+
+  private resetTreasurerStep(): void {
     this.identifier = '';
     this.firstName = '';
     this.lastName = '';
@@ -169,68 +159,95 @@ export class AssociationBoardComponent implements OnInit {
     this.lookup.set(null);
     this.issued.set(null);
     this.copied.set(false);
-    this.designationError.set(null);
+    this.wizardError.set(null);
   }
 
-  protected closeDesignation(): void {
-    this.designation.set(null);
-    this.issued.set(null);
+  // ---- Étape 1 : caisse locale -------------------------------------------------------------
+
+  protected saveFund(): void {
+    const current = this.wizard();
+    if (!current || this.busy()) return;
+    if (!this.fundName.trim()) { this.wizardError.set('Indiquez le nom de la caisse locale.'); return; }
+    if (!current.card.primaryFundId) { this.wizardError.set('Cette association n’a pas encore de caisse principale.'); return; }
+    this.busy.set(true);
+    this.wizardError.set(null);
+    this.fundService.createLocalFund(current.card.primaryFundId, {
+      name: this.fundName.trim(), location: this.fundLocation.trim() || null, description: null,
+    }, current.card.association.id).subscribe({
+      next: (fund) => {
+        this.busy.set(false);
+        this.expandedId.set(current.card.association.id);
+        this.wizard.set({ ...current, step: 'treasurer', fund });
+      },
+      error: (error: unknown) => {
+        this.busy.set(false);
+        this.wizardError.set(apiErrorMessage(error, 'La caisse n’a pas pu être créée.'));
+      },
+    });
+  }
+
+  // ---- Étape 2 : trésorier -----------------------------------------------------------------
+
+  /** « Plus tard » : la caisse reste « Sans responsable ». */
+  protected skipTreasurer(): void {
+    const current = this.wizard();
+    this.closeWizard();
+    if (current?.fund) this.flash(current.card.association.id, `Caisse « ${current.fund.name} » créée. Désignez son trésorier quand vous voulez.`);
   }
 
   protected check(): void {
-    const target = this.designation();
-    if (!target?.card.primaryFundId || this.designating()) return;
+    const current = this.wizard();
+    if (!current?.card.primaryFundId || this.busy()) return;
     if (this.identifier.trim().length < 6) {
-      this.designationError.set('Saisissez le téléphone ou l’e-mail du trésorier.');
+      this.wizardError.set('Saisissez le téléphone ou l’e-mail du trésorier.');
       return;
     }
-    this.designating.set(true);
-    this.designationError.set(null);
-    this.fundService.lookupAccount(target.card.primaryFundId, this.identifier.trim(), target.card.association.id).subscribe({
-      next: (result) => { this.designating.set(false); this.lookup.set(result); },
+    this.busy.set(true);
+    this.wizardError.set(null);
+    this.fundService.lookupAccount(current.card.primaryFundId, this.identifier.trim(), current.card.association.id).subscribe({
+      next: (result) => { this.busy.set(false); this.lookup.set(result); },
       error: (error: unknown) => {
-        this.designating.set(false);
-        this.designationError.set(apiErrorMessage(error, 'La vérification a échoué.'));
+        this.busy.set(false);
+        this.wizardError.set(apiErrorMessage(error, 'La vérification a échoué.'));
       },
     });
   }
 
   protected designate(): void {
-    const target = this.designation();
+    const current = this.wizard();
     const found = this.lookup();
-    if (!target?.card.primaryFundId || !found || this.designating()) return;
+    if (!current?.card.primaryFundId || !current.fund || !found || this.busy()) return;
     if (!found.exists && (!this.firstName.trim() || !this.lastName.trim())) {
-      this.designationError.set('Indiquez le prénom et le nom du trésorier.');
+      this.wizardError.set('Indiquez le prénom et le nom du trésorier.');
       return;
     }
+    const fund = current.fund;
     const value = this.identifier.trim();
     const other = this.otherContact.trim();
     const isEmail = value.includes('@');
-    this.designating.set(true);
-    this.designationError.set(null);
-    this.fundService.designateTreasurer(target.card.primaryFundId, {
-      localFundId: target.fund.id,
+    this.busy.set(true);
+    this.wizardError.set(null);
+    this.fundService.designateTreasurer(current.card.primaryFundId, {
+      localFundId: fund.id,
       phone: isEmail ? (found.exists ? null : other || null) : value,
       email: isEmail ? value : (found.exists ? null : other || null),
       firstName: found.exists ? undefined : this.firstName.trim(),
       lastName: found.exists ? undefined : this.lastName.trim(),
-      replaceMembershipId: target.replace?.membershipId ?? null,
-    }, target.card.association.id).subscribe({
+      replaceMembershipId: current.replace?.membershipId ?? null,
+    }, current.card.association.id).subscribe({
       next: (result) => {
-        this.designating.set(false);
+        this.busy.set(false);
         const name = result.membership.displayName || value;
         if (result.temporaryPassword) {
           this.issued.set({ name, identifier: value, password: result.temporaryPassword });
         } else {
-          this.closeDesignation();
-          this.success.set(`${name} est maintenant trésorier de « ${target.fund.name} ».`);
+          this.closeWizard();
+          this.flash(current.card.association.id, `${name} est maintenant trésorier de « ${fund.name} ».`);
         }
-        this.reload();
-        this.changed.emit();
       },
       error: (error: unknown) => {
-        this.designating.set(false);
-        this.designationError.set(apiErrorMessage(error, 'Le trésorier n’a pas pu être désigné.'));
+        this.busy.set(false);
+        this.wizardError.set(apiErrorMessage(error, 'Le trésorier n’a pas pu être désigné.'));
       },
     });
   }
@@ -241,16 +258,28 @@ export class AssociationBoardComponent implements OnInit {
     navigator.clipboard?.writeText(password).then(() => this.copied.set(true), () => this.copied.set(false));
   }
 
+  /** Trésorier qui a perdu son mot de passe : nouveau mot de passe provisoire. */
+  protected resetPassword(card: AssociationCard, fund: LocalFund, treasurer: TreasurerSummary): void {
+    if (!card.primaryFundId) return;
+    const name = treasurer.displayName || treasurer.phone || treasurer.email || 'le trésorier';
+    if (!confirm(`Générer un nouveau mot de passe provisoire pour ${name} ? Ses appareils seront déconnectés.`)) return;
+    this.error.set(null);
+    this.fundService.issueTemporaryPassword(card.primaryFundId, treasurer.membershipId, card.association.id).subscribe({
+      next: (result) => {
+        this.resetTreasurerStep();
+        this.wizard.set({ card, step: 'treasurer', fund, replace: null });
+        this.issued.set({ name, identifier: treasurer.phone || treasurer.email || '', password: result.temporaryPassword });
+      },
+      error: (error: unknown) => this.error.set(apiErrorMessage(error, 'Le mot de passe n’a pas pu être réinitialisé.')),
+    });
+  }
+
   protected removeTreasurer(card: AssociationCard, fund: LocalFund, treasurer: TreasurerSummary): void {
     if (!card.primaryFundId) return;
     if (!confirm(`Retirer ${treasurer.displayName || 'ce trésorier'} de « ${fund.name} » ? Il n’aura plus accès à cette caisse.`)) return;
     this.error.set(null);
     this.fundService.deactivateFundAccess(card.primaryFundId, treasurer.membershipId, card.association.id).subscribe({
-      next: () => {
-        this.success.set(`${treasurer.displayName || 'Le trésorier'} n’a plus accès à « ${fund.name} ».`);
-        this.reload();
-        this.changed.emit();
-      },
+      next: () => this.success.set(`${treasurer.displayName || 'Le trésorier'} n’a plus accès à « ${fund.name} ».`),
       error: (error: unknown) => this.error.set(apiErrorMessage(error, 'Le trésorier n’a pas pu être retiré.')),
     });
   }

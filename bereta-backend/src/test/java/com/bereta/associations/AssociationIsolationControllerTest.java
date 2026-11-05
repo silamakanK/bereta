@@ -87,7 +87,8 @@ class AssociationIsolationControllerTest {
                                 .user(new BeretaUserDetails(manager))).with(csrf())
                         .contentType(APPLICATION_JSON)
                         .content("{\"name\":\"Caisse initiale\",\"objective\":\"Test\"}"))
-                .andExpect(status().isCreated());
+                // La caisse principale existe déjà : elle est créée avec l'association.
+                .andExpect(status().isConflict());
     }
 
     @Test

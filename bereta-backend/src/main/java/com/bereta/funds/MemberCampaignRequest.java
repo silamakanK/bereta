@@ -4,5 +4,6 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.UUID;
 
-public record MemberCampaignRequest(@NotNull UUID campaignId, @NotNull UUID localFundId) {
+/** {@code localFundId} absent : l'inscription est suivie par la caisse du membre (locale, ou principale). */
+public record MemberCampaignRequest(@NotNull UUID campaignId, UUID localFundId) {
 }

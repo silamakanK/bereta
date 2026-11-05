@@ -91,10 +91,10 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
 .active-association-picker select { max-width: 190px; min-height: 34px; border: 1px solid #e4e9e2; border-radius: 7px; background: #fff; color: #344238; padding: 0 9px; font: inherit; font-size: 11px; }
 .association-add-button { min-height: 35px; padding: 0 10px; border: 1px solid #dfe8df; border-radius: 7px; background: #f7faf6; color: #2e6248; cursor: pointer; font: inherit; font-size: 11px; font-weight: 700; }
 .association-onboarding { width: min(100%, 520px); }
-.association-form, .association-form label, .association-choice-label { display: grid; gap: 8px; }
+.association-form, .association-form label { display: grid; gap: 8px; }
 .association-form { gap: 14px; margin-top: 20px; }
-.association-form label, .association-choice-label { color: #374239; font-size: 12px; font-weight: 650; }
-.association-form input, .association-form textarea, .association-choice-label select, .association-inline-form input { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #dfe5dd; border-radius: 8px; background: #fff; color: #27332b; font: inherit; font-size: 13px; }
+.association-form label { color: #374239; font-size: 12px; font-weight: 650; }
+.association-form input, .association-form textarea select, .association-inline-form input { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #dfe5dd; border-radius: 8px; background: #fff; color: #27332b; font: inherit; font-size: 13px; }
 .association-form textarea { resize: vertical; }
 .association-inline-form { display: flex; align-items: end; gap: 12px; margin-bottom: 20px; padding: 16px; border: 1px solid #e4e9e2; border-radius: 10px; background: #fff; }
 .association-inline-form > div { margin-right: auto; }
@@ -155,3 +155,25 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
 
 /* Sélecteur de caisse du trésorier (bandeau du tableau de bord). */
 .fund-select { min-height: 34px; max-width: 260px; padding: 0 8px; border: 1px solid #d6ddd4; border-radius: 6px; background: #fff; font: inherit; font-weight: 700; }
+
+/* Libellé du bouton du bandeau de caisse (tableau de bord) */
+.change-campaign::after { content: 'Campagnes et remises'; }
+.change-campaign.tl::after { content: 'Mes remises'; }
+
+/* Mobile : la barre du haut ne doit pas élargir la page (défilement horizontal, modals coupés). */
+@media (max-width: 600px) {
+  body .topbar.topbar { gap: 6px; padding: 0 16px; }
+  body .topbar.topbar > :first-child { min-width: 0; overflow: hidden; }
+  body .topbar-right.topbar-right { min-width: 0; gap: 8px; }
+  body .demo-badge.demo-badge, body .association-add-button.association-add-button { display: none; }
+  body .topbar-right.topbar-right select { max-width: 120px; text-overflow: ellipsis; }
+}
+
+/* Caisse de rattachement d'un membre (liste « Membres de votre caisse ») */
+.member-fund { justify-self: start; width: fit-content; max-width: 100%; margin-top: 3px; padding: 1px 8px; overflow: hidden; border-radius: 99px; background: #eef4ee; color: #2e6248; font-size: 11px; font-style: normal; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.member-fund.member-fund-primary { background: #fdf3e2; color: #8a5a12; }
+
+/* Tableau des membres : toute la largeur (les actions rapides passent dessous). */
+body .members-panel.members-panel { grid-column: 1 / -1; padding-bottom: 16px; }
+.not-enrolled-flag { display: inline-block; margin: 6px 0 0; padding: 2px 10px; border: 1px solid #fde68a; border-radius: 99px; background: #fffbeb; color: #92400e; font-size: 12px; font-weight: 650; }
+.campaign-close { justify-self: start; margin-top: 4px; padding: 2px 10px; border: 1px solid #d6ddd4; border-radius: 6px; background: #fff; color: #7c2d12; font: inherit; font-size: 11px; font-weight: 650; cursor: pointer; }

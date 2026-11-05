@@ -10,10 +10,6 @@
   <main class="session-check" role="status"><span class="session-spinner"></span>Vérification de votre connexion…</main>
 } @else if (currentUser() && associationLoadError()) {
   <main class="onboarding-page"><section class="onboarding-card"><h1>Associations indisponibles</h1><p>Impossible de charger les espaces auxquels votre compte a accès.</p><button class="login-submit" type="button" (click)="loadAssociations()">Réessayer</button><button class="onboarding-link" type="button" (click)="logout()">Se déconnecter</button></section></main>
-} @else if (currentUser() && associations().length > 0 && !activeAssociationId()) {
-  <main class="onboarding-page"><section class="onboarding-card"><p class="login-eyebrow">VOTRE ESPACE ASSOCIATIF</p><h1>Choisir une association</h1><p>Les membres et les opérations restent séparés dans chaque association.</p>
-    <label class="association-choice-label">Association active<select [ngModel]="activeAssociationId() || ''" (ngModelChange)="selectAssociation($event)"><option value="" disabled>Choisir une association</option>@for (association of associations(); track association.id) { <option [value]="association.id">{{ association.name }}{{ association.currentUserResponsible ? ' · Responsable' : ' · Trésorier' }}</option> }</select></label>
-    <button class="onboarding-link" type="button" (click)="logout()">Se déconnecter</button></section></main>
 } @else if (currentUser() && fundLoadError()) {
   <main class="onboarding-page"><section class="onboarding-card"><a class="login-brand" routerLink="/" aria-label="BERETA, accueil"><span class="login-mark">B</span><span>bereta<span class="brand-dot">.</span></span></a><h1>Connexion à vos caisses impossible</h1><p>Le serveur n’a pas pu charger vos accès. Réessayez dans un instant.</p><button class="login-submit" type="button" (click)="retryLoadFunds()">Réessayer</button><button class="onboarding-link" type="button" (click)="logout()">Se déconnecter</button></section></main>
 } @else if (currentUser() && activeAssociationId() && !hasPrimaryFunds()) {
@@ -29,7 +25,7 @@
         <button class="onboarding-link" type="button" (click)="logout()">Se déconnecter</button>
       } @else {
         <button class="onboarding-link onboarding-back" type="button" (click)="showFundSetup.set(false)">← Retour à l’accueil</button>
-        <app-fund-setup (close)="onFundSetupClosed()" />
+        <app-fund-setup [manager]="true" (close)="onFundSetupClosed()" />
       }
     </section>
   </main>
@@ -122,7 +118,7 @@
       </section>
 
       @if (isResponsible()) {
-        <app-association-board (createAssociation)="showAssociationForm.set(true)" (changed)="onFundSetupClosed()" />
+        <app-association-board (createAssociation)="showAssociationForm.set(true)" />
       }
 
       <section class="fund-banner" aria-label="Caisse et campagne sélectionnées">
@@ -145,12 +141,12 @@
         </div>
         <span class="fund-divider" aria-hidden="true"></span>
         <div class="campaign-info"><span class="fund-label">CAMPAGNE EN COURS</span><strong>Année 2026</strong></div>
-        <button class="change-campaign" type="button" [attr.aria-label]="showFundSetup() ? 'Fermer la gestion des caisses' : 'Gérer les caisses'" [attr.aria-expanded]="showFundSetup()" (click)="showFundSetup.set(!showFundSetup())">
+        <button class="change-campaign" [class.tl]="!isResponsible()" type="button" [attr.aria-label]="showFundSetup() ? 'Fermer' : (isResponsible() ? 'Campagnes et remises' : 'Mes remises')" [attr.aria-expanded]="showFundSetup()" (click)="showFundSetup.set(!showFundSetup())">
           <span class="change-campaign-icon" aria-hidden="true">{{ showFundSetup() ? '×' : '＋' }}</span>
         </button>
       </section>
 
-      @if (showFundSetup()) { <app-fund-setup (close)="onFundSetupClosed()" /> }
+      @if (showFundSetup()) { <app-fund-setup [manager]="isResponsible()" (close)="onFundSetupClosed()" /> }
 
       <section class="stats-grid" aria-label="Résumé de la caisse">
         <article class="stat-card">
@@ -177,18 +173,6 @@
 
       <section class="content-grid">
         <article class="panel members-panel" id="membres">
-          <div class="panel-heading">
-            <div><h2>Membres de votre caisse</h2><p>Recherchez ou ajoutez un membre à votre liste.</p></div>
-            <button class="text-button" type="button" (click)="showMemberForm() ? closeMemberForm() : openCreateForm()">
-              {{ showMemberForm() ? 'Fermer le formulaire' : '＋ Ajouter un membre' }}
-            </button>
-          </div>
-          <label class="search-box">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg>
-            <input type="search" placeholder="Rechercher un nom ou un numéro…" [value]="searchTerm()" (input)="updateSearch($event)" aria-label="Rechercher un membre par nom ou téléphone" />
-            <kbd>⌘ K</kbd>
-          </label>
-
           @if (showMemberForm()) {
             <form class="member-form" (ngSubmit)="saveMember()">
               <div class="form-heading"><strong>{{ editingMemberId() ? 'Modifier la fiche membre' : 'Ajouter un membre' }}</strong><span>Les champs marqués * sont obligatoires.</span></div>
@@ -197,14 +181,15 @@
                 <label>Nom *<input name="lastName" [(ngModel)]="lastName" required maxlength="100" autocomplete="family-name" /></label>
                 <label>Téléphone <span class="optional-label">(facultatif)</span><input name="phone" [(ngModel)]="phone" maxlength="30" autocomplete="tel" inputmode="tel" /></label>
                 @if (!editingMemberId()) {
-                  <label>Caisse locale *
-                    <select name="memberLocalFund" [(ngModel)]="selectedCreateLocalFundId" required [disabled]="accessibleLocalFunds().length === 0">
-                      @for (fund of accessibleLocalFunds(); track fund.id) { <option [value]="fund.id">{{ fund.name }} · {{ fund.primaryFundName }}</option> }
+                  <label>Caisse *
+                    <select name="memberLocalFund" [(ngModel)]="selectedCreateLocalFundId" required [disabled]="!selectedCreateLocalFundId">
+                      @if (isResponsible() && hasPrimaryFunds()) { <option [value]="primaryFundChoice">Caisse principale</option> }
+                      @for (fund of accessibleLocalFunds(); track fund.id) { <option [value]="fund.id">{{ fund.name }}</option> }
                     </select>
                   </label>
                 }
               </div>
-              @if (!editingMemberId() && accessibleLocalFunds().length === 0) { <p class="enrollment-hint">Créez ou rejoignez une caisse locale avant d’ajouter un membre.</p> }
+              @if (!editingMemberId() && !selectedCreateLocalFundId) { <p class="enrollment-hint">Créez ou rejoignez une caisse locale avant d’ajouter un membre.</p> }
               <div class="form-actions"><button class="cancel-button" type="button" (click)="closeMemberForm()">Annuler</button><button class="primary-button form-submit" type="submit" [disabled]="isSaving() || (!editingMemberId() && !selectedCreateLocalFundId)">{{ isSaving() ? 'Enregistrement…' : editingMemberId() ? 'Enregistrer les modifications' : 'Enregistrer le membre' }}</button></div>
             </form>
           }
@@ -212,30 +197,14 @@
           @if (saveErrorMessage()) { <p class="api-message api-error" role="alert">{{ saveErrorMessage() }}</p> }
           @if (successMessage()) { <p class="api-message api-success" role="status">{{ successMessage() }}</p> }
 
-          <div class="member-list" aria-live="polite">
-            @if (isLoading()) {
-              <div class="member-state"><span class="loading-dot"></span>Chargement des membres…</div>
-            } @else {
-            @for (member of filteredMembers(); track member.id) {
-              <article class="member-row">
-                <span class="member-avatar">{{ initials(member) }}</span>
-                <div class="member-name"><strong>{{ member.firstName }} {{ member.lastName }}</strong><span>{{ member.phone || 'Aucun téléphone renseigné' }}</span></div>
-                <div class="member-created"><span>Ajouté le</span><strong>{{ member.createdAt | date:'d MMM y':'':'fr-FR' }}</strong></div>
-                <span class="member-status"><i></i> Inscrit</span>
-                <div class="member-actions">
-                  <button class="edit-member-button" type="button" (click)="openEditForm(member)" [attr.aria-label]="'Modifier la fiche de ' + member.firstName + ' ' + member.lastName">Modifier</button>
-                  <button class="enroll-member-button" type="button" (click)="openEnrollment(member)" [attr.aria-label]="'Inscrire ' + member.firstName + ' ' + member.lastName + ' à une campagne'">Inscrire</button>
-                </div>
-              </article>
-            } @empty {
-              <div class="empty-state"><span aria-hidden="true">⌕</span><strong>{{ searchTerm() ? 'Aucun membre trouvé' : 'La liste est encore vide' }}</strong><p>{{ searchTerm() ? 'Essayez avec un autre nom ou numéro de téléphone.' : 'Ajoutez le premier membre de votre caisse.' }}</p></div>
-            }
-            }
-          </div>
+          <app-member-table [responsible]="isResponsible()" [localFunds]="accessibleLocalFunds()"
+            (add)="openCreateForm()" (edit)="openEditForm(asMember($event))" (history)="openEnrollment(asMember($event))"
+            (pay)="openPaymentForm($event)" />
           @if (selectedMemberForEnrollment(); as selectedMember) {
             <section class="member-enrollment" aria-labelledby="enrollment-title">
               <div class="enrollment-heading">
-                <div><h3 id="enrollment-title">Inscrire {{ selectedMember.firstName }} {{ selectedMember.lastName }}</h3><p>Choisissez une campagne et la caisse locale qui la suit.</p></div>
+                <div><h3 id="enrollment-title">{{ selectedMember.firstName }} {{ selectedMember.lastName }}</h3><p>{{ selectedMember.fundName ?? 'Sans caisse' }} · inscriptions et paiements</p>
+                  @if (!isLoadingEnrollments() && !isEnrolledInCurrentCampaign()) { <p class="not-enrolled-flag">Non inscrit à la campagne en cours « {{ currentCampaign()?.name }} »</p> }</div>
                 <button class="enrollment-close" type="button" (click)="closeEnrollment()" aria-label="Fermer l’inscription">×</button>
               </div>
               @if (isLoadingEnrollments()) {
@@ -250,16 +219,16 @@
                         @for (campaign of enrollmentCampaigns(); track campaign.id) { <option [value]="campaign.id">{{ campaignLabel(campaign) }}</option> }
                       </select>
                     </label>
-                    <label>Caisse locale *
-                      <select name="enrollmentLocalFund" [(ngModel)]="selectedEnrollmentLocalFundId" [disabled]="enrollmentLocalFunds().length === 0" required>
+                    <label>Caisse qui suit la cotisation *
+                      <select name="enrollmentLocalFund" [(ngModel)]="selectedEnrollmentLocalFundId" [disabled]="!selectedEnrollmentLocalFundId" required>
+                        @if (isResponsible()) { <option [value]="primaryFundChoice">Caisse principale</option> }
                         @for (fund of enrollmentLocalFunds(); track fund.id) { <option [value]="fund.id">{{ fund.name }}</option> }
                       </select>
                     </label>
-                    @if (enrollmentLocalFunds().length === 0) { <p class="enrollment-hint">Créez d’abord une caisse locale pour la caisse principale de cette campagne.</p> }
-                    <button class="primary-button enrollment-submit" type="submit" [disabled]="isSavingEnrollment() || enrollmentLocalFunds().length === 0">{{ isSavingEnrollment() ? 'Inscription…' : 'Inscrire à cette campagne' }}</button>
+                    <button class="primary-button enrollment-submit" type="submit" [disabled]="isSavingEnrollment() || !selectedEnrollmentLocalFundId">{{ isSavingEnrollment() ? 'Inscription…' : 'Inscrire à cette campagne' }}</button>
                   </form>
                 } @else {
-                  <p class="enrollment-hint">Créez d’abord une caisse principale, une caisse locale et une campagne.</p>
+                  <p class="enrollment-hint">Aucune campagne ouverte : créez-en une dans « Campagnes et remises ».</p>
                 }
                 <div class="enrollment-history">
                   <strong>Campagnes de ce membre</strong>
@@ -278,7 +247,6 @@
               }
             </section>
           }
-          @if (!isLoading() && members().length > 0) { <p class="member-count">{{ members().length }} membre{{ members().length > 1 ? 's' : '' }} enregistré{{ members().length > 1 ? 's' : '' }}</p> }
         </article>
 
         <aside class="side-panels">
@@ -314,7 +282,7 @@
   </main>
 
   @if (showPaymentForm()) {
-    <div class="payment-overlay" (click)="$event.target === $event.currentTarget && closePaymentForm()">
+    <div class="payment-overlay" (click)="closePaymentFormFromBackdrop($event)">
       <section class="payment-dialog" role="dialog" aria-modal="true" aria-labelledby="payment-dialog-title">
         <div class="payment-dialog-heading"><div><span class="eyebrow">COTISATION</span><h2 id="payment-dialog-title">Enregistrer un paiement</h2><p>Le versement sera conservé dans l’historique de la caisse.</p></div><button class="enrollment-close" type="button" (click)="closePaymentForm()" aria-label="Fermer">×</button></div>
         @if (paymentErrorMessage()) { <p class="api-message api-error" role="alert">{{ paymentErrorMessage() }}</p> }
@@ -342,7 +310,7 @@
             <div class="payment-dialog-actions"><button class="cancel-button" type="button" (click)="closePaymentForm()">Annuler</button><button class="primary-button" type="submit" [disabled]="!selectedPaymentTarget() || paymentAmount <= 0 || paymentAmount > (selectedPaymentTarget()?.remainingAmount ?? 0)">Vérifier le paiement</button></div>
           </form>
         } @else if (selectedPaymentTarget(); as target) {
-          <div class="payment-review"><h3>Confirmer le versement</h3><dl><div><dt>Membre</dt><dd>{{ target.memberName }}</dd></div><div><dt>Campagne</dt><dd>{{ target.campaignName }} · {{ target.localFundName }}</dd></div><div><dt>Montant</dt><dd>{{ paymentAmount | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</dd></div><div><dt>Date et mode</dt><dd>{{ paymentDate | date:'d MMM y':'UTC':'fr-FR' }} · {{ paymentMethodLabel(paymentMethod) }}</dd></div><div><dt>Reste après paiement</dt><dd>{{ target.remainingAmount - paymentAmount | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</dd></div></dl><p>Vérifiez les informations avant d’enregistrer. Le paiement apparaîtra dans l’historique.</p></div>
+          <div class="payment-review"><h3>Confirmer le versement</h3><dl><div><dt>Membre</dt><dd>{{ target.memberName }}</dd></div><div><dt>Campagne</dt><dd>{{ target.campaignName }} · {{ target.localFundName }}</dd></div><div><dt>Montant</dt><dd>{{ paymentAmount | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</dd></div><div><dt>Date et mode</dt><dd>{{ paymentDate | date:'d MMM y':'UTC':'fr-FR' }} · {{ paymentMethodLabel(paymentMethod) }}</dd></div><div><dt>Reste après paiement</dt><dd>{{ (target.remainingAmount ?? 0) - paymentAmount | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</dd></div></dl><p>Vérifiez les informations avant d’enregistrer. Le paiement apparaîtra dans l’historique.</p></div>
           <div class="payment-dialog-actions"><button class="cancel-button" type="button" (click)="isReviewingPayment.set(false)">Modifier</button><button class="primary-button" type="button" (click)="savePayment()" [disabled]="isSavingPayment()">{{ isSavingPayment() ? 'Enregistrement…' : 'Confirmer le paiement' }}</button></div>
         }
       </section>

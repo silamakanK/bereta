@@ -53,6 +53,11 @@ export class FundService {
     return this.http.post<Campaign>(this.campaignsEndpoint, request);
   }
 
+  /** Clôture (responsable) : plus d'inscription possible. */
+  closeCampaign(id: string): Observable<Campaign> {
+    return this.http.post<Campaign>(`${this.campaignsEndpoint}/${id}/cloture`, {});
+  }
+
   listFundAccess(primaryFundId: string): Observable<FundMembership[]> {
     return this.http.get<FundMembership[]>(`${this.primaryFundsEndpoint}/${primaryFundId}/acces`);
   }
@@ -63,9 +68,9 @@ export class FundService {
       scoped(associationId));
   }
 
-  issueTemporaryPassword(primaryFundId: string, membershipId: string): Observable<TemporaryPassword> {
+  issueTemporaryPassword(primaryFundId: string, membershipId: string, associationId?: string): Observable<TemporaryPassword> {
     return this.http.post<TemporaryPassword>(
-      `${this.primaryFundsEndpoint}/${primaryFundId}/acces/${membershipId}/mot-de-passe-provisoire`, {});
+      `${this.primaryFundsEndpoint}/${primaryFundId}/acces/${membershipId}/mot-de-passe-provisoire`, {}, scoped(associationId));
   }
 
   deactivateFundAccess(primaryFundId: string, membershipId: string, associationId?: string): Observable<void> {

@@ -1,12 +1,12 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal, untracked } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map } from 'rxjs';
 import { CurrencyPipe, DatePipe, LowerCasePipe, UpperCasePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MemberService } from './members/member.service';
-import { CreateMemberRequest, Member, MemberCampaign } from './members/member.model';
+import { CreateMemberRequest, Member, MemberCampaign, MemberTracking } from './members/member.model';
 import { FundSetupComponent } from './funds/fund-setup.component';
 import { FundService } from './funds/fund.service';
 import { Campaign, LocalFund } from './funds/fund.model';
@@ -16,11 +16,13 @@ import { FirstLoginComponent } from './auth/first-login.component';
 import { PaymentService } from './payments/payment.service';
 import { AssociationService } from './associations/association.service';
 import { AssociationBoardComponent } from './associations/association-board.component';
+import { MemberTableComponent } from './members/member-table.component';
+import { DataRefreshService } from './shared/data-refresh';
 import { CreatePaymentRequest, Payment, PaymentEnrollment, PaymentMethod, PaymentSummary } from './payments/payment.model';
 
 @Component({
   selector: 'app-root',
-  imports: [CurrencyPipe, DatePipe, FormsModule, LowerCasePipe, UpperCasePipe, FundSetupComponent, RouterLink, RouterOutlet, FirstLoginComponent, AssociationBoardComponent],
+  imports: [CurrencyPipe, DatePipe, FormsModule, LowerCasePipe, UpperCasePipe, FundSetupComponent, RouterLink, RouterOutlet, FirstLoginComponent, AssociationBoardComponent, MemberTableComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
@@ -30,6 +32,7 @@ export class App {
   private readonly authService = inject(AuthService);
   private readonly paymentService = inject(PaymentService);
   private readonly associationService = inject(AssociationService);
+  private readonly refresh = inject(DataRefreshService);
   protected readonly today = new Date();
   protected readonly isCheckingSession = signal(true);
   protected readonly currentUser = this.authService.currentUser;
@@ -107,6 +110,8 @@ export class App {
   protected selectedCampaignId = '';
   protected selectedCreateLocalFundId = '';
   protected selectedEnrollmentLocalFundId = '';
+  /** Valeur du sélecteur « Caisse » pour un membre suivi directement par la caisse principale. */
+  protected readonly primaryFundChoice = 'PRINCIPALE';
   protected readonly filteredMembers = computed(() => {
     const query = this.searchTerm().trim().toLocaleLowerCase('fr');
     if (!query) return this.members();
@@ -131,6 +136,19 @@ export class App {
       this.loadAccessibleLocalFunds();
       this.loadMembers();
       this.loadPaymentData();
+    });
+    // Après chaque écriture réussie (membre, caisse, paiement…), on recharge sans effet de « Chargement… ».
+    let seenVersion = this.refresh.version();
+    effect(() => {
+      const version = this.refresh.version();
+      if (version === seenVersion) return;
+      seenVersion = version;
+      untracked(() => {
+        if (!this.currentUser() || !this.activeAssociationId() || this.isCheckingAssociations()) return;
+        this.loadAccessibleLocalFunds();
+        this.loadMembers(true);
+        this.loadPaymentData();
+      });
     });
     // Au chargement, l'access token (gardé en mémoire) est perdu : on le redemande grâce au cookie.
     this.authService.restoreSession().subscribe({
@@ -229,9 +247,9 @@ export class App {
     return this.currentUser()?.role === 'RESPONSABLE' ? 'Responsable de caisse' : 'Trésorier';
   }
 
-  protected loadMembers(): void {
+  protected loadMembers(silent = false): void {
     const associationId = this.activeAssociationId();
-    this.isLoading.set(true);
+    if (!silent) this.isLoading.set(true);
     this.loadErrorMessage.set(null);
     this.memberService.list().subscribe({
       next: (members) => {
@@ -252,8 +270,8 @@ export class App {
     this.firstName = '';
     this.lastName = '';
     this.phone = '';
-    if (!this.accessibleLocalFunds().some((fund) => fund.id === this.selectedCreateLocalFundId)) {
-      this.selectedCreateLocalFundId = this.accessibleLocalFunds()[0]?.id ?? '';
+    if (!this.isValidMemberFund(this.selectedCreateLocalFundId)) {
+      this.selectedCreateLocalFundId = this.defaultMemberFund();
     }
     this.saveErrorMessage.set(null);
     this.showMemberForm.set(true);
@@ -281,7 +299,8 @@ export class App {
       firstName: this.firstName.trim(),
       lastName: this.lastName.trim(),
       phone: this.phone.trim() || null,
-      localFundId: this.editingMemberId() ? undefined : this.selectedCreateLocalFundId,
+      localFundId: this.editingMemberId() || this.selectedCreateLocalFundId === this.primaryFundChoice
+        ? undefined : this.selectedCreateLocalFundId,
     };
 
     this.isSaving.set(true);
@@ -361,14 +380,14 @@ export class App {
             );
             this.accessibleLocalFunds.set(localFunds);
             if (!localFunds.some((fund) => fund.id === this.activeLocalFundId())) this.activeLocalFundId.set(localFunds[0]?.id ?? null);
-            if (!localFunds.some((fund) => fund.id === this.selectedCreateLocalFundId)) {
-              this.selectedCreateLocalFundId = localFunds[0]?.id ?? '';
+            if (!this.isValidMemberFund(this.selectedCreateLocalFundId)) {
+              this.selectedCreateLocalFundId = this.defaultMemberFund();
             }
           },
           error: () => {
             if (associationId !== this.activeAssociationId()) return;
             this.accessibleLocalFunds.set([]);
-            this.selectedCreateLocalFundId = '';
+            this.selectedCreateLocalFundId = this.defaultMemberFund();
           },
         });
       },
@@ -382,8 +401,35 @@ export class App {
     });
   }
 
+  /** Le responsable rattache un membre à la caisse principale ou à une caisse locale ; le trésorier, à sa caisse. */
+  private isValidMemberFund(choice: string): boolean {
+    if (choice === this.primaryFundChoice) return this.isResponsible() && this.hasPrimaryFunds();
+    return this.accessibleLocalFunds().some((fund) => fund.id === choice);
+  }
+
+  private defaultMemberFund(): string {
+    if (this.isResponsible() && this.hasPrimaryFunds()) return this.primaryFundChoice;
+    return this.accessibleLocalFunds()[0]?.id ?? '';
+  }
+
   protected updateSearch(event: Event): void {
     this.searchTerm.set((event.target as HTMLInputElement).value);
+  }
+
+  /** Ligne du tableau → fiche membre (formulaire de modification, inscriptions). */
+  protected asMember(row: MemberTracking): Member {
+    return { id: row.id, firstName: row.firstName, lastName: row.lastName, phone: row.phone, localFundId: row.localFundId,
+      fundName: row.fundName, inPrimaryFund: row.localFundId === null, active: row.active, createdAt: row.createdAt };
+  }
+
+  /** Campagne ouverte la plus récente : sert à signaler « Non inscrit à la campagne en cours » sur la fiche. */
+  protected currentCampaign(): Campaign | null {
+    return this.enrollmentCampaigns()[0] ?? null;
+  }
+
+  protected isEnrolledInCurrentCampaign(): boolean {
+    const current = this.currentCampaign();
+    return !current || this.memberEnrollments().some((enrollment) => enrollment.campaignId === current.id);
   }
 
   protected openEnrollment(member: Member): void {
@@ -397,11 +443,12 @@ export class App {
       payments: this.paymentService.historyForMember(member.id),
     }).subscribe({
       next: ({ campaigns, enrollments, payments }) => {
-        this.enrollmentCampaigns.set(campaigns);
+        // Seules les campagnes ouvertes acceptent une inscription.
+        this.enrollmentCampaigns.set(campaigns.filter((campaign) => campaign.status === 'OUVERTE'));
         this.memberEnrollments.set(enrollments);
         this.memberPayments.set(payments);
         this.isLoadingEnrollments.set(false);
-        this.onEnrollmentCampaignChange(campaigns[0]?.id ?? '');
+        this.onEnrollmentCampaignChange(this.enrollmentCampaigns()[0]?.id ?? '');
       },
       error: (error: HttpErrorResponse) => {
         this.enrollmentErrorMessage.set(this.describeApiError(error));
@@ -416,21 +463,17 @@ export class App {
     this.enrollmentSuccessMessage.set(null);
   }
 
+  /**
+   * Caisses proposées : celles de l'utilisateur, plus la caisse principale pour le responsable.
+   * Par défaut, la caisse du membre.
+   */
   protected onEnrollmentCampaignChange(campaignId: string): void {
     this.selectedCampaignId = campaignId;
-    this.selectedEnrollmentLocalFundId = '';
-    const campaign = this.enrollmentCampaigns().find((item) => item.id === campaignId);
-    if (!campaign) {
-      this.enrollmentLocalFunds.set([]);
-      return;
-    }
-    this.fundService.listLocalFunds(campaign.primaryFundId).subscribe({
-      next: (funds) => {
-        this.enrollmentLocalFunds.set(funds);
-        this.selectedEnrollmentLocalFundId = funds[0]?.id ?? '';
-      },
-      error: (error: HttpErrorResponse) => this.enrollmentErrorMessage.set(this.describeApiError(error)),
-    });
+    this.enrollmentLocalFunds.set(this.accessibleLocalFunds());
+    const member = this.selectedMemberForEnrollment();
+    const own = member?.localFundId ?? (this.isResponsible() ? this.primaryFundChoice : '');
+    this.selectedEnrollmentLocalFundId = own && (own === this.primaryFundChoice
+      || this.accessibleLocalFunds().some((fund) => fund.id === own)) ? own : this.accessibleLocalFunds()[0]?.id ?? '';
   }
 
   protected enrollMember(): void {
@@ -441,7 +484,7 @@ export class App {
     this.enrollmentSuccessMessage.set(null);
     this.memberService.enroll(member.id, {
       campaignId: this.selectedCampaignId,
-      localFundId: this.selectedEnrollmentLocalFundId,
+      localFundId: this.selectedEnrollmentLocalFundId === this.primaryFundChoice ? undefined : this.selectedEnrollmentLocalFundId,
     }).subscribe({
       next: (enrollment) => {
         this.memberEnrollments.update((enrollments) => [enrollment, ...enrollments]);
@@ -460,10 +503,11 @@ export class App {
   protected campaignLabel(campaign: Campaign): string {
     const year = campaign.campaignYear ? ` · ${campaign.campaignYear}` : '';
     const amount = campaign.expectedAmount === null ? 'montant à définir' : `${campaign.expectedAmount} €`;
-    return `${campaign.name}${year} — ${campaign.primaryFundName} (${amount})`;
+    return `${campaign.name}${year} (${amount})`;
   }
 
-  protected openPaymentForm(): void {
+  /** {@code enrollmentId} : inscription présélectionnée (bouton « Encaisser » du tableau). */
+  protected openPaymentForm(enrollmentId?: string): void {
     this.showPaymentForm.set(true);
     this.isReviewingPayment.set(false);
     this.paymentErrorMessage.set(null);
@@ -474,14 +518,23 @@ export class App {
       next: (targets) => {
         this.paymentTargets.set(targets);
         this.isLoadingPaymentTargets.set(false);
-        this.selectedPaymentEnrollmentId = targets[0]?.id ?? '';
-        this.paymentAmount = targets[0]?.remainingAmount ?? 0;
+        const target = targets.find((item) => item.id === enrollmentId) ?? targets[0];
+        this.selectedPaymentEnrollmentId = target?.id ?? '';
+        this.paymentAmount = target?.remainingAmount ?? 0;
       },
       error: (error: HttpErrorResponse) => {
         this.paymentErrorMessage.set(this.describeApiError(error));
         this.isLoadingPaymentTargets.set(false);
       },
     });
+  }
+
+  /**
+   * Clic sur le fond du modal uniquement. Ne rien renvoyer : un gestionnaire Angular qui renvoie
+   * `false` annule l'action par défaut, ce qui bloquait l'envoi du formulaire (« Vérifier le paiement »).
+   */
+  protected closePaymentFormFromBackdrop(event: MouseEvent): void {
+    if (event.target === event.currentTarget) this.closePaymentForm();
   }
 
   protected closePaymentForm(): void {
@@ -502,14 +555,14 @@ export class App {
 
   protected reviewPayment(): void {
     const target = this.selectedPaymentTarget();
-    if (!target || this.paymentAmount <= 0 || this.paymentAmount > target.remainingAmount) return;
+    if (!target || this.paymentAmount <= 0 || this.paymentAmount > (target.remainingAmount ?? 0)) return;
     this.paymentErrorMessage.set(null);
     this.isReviewingPayment.set(true);
   }
 
   protected savePayment(): void {
     const target = this.selectedPaymentTarget();
-    if (!target || this.isSavingPayment() || this.paymentAmount <= 0 || this.paymentAmount > target.remainingAmount) return;
+    if (!target || this.isSavingPayment() || this.paymentAmount <= 0 || this.paymentAmount > (target.remainingAmount ?? 0)) return;
     const request: CreatePaymentRequest = {
       amount: this.paymentAmount,
       paidOn: this.paymentDate,
@@ -527,10 +580,10 @@ export class App {
         this.paymentSuccessMessage.set(`Paiement de ${payment.amount.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })} enregistré pour ${payment.memberName}.`);
         this.paymentTargets.update((targets) => targets
           .map((item) => item.id === target.id
-            ? { ...item, paidAmount: item.paidAmount + payment.amount, remainingAmount: item.remainingAmount - payment.amount,
-              status: item.remainingAmount - payment.amount <= 0 ? 'PAYE' as const : 'PARTIELLEMENT_PAYE' as const }
+            ? { ...item, paidAmount: item.paidAmount + payment.amount, remainingAmount: (item.remainingAmount ?? 0) - payment.amount,
+              status: (item.remainingAmount ?? 0) - payment.amount <= 0 ? 'PAYE' as const : 'PARTIELLEMENT_PAYE' as const }
             : item)
-          .filter((item) => item.remainingAmount > 0));
+          .filter((item) => (item.remainingAmount ?? 0) > 0));
         this.paymentSummary.update((summary) => summary ? {
           ...summary,
           collectedAmount: summary.collectedAmount + payment.amount,

@@ -11,7 +11,10 @@ public record CashRemittanceSummaryResponse(
         BigDecimal totalCollected,
         BigDecimal availableLocally,
         BigDecimal inTransit,
+        /** Remises confirmées + paiements encaissés directement par la caisse principale (responsable). */
         BigDecimal centralBalance,
+        /** Part du solde central encaissée directement par la caisse principale (responsable). */
+        BigDecimal collectedCentrally,
         BigDecimal totalHeldGlobally
 ) {
 }

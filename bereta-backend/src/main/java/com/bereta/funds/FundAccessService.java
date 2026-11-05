@@ -50,7 +50,7 @@ public class FundAccessService {
         PrimaryFundEntity fund = primaryFundRepository.findById(primaryFundId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Caisse principale introuvable."));
         UUID associationId = context.requireId();
-        if (!fund.getAssociation().getId().equals(associationId)) {
+        if (!fund.isActive() || !fund.getAssociation().getId().equals(associationId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Caisse principale introuvable.");
         }
         associationAccess.requireAccess(userId, associationId);
@@ -85,19 +85,20 @@ public class FundAccessService {
 
     public boolean hasManagerAccess(UUID userId, UUID primaryFundId) {
         return primaryFundRepository.findById(primaryFundId)
-                .filter(f -> f.getAssociation().getId().equals(context.requireId()))
+                .filter(f -> f.isActive() && f.getAssociation().getId().equals(context.requireId()))
                 .filter(f -> isAssociationManager(userId, context.requireId())).isPresent();
     }
 
     public List<UUID> managerPrimaryFundIds(UUID userId) {
         UUID associationId = context.requireId();
         if (!isAssociationManager(userId, associationId)) return List.of();
-        return primaryFundRepository.findAllByAssociationIdOrderByNameAsc(associationId).stream()
+        return primaryFundRepository.findActiveByAssociationId(associationId).stream()
                 .map(PrimaryFundEntity::getId).toList();
     }
 
     public List<UUID> accessiblePrimaryFundIds(UUID userId) {
-        return membershipsForUser(userId).stream().map(m -> m.getPrimaryFund().getId()).distinct().toList();
+        return membershipsForUser(userId).stream().map(FundMembershipEntity::getPrimaryFund)
+                .filter(PrimaryFundEntity::isActive).map(PrimaryFundEntity::getId).distinct().toList();
     }
 
     public List<UUID> accessibleLocalFundIds(UUID userId) {
@@ -109,6 +110,15 @@ public class FundAccessService {
         }
         return membershipsForUser(userId).stream().filter(m -> m.getRole() == FundRole.TRESORIER)
                 .map(m -> m.getLocalFund().getId()).distinct().toList();
+    }
+
+    /** Périmètre de l'utilisateur dans l'association active (403 s'il n'y a pas accès). */
+    public FundScope scope(UUID userId) {
+        UUID associationId = context.requireId();
+        associationAccess.requireAccess(userId, associationId);
+        boolean manager = isAssociationManager(userId, associationId);
+        return new FundScope(associationId, manager,
+                manager ? java.util.Set.of() : java.util.Set.copyOf(accessibleLocalFundIds(userId)));
     }
 
     public boolean isAssociationManager(UUID userId, UUID associationId) {

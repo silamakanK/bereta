@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -16,6 +17,7 @@ import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -34,6 +36,9 @@ class FundJourneyIntegrationTest {
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
     @Autowired private AdminAuditRepository adminAudit;
+    @Autowired private PrimaryFundRepository primaryFunds;
+    @Autowired private LocalFundRepository localFunds;
+    @Autowired private com.bereta.associations.AssociationRepository associations;
 
     @Test
     void managerCreatesAssociationLocalFundAndTreasurerWhoOnlySeesHisFund() throws Exception {
@@ -144,6 +149,41 @@ class FundJourneyIntegrationTest {
         String outsider = registerManager();
         call(outsider, associationId, get("/api/caisses-principales/" + primaryFundId + "/caisses-locales"), null)
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void anAssociationHasExactlyOnePrimaryFundAndLocalFundsStayInsideIt() throws Exception {
+        String manager = registerManager();
+        String associationA = createAssociation(manager, "Association A");
+        String associationB = createAssociation(manager, "Association B");
+        String primaryA = primaryFundOf(manager, associationA);
+        String primaryB = primaryFundOf(manager, associationB);
+
+        // Refus d'une 2e caisse principale (API) et contrainte en base.
+        call(manager, associationA, post("/api/caisses-principales"),
+                "{\"name\":\"Doublon\",\"objective\":\"Test\"}").andExpect(status().isConflict());
+        primaryFundOf(manager, associationA);
+        var association = associations.findById(UUID.fromString(associationA)).orElseThrow();
+        assertThatThrownBy(() -> primaryFunds.saveAndFlush(new PrimaryFundEntity(association, "Doublon", "Test", null)))
+                .isInstanceOf(DataIntegrityViolationException.class);
+
+        // La caisse locale est rattachée à la caisse principale de son association.
+        String local = json(call(manager, associationA, post("/api/caisses-principales/" + primaryA + "/caisses-locales"),
+                "{\"name\":\"Caisse Bamako\"}").andExpect(status().isCreated())).get("id").asText();
+        assertThat(localFunds.findById(UUID.fromString(local)).orElseThrow().getPrimaryFund().getId().toString())
+                .isEqualTo(primaryA);
+        call(manager, associationA, get("/api/caisses-principales/" + primaryA + "/caisses-locales"), null)
+                .andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].id").value(local));
+        call(manager, associationB, get("/api/caisses-principales/" + primaryB + "/caisses-locales"), null)
+                .andExpect(jsonPath("$.length()").value(0));
+
+        // La caisse principale d'une association n'est pas accessible sous une autre.
+        call(manager, associationB, post("/api/caisses-principales/" + primaryA + "/caisses-locales"),
+                "{\"name\":\"Mauvaise association\"}").andExpect(status().isNotFound());
+        call(manager, associationB, get("/api/caisses-principales/" + primaryA + "/caisses-locales"), null)
+                .andExpect(status().isNotFound());
+        String outsider = registerManager();
+        call(outsider, associationA, get("/api/caisses-principales"), null).andExpect(status().isForbidden());
     }
 
     // ---- Outils ------------------------------------------------------------------------------

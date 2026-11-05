@@ -79,6 +79,38 @@ class MemberControllerTest {
     }
 
     @Test
+    void managerAssignsAMemberToThePrimaryFundOrToALocalFundAndTheListShowsIt() throws Exception {
+        mockMvc.perform(secured(post("/api/membres").contentType(APPLICATION_JSON)
+                        .content("{\"firstName\":\"Awa\",\"lastName\":\"Principale\"}")))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.inPrimaryFund").value(true))
+                .andExpect(jsonPath("$.localFundId").doesNotExist())
+                .andExpect(jsonPath("$.fundName").value("Caisse principale"));
+        mockMvc.perform(secured(post("/api/membres").contentType(APPLICATION_JSON)
+                        .content("{\"firstName\":\"Binta\",\"lastName\":\"Locale\",\"localFundId\":\"%s\"}"
+                                .formatted(testLocalFund.getId()))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.inPrimaryFund").value(false))
+                .andExpect(jsonPath("$.fundName").value("Caisse de test"));
+        mockMvc.perform(secured(get("/api/membres")))
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[?(@.lastName == 'Principale')].fundName").value("Caisse principale"))
+                .andExpect(jsonPath("$[?(@.lastName == 'Locale')].localFundId").value(testLocalFund.getId().toString()));
+
+        // Un trésorier ne peut rattacher qu'à sa caisse locale, et ne voit pas les membres de la caisse principale.
+        UserAccountEntity treasurer = TestSecurity.account(userAccountRepository, passwordEncoder,
+                "member-treasurer-" + java.util.UUID.randomUUID() + "@example.test", "TRESORIER");
+        fundMembershipRepository.save(new com.bereta.funds.FundMembershipEntity(treasurer,
+                testLocalFund.getPrimaryFund(), testLocalFund, com.bereta.funds.FundRole.TRESORIER));
+        mockMvc.perform(post("/api/membres").with(TestSecurity.as(treasurer)).with(csrf()).contentType(APPLICATION_JSON)
+                        .content("{\"firstName\":\"Sans\",\"lastName\":\"Caisse\"}"))
+                .andExpect(status().isBadRequest());
+        mockMvc.perform(get("/api/membres").with(TestSecurity.as(treasurer)))
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].lastName").value("Locale"));
+    }
+
+    @Test
     void listsMembersAndCreatesOneWithOptionalPhone() throws Exception {
         mockMvc.perform(secured(get("/api/membres")))
                 .andExpect(status().isOk())

@@ -54,6 +54,11 @@ public class PrimaryFundService {
         String description = request.description() == null || request.description().isBlank()
                 ? null : request.description().trim();
         var association = associationAccessService.requireManager(userId, associationContext.requireId());
+        // Une seule caisse principale par association : elle est créée avec l'association.
+        if (primaryFundRepository.existsByAssociationIdAndStatus(association.getId(), "ACTIVE")) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Cette association a déjà sa caisse principale. Ajoutez plutôt une caisse locale.");
+        }
         PrimaryFundEntity fund = new PrimaryFundEntity(association,
                 request.name().trim(), request.objective().trim(), description);
         userAccountRepository.findById(userId).filter(UserAccountEntity::isEnabled)

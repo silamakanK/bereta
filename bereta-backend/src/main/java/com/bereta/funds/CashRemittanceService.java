@@ -130,12 +130,14 @@ public class CashRemittanceService {
         BigDecimal totalCollected = sum(localBalances, LocalFundCashBalanceResponse::totalCollected);
         BigDecimal available = sum(localBalances, LocalFundCashBalanceResponse::availableLocally);
         BigDecimal inTransit = sum(localBalances, LocalFundCashBalanceResponse::inTransit);
+        // Un paiement encaissé par la caisse principale compte directement dans le solde central.
+        BigDecimal direct = manager ? paymentRepository.sumDirectForAssociation(primaryFund.getAssociation().getId()) : null;
         BigDecimal central = manager
-                ? remittanceRepository.sumForPrimaryFundAndStatus(primaryFundId, RemittanceStatus.CONFIRMEE)
+                ? remittanceRepository.sumForPrimaryFundAndStatus(primaryFundId, RemittanceStatus.CONFIRMEE).add(direct)
                 : null;
         BigDecimal global = manager ? available.add(inTransit).add(central) : null;
         return new CashRemittanceSummaryResponse(primaryFundId, primaryFund.getName(), localBalances,
-                totalCollected, available, inTransit, central, global);
+                manager ? totalCollected.add(direct) : totalCollected, available, inTransit, central, direct, global);
     }
 
     private CashRemittanceEntity requireRemittanceForUpdate(UUID primaryFundId, UUID remittanceId) {

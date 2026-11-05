@@ -67,12 +67,13 @@ class MemberCampaignControllerTest {
                 """);
         String localFundId = create("/api/caisses-principales/%s/caisses-locales".formatted(primaryFundId),
                 "{\"name\":\"Caisse de Mamadou\"}");
-        String memberId = create("/api/membres", """
-                {"firstName":"Awa","lastName":"Traoré","localFundId":"%s"}
-                """.formatted(localFundId));
+        // Campagne créée avant le membre : pas d'inscription automatique, on l'inscrit à la main.
         String campaignId = create("/api/campagnes", """
                 {"primaryFundId":"%s","name":"Campagne 2026","campaignType":"ANNUAL","campaignYear":2026,"expectedAmount":30.00}
                 """.formatted(primaryFundId));
+        String memberId = create("/api/membres", """
+                {"firstName":"Awa","lastName":"Traoré","localFundId":"%s"}
+                """.formatted(localFundId));
 
         mockMvc.perform(secured(post("/api/membres/{memberId}/inscriptions", memberId)
                         .contentType(APPLICATION_JSON)
@@ -93,28 +94,14 @@ class MemberCampaignControllerTest {
     }
 
     @Test
-    void rejectsLocalFundFromDifferentPrimaryFund() throws Exception {
-        String firstFundId = create("/api/caisses-principales", """
+    void refusesASecondPrimaryFundInTheSameAssociation() throws Exception {
+        create("/api/caisses-principales", """
                 {"name":"Solidarité","objective":"Soutenir les membres"}
                 """);
-        String secondFundId = create("/api/caisses-principales", """
-                {"name":"Développement","objective":"Projets du village"}
-                """);
-        String localFundId = create("/api/caisses-principales/%s/caisses-locales".formatted(firstFundId),
-                "{\"name\":\"Caisse locale A\"}");
-        String memberId = create("/api/membres", """
-                {"firstName":"Mamadou","lastName":"Cissé","localFundId":"%s"}
-                """.formatted(localFundId));
-        String campaignId = create("/api/campagnes", """
-                {"primaryFundId":"%s","name":"Année 2026","campaignType":"ANNUAL","campaignYear":2026,"expectedAmount":18.00}
-                """.formatted(secondFundId));
-
-        mockMvc.perform(secured(post("/api/membres/{memberId}/inscriptions", memberId)
+        mockMvc.perform(secured(post("/api/caisses-principales")
                         .contentType(APPLICATION_JSON)
-                        .content("""
-                                {"campaignId":"%s","localFundId":"%s"}
-                                """.formatted(campaignId, localFundId))))
-                .andExpect(status().isBadRequest());
+                        .content("{\"name\":\"Développement\",\"objective\":\"Projets du village\"}")))
+                .andExpect(status().isConflict());
     }
 
     private String create(String path, String content) throws Exception {

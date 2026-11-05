@@ -15,12 +15,17 @@ public class CampaignService {
     private final CampaignRepository campaignRepository;
     private final PrimaryFundRepository primaryFundRepository;
     private final FundAccessService fundAccessService;
+    private final MemberCampaignRepository enrollmentRepository;
+    private final com.bereta.members.MemberRepository memberRepository;
 
     public CampaignService(CampaignRepository campaignRepository, PrimaryFundRepository primaryFundRepository,
-                           FundAccessService fundAccessService) {
+                           FundAccessService fundAccessService, MemberCampaignRepository enrollmentRepository,
+                           com.bereta.members.MemberRepository memberRepository) {
         this.campaignRepository = campaignRepository;
         this.primaryFundRepository = primaryFundRepository;
         this.fundAccessService = fundAccessService;
+        this.enrollmentRepository = enrollmentRepository;
+        this.memberRepository = memberRepository;
     }
 
     public List<CampaignResponse> findAll(UUID userId, UUID primaryFundId) {
@@ -34,14 +39,14 @@ public class CampaignService {
         }
         if (accessibleIds.isEmpty()) return List.of();
         List<CampaignEntity> campaigns = campaignRepository.findAllByPrimaryFundIdInOrderByCreatedAtDesc(accessibleIds);
-        return campaigns.stream().map(CampaignResponse::from).toList();
+        return campaigns.stream().map(this::withCount).toList();
     }
 
     public CampaignResponse findById(UUID userId, UUID id) {
         CampaignEntity campaign = campaignRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Campagne introuvable"));
         fundAccessService.requireAccess(userId, campaign.getPrimaryFund().getId());
-        return CampaignResponse.from(campaign);
+        return withCount(campaign);
     }
 
     @Transactional
@@ -56,8 +61,33 @@ public class CampaignService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Caisse principale introuvable"));
         fundAccessService.requireManager(userId, primaryFund.getId());
-        CampaignEntity campaign = new CampaignEntity(primaryFund, request.name().trim(),
-                request.campaignType(), request.campaignYear(), request.expectedAmount(), request.dueDate());
-        return CampaignResponse.from(campaignRepository.save(campaign));
+        CampaignEntity campaign = campaignRepository.save(new CampaignEntity(primaryFund, request.name().trim(),
+                request.campaignType(), request.campaignYear(), request.expectedAmount(), request.dueDate()));
+        // Même transaction : tous les membres actifs de l'association sont inscrits, chacun dans sa caisse
+        // (caisse locale, ou caisse principale si le membre n'a pas de caisse locale). Montant dû copié.
+        List<MemberCampaignEntity> enrollments = memberRepository
+                .findAllByAssociationIdAndActiveTrue(primaryFund.getAssociation().getId()).stream()
+                .map(member -> new MemberCampaignEntity(member, campaign, member.getCreatedInLocalFund(),
+                        campaign.getExpectedAmount()))
+                .toList();
+        enrollmentRepository.saveAll(enrollments);
+        return CampaignResponse.from(campaign, enrollments.size());
+    }
+
+    /** Clôture par le responsable : plus aucune inscription ; les paiements restent possibles pour les restes dus. */
+    @Transactional
+    public CampaignResponse close(UUID userId, UUID id) {
+        CampaignEntity campaign = campaignRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Campagne introuvable"));
+        fundAccessService.requireManager(userId, campaign.getPrimaryFund().getId());
+        if (!campaign.isOpen()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Cette campagne est déjà clôturée.");
+        }
+        campaign.close();
+        return withCount(campaign);
+    }
+
+    private CampaignResponse withCount(CampaignEntity campaign) {
+        return CampaignResponse.from(campaign, enrollmentRepository.countByCampaignId(campaign.getId()));
     }
 }

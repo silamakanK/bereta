@@ -20,8 +20,9 @@ export class AssociationService {
       const currentId = this.activeAssociationId();
       const current = items.find((item) => item.id === currentId) ?? null;
       this.activeAssociation.set(current);
-      if (!current && items.length === 1) this.select(items[0].id);
-      else if (!current) this.select(null);
+      // Pas d'écran « Choisir une association » : la dernière choisie si elle est encore accessible,
+      // sinon la première qu'on gère, sinon la première tout court (modifiable dans la barre du haut).
+      if (!current) this.select((items.find((item) => item.currentUserResponsible) ?? items[0])?.id ?? null);
     }));
   }
 

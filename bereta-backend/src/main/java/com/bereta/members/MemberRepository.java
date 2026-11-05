@@ -23,4 +23,6 @@ public interface MemberRepository extends JpaRepository<MemberEntity, UUID> {
             + "AND role = 'RESPONSABLE' AND active = TRUE ORDER BY created_at LIMIT 1) "
             + "WHERE created_by_user_id IS NULL", nativeQuery = true)
     int assignUnownedMembersTo(@Param("userId") UUID userId);
+    /** Membres actifs (non archivés) de l'association : inscrits automatiquement aux nouvelles campagnes. */
+    List<MemberEntity> findAllByAssociationIdAndActiveTrue(UUID associationId);
 }

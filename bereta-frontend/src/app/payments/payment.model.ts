@@ -1,3 +1,5 @@
+import { CampaignStatus } from '../funds/fund.model';
+
 export type PaymentMethod = 'ESPECES' | 'VIREMENT' | 'CHEQUE' | 'AUTRE';
 
 export interface PaymentEnrollment {
@@ -7,11 +9,14 @@ export interface PaymentEnrollment {
   campaignId: string;
   campaignName: string;
   campaignYear: number | null;
-  localFundId: string;
+  campaignStatus: CampaignStatus;
+  dueDate: string | null;
+  /** null = caisse principale. */
+  localFundId: string | null;
   localFundName: string;
-  expectedAmount: number;
+  expectedAmount: number | null;
   paidAmount: number;
-  remainingAmount: number;
+  remainingAmount: number | null;
   status: 'A_PAYER' | 'PARTIELLEMENT_PAYE' | 'PAYE' | 'EN_RETARD' | 'MONTANT_A_DEFINIR';
 }
 
@@ -29,7 +34,8 @@ export interface Payment {
   memberName: string;
   campaignId: string;
   campaignName: string;
-  localFundId: string;
+  /** Caisse qui a encaissé (null = caisse principale), figée au moment du paiement. */
+  localFundId: string | null;
   localFundName: string;
   amount: number;
   paidOn: string;

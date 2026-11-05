@@ -39,9 +39,12 @@ public class MemberCampaignEntity {
     @JoinColumn(name = "campaign_id", nullable = false)
     private CampaignEntity campaign;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "local_fund_id", nullable = false)
+    /** Caisse locale qui suit l'inscription ; null = caisse principale de l'association. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "local_fund_id")
     private LocalFundEntity localFund;
+
+    /** Montant dû copié à l'inscription : modifier la campagne ne change pas les inscriptions existantes. */
 
     @Column(name = "expected_amount", precision = 12, scale = 2)
     private BigDecimal expectedAmount;
@@ -71,6 +74,7 @@ public class MemberCampaignEntity {
     public MemberEntity getMember() { return member; }
     public CampaignEntity getCampaign() { return campaign; }
     public LocalFundEntity getLocalFund() { return localFund; }
+    public boolean isPrimaryFund() { return localFund == null; }
     public BigDecimal getExpectedAmount() { return expectedAmount; }
     public Instant getCreatedAt() { return createdAt; }
 }

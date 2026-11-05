@@ -53,4 +53,15 @@ public class MemberController {
                                  @PathVariable UUID id, @Valid @RequestBody MemberRequest request) {
         return memberService.update(user.getId(), id, request);
     }
+
+    /** Archiver un membre : il reste consultable mais n'est plus inscrit aux nouvelles campagnes. */
+    @PostMapping("/{id}/archiver")
+    public MemberResponse archive(@AuthenticationPrincipal BeretaUserDetails user, @PathVariable UUID id) {
+        return memberService.setActive(user.getId(), id, false);
+    }
+
+    @PostMapping("/{id}/reactiver")
+    public MemberResponse reactivate(@AuthenticationPrincipal BeretaUserDetails user, @PathVariable UUID id) {
+        return memberService.setActive(user.getId(), id, true);
+    }
 }
