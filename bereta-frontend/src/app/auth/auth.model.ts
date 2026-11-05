@@ -2,15 +2,14 @@ export type Role = 'RESPONSABLE' | 'TRESORIER' | 'ADMIN';
 
 export interface AuthUser {
   id: string;
-  displayName: string;
+  displayName: string | null;
   email: string | null;
   phone: string | null;
   role: Role;
-  emailVerified: boolean;
-  phoneVerified: boolean;
   mustChangePassword: boolean;
 }
 
+/** Inscription et connexion renvoient directement la session (cookie de rafraîchissement en plus). */
 export interface TokenResponse {
   accessToken: string;
   tokenType: 'Bearer';
@@ -18,43 +17,18 @@ export interface TokenResponse {
   user: AuthUser;
 }
 
-/** Étape 1 de la connexion : jamais de jeton, seulement un challenge SMS ou une demande de téléphone. */
-export interface LoginStep {
-  step: 'OTP_REQUIRED' | 'PHONE_REQUIRED';
-  challengeId: string | null;
-  maskedPhone: string | null;
-  expiresInSeconds: number | null;
-  resendAvailableInSeconds: number | null;
-  enrollmentToken: string | null;
-}
-
-export interface CodeSent {
-  challengeId: string;
-  channel: 'SMS' | 'EMAIL' | null;
-  maskedDestination: string | null;
-  expiresInSeconds: number;
-  resendAvailableInSeconds: number;
-}
-
+/** Téléphone + mot de passe + CGU ; prénom, nom et e-mail ensuite (« Complète ton profil »). */
 export interface RegisterRequest {
-  firstName: string;
-  lastName: string;
   phone: string;
-  email: string | null;
   password: string;
   acceptTerms: boolean;
 }
 
-export interface RegistrationResponse {
-  phoneVerification: CodeSent;
-  emailVerificationSent: boolean;
-}
-
-export interface ForgotPasswordResponse {
-  message: string;
-  channel: 'SMS' | 'EMAIL';
-  challengeId: string | null;
-  expiresInSeconds: number;
+export interface UpdateProfileRequest {
+  firstName?: string | null;
+  lastName?: string | null;
+  /** Chaîne vide : retire l'e-mail. */
+  email?: string | null;
 }
 
 export interface AuthMessage {

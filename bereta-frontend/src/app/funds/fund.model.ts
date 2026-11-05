@@ -6,12 +6,38 @@ export interface PrimaryFund {
   createdAt: string;
 }
 
+export interface TreasurerSummary {
+  membershipId: string;
+  userId: string;
+  displayName: string | null;
+  phone: string | null;
+  email: string | null;
+}
+
 export interface LocalFund {
   id: string;
   primaryFundId: string;
   primaryFundName: string;
   name: string;
+  location: string | null;
+  description: string | null;
+  /** Vide : caisse « Sans responsable ». */
+  treasurers: TreasurerSummary[];
   createdAt: string;
+}
+
+export interface CreateLocalFundRequest {
+  name: string;
+  location?: string | null;
+  description?: string | null;
+}
+
+/** Recherche exacte par téléphone ou e-mail (jamais de liste de comptes). */
+export interface AccountLookup {
+  exists: boolean;
+  displayName: string | null;
+  maskedPhone: string | null;
+  alreadyTreasurer: boolean;
 }
 
 export interface FundMembership {
@@ -19,7 +45,7 @@ export interface FundMembership {
   userId: string;
   email: string | null;
   phone: string | null;
-  displayName: string;
+  displayName: string | null;
   role: 'RESPONSABLE' | 'TRESORIER';
   localFundId: string | null;
   localFundName: string | null;
@@ -28,9 +54,12 @@ export interface FundMembership {
 
 export interface DesignateTreasurerRequest {
   localFundId: string;
-  phone: string;
+  phone?: string | null;
+  email?: string | null;
   firstName?: string;
   lastName?: string;
+  /** Trésorier actuel à remplacer (« Changer »). */
+  replaceMembershipId?: string | null;
 }
 
 /** temporaryPassword n'est fourni qu'une fois, à la création du compte. */

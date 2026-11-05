@@ -4,7 +4,9 @@ import { AssociationService } from './association.service';
 
 export const associationInterceptor: HttpInterceptorFn = (request, next) => {
   const associationId = inject(AssociationService).activeAssociationId();
-  if (!associationId || !request.url.startsWith('/api/') || request.url.startsWith('/api/auth/')
+  // Un appel peut viser une autre association que l'active (tableau de bord des associations) : on garde son en-tête.
+  if (!associationId || request.headers.has('X-Association-Id') || !request.url.startsWith('/api/')
+      || request.url.startsWith('/api/auth/')
       || request.url.startsWith('/api/admin/')) {
     return next(request);
   }

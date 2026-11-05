@@ -5,7 +5,7 @@ import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from './auth.service';
 
 /** Routes publiques ou à cookie : pas de jeton, pas de nouvel essai sur 401. */
-const NO_BEARER = /^\/api\/auth\/(login|register|otp|refresh|logout$|password\/(forgot|reset))/;
+const NO_BEARER = /^\/api\/auth\/(login|register|refresh|logout$|password\/(forgot|reset))/;
 
 /**
  * Ajoute « Authorization: Bearer … » aux appels /api et, sur une 401 due à un access token

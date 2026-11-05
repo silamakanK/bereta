@@ -13,14 +13,14 @@ import { Campaign, LocalFund } from './funds/fund.model';
 import { forkJoin } from 'rxjs';
 import { AuthService } from './auth/auth.service';
 import { FirstLoginComponent } from './auth/first-login.component';
-import { EmailVerificationComponent } from './auth/email-verification.component';
 import { PaymentService } from './payments/payment.service';
 import { AssociationService } from './associations/association.service';
+import { AssociationBoardComponent } from './associations/association-board.component';
 import { CreatePaymentRequest, Payment, PaymentEnrollment, PaymentMethod, PaymentSummary } from './payments/payment.model';
 
 @Component({
   selector: 'app-root',
-  imports: [CurrencyPipe, DatePipe, FormsModule, LowerCasePipe, UpperCasePipe, FundSetupComponent, RouterLink, RouterOutlet, FirstLoginComponent, EmailVerificationComponent],
+  imports: [CurrencyPipe, DatePipe, FormsModule, LowerCasePipe, UpperCasePipe, FundSetupComponent, RouterLink, RouterOutlet, FirstLoginComponent, AssociationBoardComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
@@ -33,12 +33,15 @@ export class App {
   protected readonly today = new Date();
   protected readonly isCheckingSession = signal(true);
   protected readonly currentUser = this.authService.currentUser;
-  protected readonly pendingEmailVerification = this.authService.pendingEmailVerification;
   private readonly router = inject(Router);
   private readonly currentUrl = toSignal(this.router.events.pipe(
     filter((event): event is NavigationEnd => event instanceof NavigationEnd),
     map((event) => event.urlAfterRedirects)), { initialValue: this.router.url });
   protected readonly isAdminRoute = computed(() => this.currentUrl().startsWith('/admin'));
+  /** « Complète ton profil » s'affiche hors du tableau de bord. */
+  protected readonly isAccountRoute = computed(() =>
+    this.currentUrl().startsWith('/completer-profil'));
+
   protected readonly associations = this.associationService.associations;
   protected readonly activeAssociation = this.associationService.activeAssociation;
   protected readonly activeAssociationId = this.associationService.activeAssociationId;
@@ -55,7 +58,6 @@ export class App {
   protected readonly hasPrimaryFunds = signal(false);
   protected readonly isCheckingFunds = signal(false);
   protected readonly fundLoadError = signal(false);
-  protected readonly selectedFund = signal('Développement de Niogoméra');
   protected readonly searchTerm = signal('');
   protected readonly members = signal<Member[]>([]);
   protected readonly accessibleLocalFunds = signal<LocalFund[]>([]);
@@ -77,6 +79,15 @@ export class App {
   protected readonly enrollmentSuccessMessage = signal<string | null>(null);
   protected readonly paymentSummary = signal<PaymentSummary | null>(null);
   protected readonly recentPayments = signal<Payment[]>([]);
+  /** Trésorier de plusieurs caisses : caisse affichée (sélecteur en haut du tableau de bord). */
+  protected readonly activeLocalFundId = signal<string | null>(null);
+  protected readonly visiblePayments = computed(() => {
+    const fundId = this.isResponsible() ? null : this.activeLocalFundId();
+    return fundId ? this.recentPayments().filter((payment) => payment.localFundId === fundId) : this.recentPayments();
+  });
+  protected readonly isResponsible = computed(() => !!this.activeAssociation()?.currentUserResponsible);
+  /** Un compte trésorier (créé par un responsable) ne crée pas d'association. */
+  protected readonly canCreateAssociation = computed(() => this.currentUser()?.role !== 'TRESORIER');
   protected readonly memberPayments = signal<Payment[]>([]);
   protected readonly paymentTargets = signal<PaymentEnrollment[]>([]);
   protected readonly showPaymentForm = signal(false);
@@ -194,6 +205,7 @@ export class App {
     this.loadPaymentData();
   }
 
+
   protected logout(): void {
     this.authService.logout().subscribe({
       next: () => this.finishLogout(),
@@ -202,7 +214,7 @@ export class App {
   }
 
   protected userDisplayName(): string {
-    return this.currentUser()?.displayName || this.currentUser()?.email || 'Utilisateur';
+    return this.currentUser()?.displayName || this.currentUser()?.email || this.currentUser()?.phone || 'Utilisateur';
   }
 
   protected userInitials(): string {
@@ -348,6 +360,7 @@ export class App {
               a.primaryFundName.localeCompare(b.primaryFundName, 'fr') || a.name.localeCompare(b.name, 'fr'),
             );
             this.accessibleLocalFunds.set(localFunds);
+            if (!localFunds.some((fund) => fund.id === this.activeLocalFundId())) this.activeLocalFundId.set(localFunds[0]?.id ?? null);
             if (!localFunds.some((fund) => fund.id === this.selectedCreateLocalFundId)) {
               this.selectedCreateLocalFundId = localFunds[0]?.id ?? '';
             }

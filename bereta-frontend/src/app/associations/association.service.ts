@@ -11,6 +11,8 @@ export class AssociationService {
   readonly associations = signal<Association[]>([]);
   readonly activeAssociationId = signal<string | null>(this.readActiveId());
   readonly activeAssociation = signal<Association | null>(null);
+  /** Association tout juste créée : mise en évidence quelques secondes sur le tableau de bord. */
+  readonly lastCreatedId = signal<string | null>(null);
 
   list(): Observable<Association[]> {
     return this.http.get<Association[]>('/api/associations').pipe(tap((items) => {
@@ -26,6 +28,7 @@ export class AssociationService {
   create(request: CreateAssociationRequest): Observable<Association> {
     return this.http.post<Association>('/api/associations', request).pipe(tap((created) => {
       this.associations.update((items) => [...items, created]);
+      this.lastCreatedId.set(created.id);
       this.select(created.id);
     }));
   }

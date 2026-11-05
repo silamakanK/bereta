@@ -11,8 +11,15 @@ export const authGuard: CanActivateFn = () => {
   return auth.restoreSession().pipe(map((user) => (user ? true : router.createUrlTree(['/connexion']))));
 };
 
-/** Pages publiques (connexion, inscription…) : inutiles une fois connecté. */
-export const guestGuard: CanActivateFn = () => {
+/**
+ * Pages publiques (connexion, inscription…) : inutiles une fois connecté, on renvoie vers « / »
+ * (où App affiche le tableau de bord). « / » lui-même est laissé passer : rediriger « / » vers
+ * « / » ferait boucler le routeur à l'infini et figerait la page.
+ */
+export const guestGuard: CanActivateFn = (_route, state) => {
   const auth = inject(AuthService);
-  return of(auth.currentUser() ? inject(Router).createUrlTree(['/']) : true);
+  if (!auth.currentUser() || state.url === '/' || state.url.startsWith('/?') || state.url.startsWith('/#')) {
+    return of(true);
+  }
+  return of(inject(Router).createUrlTree(['/']));
 };
