@@ -1,124 +1,83 @@
-# Authentification BERETA — livrable
+# Authentification BERETA
 
-*Branche `feat/auth-complete`, 04/11/2026. L'audit initial et les décisions prises sont dans [AUDIT_AUTH.md](AUDIT_AUTH.md).*
+*Branche `feat/auth-complete`, mise à jour du 04/11/2026 : version simplifiée, **sans code ni vérification**. L'audit initial est dans [AUDIT_AUTH.md](AUDIT_AUTH.md) ; les étapes OTP, appareils de confiance et WhatsApp ont été retirées.*
 
-> ⚠️ **Avant le prochain démarrage du backend sur Supabase :**
-> 1. Ajouter `JWT_SECRET` dans `bereta-backend/.env`, par exemple avec `openssl rand -base64 48`. Sans lui, l'application refuse de démarrer.
-> 2. Désactiver l'API de données de Supabase (*Settings → API → Data API*).
->
-> Au démarrage, Flyway appliquera les migrations V14 (fermeture du schéma public) et V15 (authentification).
+## 1. Fonctionnement
 
----
-
-## 1. Récapitulatif
-
-| Sujet | Existait | Corrigé | Ajouté |
-|---|---|---|---|
-| Base Supabase ouverte au rôle `anon` (lecture et écriture) | — | V14 : `REVOKE` + RLS sur toutes les tables, plus un callback `afterMigrate` pour les tables futures | — |
-| Identifiant | E-mail seul | E-mail **facultatif** | Téléphone E.164 unique (`libphonenumber`), connexion par e-mail **ou** téléphone |
-| Inscription | E-mail + mot de passe de 6 caractères, rôle `TRESORIER` | Rôle `RESPONSABLE`, mot de passe de 8 caractères avec 1 chiffre, CGU obligatoires | Compte en attente tant que le téléphone n'est pas vérifié par SMS ; e-mail vérifié par code s'il est saisi |
-| Connexion | Session serveur + CSRF, ouverte dès que le mot de passe est bon | — | 2 étapes : mot de passe puis **code SMS à chaque connexion** ; aucun jeton avant le code |
-| Session | Cookie `JSESSIONID` | — | Access token JWT de 15 min (en mémoire côté front) + refresh token de 7 jours (cookie `HttpOnly; Secure; SameSite=Strict`), avec rotation et détection de réutilisation |
-| Codes OTP | — | — | 6 chiffres, `SecureRandom`, HMAC-SHA256, 5 min, usage unique, 5 essais, renvoi après 60 s, 3 renvois par 15 min |
-| Mot de passe oublié | Lien par e-mail de 30 min ; 503 si le SMTP manque | Lien de 15 min, réponse toujours identique | Code par SMS ; toutes les sessions révoquées ; notification par SMS et/ou e-mail |
-| Trésoriers | Invitation par lien e-mail | — | Désignation **par téléphone** (rattachement du compte s'il existe, sinon mot de passe provisoire), changement imposé à la première connexion, nouveau mot de passe provisoire remis par le responsable |
-| Protection | Aucune limitation | Cookie `Secure`, CORS centralisé | Bucket4j sur la connexion, les envois de code, l'oubli et l'inscription ; verrouillage de 15 min après 5 échecs |
-| Déconnexion | Session invalidée | — | Révocation du refresh token ; « tous les appareils » |
-| Journal | Admin seulement | — | `auth_audit_log` : 16 types d'événements, identifiant masqué, IP, navigateur, jamais aucun secret |
-| Erreurs | Messages du backend perdus | `ProblemDetail` avec `detail` en français, affiché tel quel par le front | — |
-| Front | Formulaires e-mail, pas de garde | Route `/admin` branchée ; locale `fr-FR` enregistrée | Intercepteur avec rafraîchissement automatique, `authGuard` / `guestGuard`, OTP en 6 cases, jauge de force, pages conformes à la charte |
-
-**Supprimé (remplacé par la nouvelle version) :**
-- `AccountStatusFilter` et `BeretaUserDetailsService` (le convertisseur JWT les remplace) ;
-- `UserRegistrationService` et `PasswordResetService` (remplacés par `RegistrationService` et `PasswordService`) ;
-- `SmtpPasswordResetEmailSender` (remplacé par `EmailSender`) ;
-- l'invitation de trésorier par lien : `TreasurerInvitationService`, `FundInvitation*` et `/api/auth/invitations/accept`. **La table `fund_invitations` est conservée** ;
-- les annotations `@CrossOrigin` dispersées, et l'ancien `AuthControllerTest`.
-
-**Tests :**
-- backend : **42 tests verts**, dont `AuthFlowIntegrationTest` (15 scénarios) et `AuthRulesTest` ;
-- frontend : 13 tests Vitest verts, build de production OK ;
-- parcours complet vérifié avec curl sur un PostgreSQL 16 local (V14 puis V15), puis à travers le proxy Angular.
-
----
+| Sujet | Comportement |
+|---|---|
+| Inscription | Téléphone (obligatoire, normalisé en E.164, unique) + mot de passe + confirmation + CGU. Le compte est **actif immédiatement** et la session est ouverte. Prénom, nom et e-mail sont demandés ensuite, sur l'écran facultatif « Complète ton profil ». |
+| Connexion | Un champ « Téléphone ou e-mail » + mot de passe → access token + refresh token **directement**. Erreur toujours générique : « Identifiants incorrects ». |
+| Mot de passe | Au moins 8 caractères dont 1 chiffre (règle de la maquette), haché en BCrypt (coût 12). |
+| Session | Access token JWT HS256 de 15 min, gardé en mémoire côté front. Refresh token opaque de 7 jours, stocké en SHA-256, avec rotation et détection de réutilisation. Cookie `bereta_refresh` `HttpOnly; Secure; SameSite=Strict; Path=/api/auth`, plus l'en-tête `X-Bereta-Refresh: 1` sur `/refresh` et `/logout`. |
+| Protection | Limitation de débit (Bucket4j) sur la connexion, par IP et par identifiant, sur l'inscription, par IP, et sur le mot de passe oublié. Verrouillage de 15 min après 5 mots de passe erronés. |
+| Mot de passe oublié | **Désactivé** (`BERETA_FORGOT_PASSWORD_ENABLED=false`). L'écran renvoie vers le responsable ou l'administrateur. Le code du lien par e-mail et la table `password_reset_tokens` sont conservés pour une réactivation avec Brevo. |
+| Réinitialisation | Le responsable génère un mot de passe provisoire pour un trésorier. L'administrateur peut en générer un pour tout compte (`POST /api/admin/users/{id}/password`). Dans les deux cas, toutes les sessions sont révoquées et le mot de passe doit être changé à la connexion suivante. |
+| Déconnexion | Révocation du refresh token. « Tous les appareils » incrémente aussi la version des access tokens. |
+| Journal | `auth_audit_log` : inscription, connexions réussies ou refusées, verrouillage, réutilisation d'un refresh token, déconnexions, changements de mot de passe. L'identifiant y est masqué et aucun secret n'est enregistré. Les actions d'administration vont en plus dans `admin_audit_log`. |
 
 ## 2. Endpoints
 
-Sauf mention contraire, les corps sont en JSON. Les erreurs sont au format `ProblemDetail` : `{ status, detail, code }`, avec `retryAfterSeconds` et l'en-tête `Retry-After` en cas de 429.
+Toutes les erreurs sont au format `ProblemDetail`, avec `code` et un `detail` en français.
 
 ### Publics
 
-| Méthode | URL | Corps | Réponse |
+| Méthode | URL | Corps | Réponses |
 |---|---|---|---|
-| POST | `/api/auth/register` | `firstName`, `lastName`, `phone`, `email?`, `password`, `acceptTerms` | 201 `{ phoneVerification: { challengeId, channel, maskedDestination, expiresInSeconds, resendAvailableInSeconds }, emailVerificationSent }` · 400 `PASSWORD_POLICY` / `TERMS_REQUIRED` / `PHONE_INVALID` · 409 `PHONE_TAKEN` / `EMAIL_TAKEN` · 429 |
-| POST | `/api/auth/register/verify` | `challengeId`, `code` | 200 `TokenResponse` + cookie · 400 `CODE_INVALID` |
-| POST | `/api/auth/login` | `identifier` (e-mail ou téléphone), `password` | 200 `{ step: "OTP_REQUIRED", challengeId, maskedPhone, expiresInSeconds, resendAvailableInSeconds }`, ou `{ step: "PHONE_REQUIRED", enrollmentToken }` pour un compte sans téléphone · 401 `INVALID_CREDENTIALS` (message générique, y compris compte verrouillé ou inconnu) · 429 |
-| POST | `/api/auth/login/phone` | `enrollmentToken`, `phone` | 200 `{ step: "OTP_REQUIRED", … }` · 401 `ENROLLMENT_EXPIRED` · 409 `PHONE_TAKEN` |
-| POST | `/api/auth/login/verify` | `challengeId`, `code` | 200 `TokenResponse` + cookie · 400 `CODE_INVALID` |
-| POST | `/api/auth/otp/resend` | `challengeId` | 200 `{ challengeId, … }` (même réponse si le challenge n'existe pas) · 429 `RESEND_TOO_SOON` / `RESEND_LIMIT` |
-| POST | `/api/auth/refresh` | — (cookie `bereta_refresh` et en-tête `X-Bereta-Refresh: 1`) | 200 `TokenResponse` + nouveau cookie · 401 `SESSION_EXPIRED` · 403 si l'en-tête manque |
-| POST | `/api/auth/logout` | — (cookie et en-tête `X-Bereta-Refresh: 1`) | 204, cookie effacé |
-| POST | `/api/auth/password/forgot` | `identifier` | 200 `{ message, channel: "SMS" \| "EMAIL", challengeId (SMS seulement), expiresInSeconds }`, identique que le compte existe ou non |
-| POST | `/api/auth/password/reset/code` | `challengeId`, `code`, `password` | 200 `{ message }` · 400 `CODE_INVALID` / `PASSWORD_POLICY` |
+| POST | `/api/auth/register` | `phone`, `password`, `acceptTerms` ; `firstName?`, `lastName?`, `email?` | 201 `TokenResponse` + cookie · 400 `PASSWORD_POLICY` / `TERMS_REQUIRED` / `PHONE_INVALID` · 409 `ACCOUNT_EXISTS` · 429 |
+| POST | `/api/auth/login` | `identifier` (téléphone ou e-mail), `password` | 200 `TokenResponse` + cookie · 401 `INVALID_CREDENTIALS` · 429 |
+| POST | `/api/auth/refresh` | — (cookie et en-tête `X-Bereta-Refresh: 1`) | 200 `TokenResponse` + nouveau cookie · 401 `SESSION_EXPIRED` · 403 sans l'en-tête |
+| POST | `/api/auth/logout` | — (cookie et en-tête) | 204, cookie effacé |
+| POST | `/api/auth/password/forgot` | `identifier` | 503 `FORGOT_PASSWORD_DISABLED` (une fois réactivé : 200 `{ message }`, identique que le compte existe ou non) |
 | POST | `/api/auth/password/reset` | `token` (lien e-mail), `password` | 200 `{ message }` · 410 `LINK_INVALID` |
 
-`TokenResponse` = `{ accessToken, tokenType: "Bearer", expiresInSeconds: 900, user: { id, displayName, email, phone, role, emailVerified, phoneVerified, mustChangePassword } }`
+`TokenResponse` = `{ accessToken, tokenType: "Bearer", expiresInSeconds: 900, user: { id, displayName, email, phone, role, mustChangePassword } }`.
 
-### Connecté (en-tête `Authorization: Bearer …`)
+### Connecté (`Authorization: Bearer …`)
 
-| Méthode | URL | Corps | Réponse |
+| Méthode | URL | Corps | Réponses |
 |---|---|---|---|
 | GET | `/api/auth/me` | — | 200 `user` |
-| POST | `/api/auth/password/change` | `currentPassword`, `newPassword` | 200 `TokenResponse` (nouvelle session ; les autres sont révoquées) · 400 `CURRENT_PASSWORD_INVALID` / `PASSWORD_POLICY` / `PASSWORD_UNCHANGED` |
-| POST | `/api/auth/email/send-code` | — | 200 `{ challengeId, … }` · 400 `EMAIL_MISSING` · 409 `EMAIL_ALREADY_VERIFIED` |
-| POST | `/api/auth/email/verify` | `code` | 200 `user` |
-| POST | `/api/auth/logout-all` | — | 204 : tous les appareils sont déconnectés |
-| POST | `/api/caisses-principales/{id}/acces` | `localFundId`, `phone`, `firstName?`, `lastName?` | 201 `{ membership, accountCreated, temporaryPassword }`. Le mot de passe provisoire n'est renvoyé que si le compte vient d'être créé. Responsable uniquement |
-| POST | `/api/caisses-principales/{id}/acces/{membershipId}/mot-de-passe-provisoire` | — | 200 `{ temporaryPassword, maskedPhone }` · 409 si le compte sert aussi dans une autre association |
+| PATCH | `/api/auth/profile` | `firstName?`, `lastName?`, `email?` (chaîne vide = retirer l'e-mail) | 200 `user` · 400 `EMAIL_INVALID` · 409 `EMAIL_UNAVAILABLE` |
+| POST | `/api/auth/password/change` | `currentPassword`, `newPassword` | 200 `TokenResponse` (nouvelle session, les autres révoquées) · 400 `CURRENT_PASSWORD_INVALID` / `PASSWORD_POLICY` / `PASSWORD_UNCHANGED` |
+| POST | `/api/auth/logout-all` | — | 204 |
+| POST | `/api/admin/users/{id}/password` | — (rôle `ADMIN`) | 200 `{ temporaryPassword }`, montré une seule fois · 403 · 404 |
+| POST | `/api/caisses-principales/{id}/acces/{membershipId}/mot-de-passe-provisoire` | — (responsable) | 200 `{ temporaryPassword, maskedPhone }` · 409 si le compte sert ailleurs |
 
-Tant qu'un mot de passe provisoire n'est pas remplacé, toutes les autres routes répondent **403 `PASSWORD_CHANGE_REQUIRED`**. Restent ouvertes : `/me`, `/password/change`, `/logout` et `/logout-all`.
-
----
+Tant que `mustChangePassword` vaut `true`, seuls `/me`, `/password/change`, `/logout` et `/logout-all` sont accessibles (403 `PASSWORD_CHANGE_REQUIRED`).
 
 ## 3. Variables d'environnement
-
-Modèle : `bereta-backend/.env.example`.
 
 | Variable | Obligatoire | Rôle |
 |---|---|---|
 | `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | Oui | PostgreSQL / Supabase |
-| `JWT_SECRET` | **Oui** (au moins 32 octets) | Signature HS256 des access tokens |
-| `OTP_HASH_SECRET` | Non (par défaut `JWT_SECRET`) | Clé HMAC des codes OTP |
-| `BERETA_CORS_ALLOWED_ORIGINS` | Non (`http://localhost:4200`) | Origines du front, séparées par des virgules |
-| `BERETA_REFRESH_COOKIE_SECURE` | Non (`true`) | Ne mettre `false` qu'en HTTP hors `localhost` |
-| `BERETA_PASSWORD_RESET_BASE_URL` | Non | URL du front, utilisée dans le lien de réinitialisation |
-| `BERETA_FORWARD_HEADERS` | Non (`none`) | `framework` derrière un reverse proxy, pour obtenir l'IP réelle (limitation de débit, audit) |
+| `JWT_SECRET` | **Oui** (32 octets ou plus) | Signature des access tokens (`openssl rand -base64 48`) |
+| `BERETA_CORS_ALLOWED_ORIGINS` | Non (`http://localhost:4200`) | Origines du front |
+| `BERETA_REFRESH_COOKIE_SECURE` | Non (`true`) | `false` seulement en HTTP hors `localhost` |
+| `BERETA_FORWARD_HEADERS` | Non (`none`) | `framework` derrière un reverse proxy (IP réelle) |
 | `BERETA_RATE_LIMIT_ENABLED` | Non (`true`) | Désactivé seulement dans les tests |
 | `BERETA_PHONE_DEFAULT_REGION` | Non (`FR`) | Pays des numéros saisis sans indicatif |
-| `BERETA_SMS_PROVIDER` | Non (`log`) | `log` (code écrit dans les logs, **développement uniquement**), `brevo` ou `twilio` |
-| `SMS_SENDER` | Non (`BERETA`) | Nom d'expéditeur des SMS |
-| `BREVO_API_KEY` | Si `brevo` | — |
-| `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM` | Si `twilio` | — |
-| `BERETA_MAIL_PROVIDER` | Non (`log`) | `log` ou `smtp` (fonctionne aussi avec le SMTP de Brevo) |
-| `MAIL_FROM`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_SMTP_AUTH`, `MAIL_SMTP_STARTTLS` | Si `smtp` | — |
-| `BOOTSTRAP_USER_EMAIL`, `BOOTSTRAP_USER_PHONE`, `BOOTSTRAP_USER_PASSWORD`, `BOOTSTRAP_USER_NAME` | Non | Compte initial. Le mot de passe doit respecter la nouvelle règle |
+| `BERETA_FORGOT_PASSWORD_ENABLED` | Non (`false`) | Réactive le mot de passe oublié par lien e-mail |
+| `BERETA_PASSWORD_RESET_BASE_URL` | Non | URL du front utilisée dans le lien |
+| `BERETA_MAIL_PROVIDER` | Non (`log`) | `log` ou `smtp`, par exemple le relais Brevo `smtp-relay.brevo.com:587` |
+| `MAIL_FROM`, `MAIL_FROM_NAME`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_SMTP_AUTH`, `MAIL_SMTP_STARTTLS` | Si `smtp` | — |
+| `BOOTSTRAP_USER_*` | Non | Compte initial |
 
-`BERETA_MAIL_ENABLED` disparaît : il est remplacé par `BERETA_MAIL_PROVIDER`.
+Supprimées : `OTP_HASH_SECRET`, `BERETA_SMS_PROVIDER`, `SMS_SENDER`, `BREVO_API_KEY`, `TWILIO_*`, `APP_DOMAIN`, `OTP_WHATSAPP_ENABLED`, `BERETA_WHATSAPP_PROVIDER`, `BERETA_TRUSTED_DEVICE_TTL`.
 
----
+## 4. Base de données
 
-## 4. Points restants et décisions à valider
+- **V20** (`V20__remove_verification.sql`) supprime les tables `otp_codes` et `trusted_devices`, passe tous les comptes en actifs, puis supprime les colonnes `status`, `phone_verified_at` et `email_verified_at` de `user_accounts`. Elle a été testée sur PostgreSQL 16 à partir d'une base en V19. En production, au moment de la validation, la base contenait 0 compte, 0 code et 0 appareil.
+- Les migrations V15 à V19 restent telles quelles, car elles sont déjà appliquées.
+- V16 (écrite à la main) se trouve dans `db/vendor/postgresql/`, avec un contenu inchangé. Son équivalent H2 pour les tests est une migration Java dans `src/test/java/db/vendor/h2/`.
 
-1. **Fournisseur SMS.** Il faut choisir entre Brevo et Twilio, ouvrir le compte et faire déclarer l'expéditeur « BERETA », ce qui est réglementé en France. Un OTP à chaque connexion représente un coût par SMS. Les deux implémentations suivent la documentation des API mais **n'ont pas été testées avec un vrai compte**.
-2. **Mot de passe provisoire.** Il est affiché une seule fois au responsable, et le SMS envoyé au trésorier ne fait que le prévenir. La maquette dit « Reçu par SMS / Fiche » : faut-il aussi envoyer le mot de passe par SMS ?
-3. **Option « Créer un profil indépendant »** de la maquette de création de caisse : elle est incompatible avec un téléphone unique et n'a pas été implémentée.
-4. **Comptes inscrits mais jamais vérifiés.** Ils réservent le numéro saisi. Il faut une règle, par exemple libérer le numéro au bout de 24 h. La purge est délicate avec la règle « aucune suppression ».
-5. **Comptes existants.** Les 2 comptes actuels n'ont pas de téléphone : à leur prochaine connexion, ils devront en ajouter un puis le vérifier.
-6. **Ajout d'un co-responsable et actions de l'admin.** Ils se font encore **par e-mail** (`AssociationAccessService.addManager`, `AdminService`). Un compte qui n'a qu'un téléphone ne peut donc pas être ajouté comme co-responsable : à adapter.
-7. **Écran « Mon profil ».** Il n'est pas construit, alors que les endpoints existent : changement de mot de passe, déconnexion de tous les appareils, vérification de l'e-mail. Dans la maquette, la double authentification apparaît comme une option ; ici, elle est toujours active.
-8. **Limitation de débit en mémoire.** Elle suffit pour une seule instance. Avec plusieurs réplicas (Kubernetes), il faudra un stockage partagé, Redis via `bucket4j-redis`.
-9. **Verrouillage du compte.** Un tiers qui connaît un numéro peut verrouiller le compte pendant 15 minutes. C'est le prix du verrouillage demandé ; la limitation par identifiant l'atténue.
-10. **Page des CGU.** Elle n'existe pas encore : le texte à cocher n'a pas de lien.
-11. **Moindre privilège.** L'application se connecte encore avec le compte `postgres` : il faut créer un rôle dédié.
-12. **Tests sur H2.** Les tests automatiques tournent sur H2 ; le comportement sous PostgreSQL (verrous, RLS) n'a été vérifié qu'à la main. Il faudrait ajouter Testcontainers.
-13. **Taille du bundle front.** Il pèse 569 Ko, au-delà du budget de 500 Ko défini dans `angular.json`. C'est un avertissement, pas une erreur.
+## 5. Points ouverts
+
+1. **Mot de passe oublié.** Pour le réactiver : vérifier l'expéditeur dans Brevo, de préférence sur un domaine à soi plutôt qu'une adresse @gmail.com, puis passer `BERETA_FORGOT_PASSWORD_ENABLED=true` et rétablir le formulaire côté front. Seuls les comptes qui ont un e-mail pourront s'en servir.
+2. **E-mail non vérifié.** Un utilisateur peut saisir l'e-mail de quelqu'un d'autre, ce qui bloque cette adresse pour son vrai titulaire. Le risque est faible tant que le lien par e-mail est désactivé ; il faudra une vérification avant de le réactiver.
+3. **Inscription avec un numéro déjà pris.** Le message d'erreur révèle qu'un compte existe. C'est inévitable dès lors que l'inscription ouvre directement la session.
+4. **Verrouillage du compte.** Un tiers qui connaît un numéro peut verrouiller le compte pendant 15 minutes. La limitation par identifiant atténue ce risque.
+5. **Limitation de débit en mémoire.** Elle suffit pour une seule instance. Avec plusieurs réplicas, il faudra `bucket4j-redis`.
+6. **Écran « Mon profil ».** Il n'est pas construit : changer son mot de passe ou se déconnecter de tous les appareils n'est possible que par l'API.
+7. **Moindre privilège et tests.** L'application se connecte encore avec le compte `postgres`. Les tests tournent sur H2 ; il faudrait ajouter Testcontainers.
+8. **Page des CGU.** Elle n'existe pas encore.

@@ -22,16 +22,19 @@ public class PrimaryFundService {
     private final FundAccessService fundAccessService;
     private final AssociationRequestContext associationContext;
     private final AssociationAccessService associationAccessService;
+    private final FundMembershipRepository membershipRepository;
 
     public PrimaryFundService(PrimaryFundRepository primaryFundRepository, LocalFundRepository localFundRepository,
                               UserAccountRepository userAccountRepository, FundAccessService fundAccessService,
-                              AssociationRequestContext associationContext, AssociationAccessService associationAccessService) {
+                              AssociationRequestContext associationContext, AssociationAccessService associationAccessService,
+                              FundMembershipRepository membershipRepository) {
         this.primaryFundRepository = primaryFundRepository;
         this.localFundRepository = localFundRepository;
         this.userAccountRepository = userAccountRepository;
         this.fundAccessService = fundAccessService;
         this.associationContext = associationContext;
         this.associationAccessService = associationAccessService;
+        this.membershipRepository = membershipRepository;
     }
 
     public List<PrimaryFundResponse> findAll(UUID userId) {
@@ -63,21 +66,31 @@ public class PrimaryFundService {
         List<LocalFundEntity> funds = fundAccessService.isAssociationManager(userId, associationContext.requireId())
                 ? localFundRepository.findAllByPrimaryFundIdOrderByNameAsc(primaryFundId)
                 : List.of(membership.getLocalFund());
-        return funds.stream()
-                .map(LocalFundResponse::from).toList();
+        return funds.stream().map(this::withTreasurers).toList();
     }
 
     @Transactional
     public LocalFundResponse findLocalFund(UUID userId, UUID primaryFundId, UUID localFundId) {
-        return LocalFundResponse.from(fundAccessService.requireLocalAccess(userId, primaryFundId, localFundId));
+        return withTreasurers(fundAccessService.requireLocalAccess(userId, primaryFundId, localFundId));
     }
 
     @Transactional
     public LocalFundResponse createLocalFund(UUID userId, UUID primaryFundId, LocalFundRequest request) {
         fundAccessService.requireManager(userId, primaryFundId);
         PrimaryFundEntity primaryFund = requirePrimaryFund(primaryFundId);
-        LocalFundEntity localFund = new LocalFundEntity(primaryFund, request.name().trim());
+        // Une caisse locale peut être créée sans trésorier (badge « Sans responsable »).
+        LocalFundEntity localFund = new LocalFundEntity(primaryFund, request.name().trim(),
+                clean(request.location()), clean(request.description()));
         return LocalFundResponse.from(localFundRepository.save(localFund));
+    }
+
+    private LocalFundResponse withTreasurers(LocalFundEntity fund) {
+        return LocalFundResponse.from(fund,
+                membershipRepository.findAllByLocalFundIdAndRoleAndActiveTrueOrderByCreatedAtAsc(fund.getId(), FundRole.TRESORIER));
+    }
+
+    private static String clean(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 
     private PrimaryFundEntity requirePrimaryFund(UUID id) {

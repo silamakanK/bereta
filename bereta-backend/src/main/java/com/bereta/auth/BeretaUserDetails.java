@@ -18,8 +18,6 @@ public class BeretaUserDetails implements UserDetails {
     private final String role;
     private final boolean enabled;
     private final boolean mustChangePassword;
-    private final boolean phoneVerified;
-    private final boolean emailVerified;
 
     public BeretaUserDetails(UserAccountEntity account) {
         id = account.getId();
@@ -30,8 +28,6 @@ public class BeretaUserDetails implements UserDetails {
         role = account.getRole();
         enabled = account.isEnabled();
         mustChangePassword = account.isMustChangePassword();
-        phoneVerified = account.isPhoneVerified();
-        emailVerified = account.isEmailVerified();
     }
 
     public UUID getId() { return id; }
@@ -40,8 +36,6 @@ public class BeretaUserDetails implements UserDetails {
     public String getDisplayName() { return displayName; }
     public String getRole() { return role; }
     public boolean isMustChangePassword() { return mustChangePassword; }
-    public boolean isPhoneVerified() { return phoneVerified; }
-    public boolean isEmailVerified() { return emailVerified; }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

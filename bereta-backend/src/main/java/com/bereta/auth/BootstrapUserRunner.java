@@ -65,8 +65,7 @@ public class BootstrapUserRunner implements ApplicationRunner {
                     phoneE164,
                     displayName.isBlank() ? "Responsable BERETA" : displayName.trim(),
                     passwordEncoder.encode(password),
-                    "RESPONSABLE",
-                    AccountStatus.ACTIVE
+                    "RESPONSABLE"
             ));
             logger.info("Le compte responsable initial a été créé à partir de la configuration locale.");
         }

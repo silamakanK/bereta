@@ -2,8 +2,6 @@ package com.bereta.auth;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -31,7 +29,7 @@ public class UserAccountEntity {
     @Column(name = "phone_e164", unique = true, length = 16)
     private String phoneE164;
 
-    @Column(name = "display_name", nullable = false, length = 120)
+    @Column(name = "display_name", length = 120)
     private String displayName;
 
     @Column(name = "password_hash", nullable = false, length = 100)
@@ -42,16 +40,6 @@ public class UserAccountEntity {
 
     @Column(nullable = false)
     private boolean enabled;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
-    private AccountStatus status;
-
-    @Column(name = "phone_verified_at")
-    private Instant phoneVerifiedAt;
-
-    @Column(name = "email_verified_at")
-    private Instant emailVerifiedAt;
 
     @Column(name = "terms_accepted_at")
     private Instant termsAcceptedAt;
@@ -78,11 +66,11 @@ public class UserAccountEntity {
     }
 
     public UserAccountEntity(String email, String displayName, String passwordHash, String role) {
-        this(email, null, displayName, passwordHash, role, AccountStatus.ACTIVE);
+        this(email, null, displayName, passwordHash, role);
     }
 
-    public UserAccountEntity(String email, String phoneE164, String displayName, String passwordHash,
-                             String role, AccountStatus status) {
+    /** Compte actif dès sa création (aucune vérification d'e-mail ni de téléphone). */
+    public UserAccountEntity(String email, String phoneE164, String displayName, String passwordHash, String role) {
         this.email = email;
         this.emailNormalized = email == null ? null : email.toLowerCase(Locale.ROOT);
         this.phoneE164 = phoneE164;
@@ -90,7 +78,6 @@ public class UserAccountEntity {
         this.passwordHash = passwordHash;
         this.role = role;
         this.enabled = true;
-        this.status = status;
     }
 
     @PrePersist
@@ -105,18 +92,14 @@ public class UserAccountEntity {
     public String getPasswordHash() { return passwordHash; }
     public String getRole() { return role; }
     public boolean isEnabled() { return enabled; }
-    public AccountStatus getStatus() { return status; }
-    public Instant getPhoneVerifiedAt() { return phoneVerifiedAt; }
-    public Instant getEmailVerifiedAt() { return emailVerifiedAt; }
     public int getFailedLoginCount() { return failedLoginCount; }
     public Instant getLockedUntil() { return lockedUntil; }
     public boolean isMustChangePassword() { return mustChangePassword; }
     public int getTokenVersion() { return tokenVersion; }
     public Instant getCreatedAt() { return createdAt; }
+    public Instant getPasswordChangedAt() { return passwordChangedAt; }
 
     public boolean isLocked(Instant now) { return lockedUntil != null && lockedUntil.isAfter(now); }
-    public boolean isPhoneVerified() { return phoneVerifiedAt != null; }
-    public boolean isEmailVerified() { return emailVerifiedAt != null; }
 
     public void changePasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
@@ -147,17 +130,9 @@ public class UserAccountEntity {
         lockedUntil = null;
     }
 
-    public void verifyPhone(String phoneE164) {
-        this.phoneE164 = phoneE164;
-        this.phoneVerifiedAt = Instant.now();
-        this.status = AccountStatus.ACTIVE;
-    }
-
-    public void verifyEmail() { this.emailVerifiedAt = Instant.now(); }
     public void acceptTerms() { this.termsAcceptedAt = Instant.now(); }
 
     public void updateProfile(String email, String displayName) {
-        if (email != null && !email.equalsIgnoreCase(this.email)) emailVerifiedAt = null;
         this.email = email;
         this.emailNormalized = email == null ? null : email.toLowerCase(Locale.ROOT);
         this.displayName = displayName;

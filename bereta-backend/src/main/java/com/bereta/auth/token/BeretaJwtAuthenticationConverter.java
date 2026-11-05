@@ -1,6 +1,5 @@
 package com.bereta.auth.token;
 
-import com.bereta.auth.AccountStatus;
 import com.bereta.auth.BeretaUserDetails;
 import com.bereta.auth.UserAccountEntity;
 import com.bereta.auth.UserAccountRepository;
@@ -40,7 +39,7 @@ public class BeretaJwtAuthenticationConverter implements Converter<Jwt, Abstract
             account = null;
         }
         Number version = jwt.getClaim(AccessTokenService.VERSION_CLAIM);
-        if (account == null || !account.isEnabled() || account.getStatus() != AccountStatus.ACTIVE
+        if (account == null || !account.isEnabled()
                 || version == null || version.intValue() != account.getTokenVersion()
                 || !account.getRole().equals(jwt.getClaimAsString("role"))) {
             throw new InvalidBearerTokenException("La session du compte n’est plus valide.");

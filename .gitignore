@@ -2,3 +2,11 @@ node_modules/
 bereta-backend/bin/
 bereta-backend/target/
 .idea/workspace.xml
+
+# Claude Code (fichiers locaux, jamais versionnés)
+.claude/
+CLAUDE.md
+CLAUDE.local.md
+**/CLAUDE.md
+**/CLAUDE.local.md
+.mcp.json

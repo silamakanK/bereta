@@ -1,15 +1,9 @@
 package com.bereta.auth;
 
-import com.bereta.auth.AuthResponses.ForgotPasswordResponse;
 import com.bereta.auth.RateLimiterService.Limit;
-import com.bereta.auth.otp.OtpChannel;
-import com.bereta.auth.otp.OtpCodeEntity;
-import com.bereta.auth.otp.OtpService;
-import com.bereta.auth.otp.OtpType;
 import com.bereta.auth.token.RefreshTokenService;
 import com.bereta.notifications.AuthMessages;
 import com.bereta.notifications.EmailSender;
-import com.bereta.notifications.SmsSender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,92 +21,71 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.HexFormat;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Mot de passe oublié (lien par e-mail ou code SMS, 15 min, usage unique, stockés hachés),
- * réinitialisation et changement. Tout changement déconnecte tous les appareils
- * (refresh tokens révoqués + version des access tokens incrémentée) et prévient l'utilisateur.
+ * Changement de mot de passe, mot de passe provisoire (responsable ou administrateur) et
+ * mot de passe oublié par lien e-mail. Ce dernier est désactivé tant que
+ * BERETA_FORGOT_PASSWORD_ENABLED=false (à réactiver avec l'envoi d'e-mails Brevo).
+ * Tout changement déconnecte tous les appareils (refresh tokens révoqués + version des
+ * access tokens incrémentée).
  */
 @Service
 public class PasswordService {
 
     static final Duration LINK_TTL = Duration.ofMinutes(15);
     static final String GENERIC_FORGOT_MESSAGE =
-            "Si un compte correspond, vous allez recevoir un code par SMS ou un lien par e-mail.";
+            "Si un compte correspond à cette adresse, vous allez recevoir un lien par e-mail.";
 
     private static final Logger logger = LoggerFactory.getLogger(PasswordService.class);
 
     private final UserAccountRepository users;
     private final PasswordResetTokenRepository resetTokens;
     private final PasswordEncoder passwordEncoder;
-    private final PhoneNumberService phoneNumbers;
-    private final OtpService otp;
     private final RefreshTokenService refreshTokens;
-    private final SmsSender smsSender;
     private final EmailSender emailSender;
     private final RateLimiterService rateLimiter;
     private final AuthAuditService audit;
     private final Clock clock;
     private final String resetBaseUrl;
+    private final boolean forgotEnabled;
     private final SecureRandom random = new SecureRandom();
 
     public PasswordService(UserAccountRepository users, PasswordResetTokenRepository resetTokens,
-                           PasswordEncoder passwordEncoder, PhoneNumberService phoneNumbers, OtpService otp,
-                           RefreshTokenService refreshTokens, SmsSender smsSender, EmailSender emailSender,
-                           RateLimiterService rateLimiter, AuthAuditService audit, Clock clock,
-                           @Value("${bereta.auth.reset.base-url}") String resetBaseUrl) {
+                           PasswordEncoder passwordEncoder, RefreshTokenService refreshTokens,
+                           EmailSender emailSender, RateLimiterService rateLimiter, AuthAuditService audit, Clock clock,
+                           @Value("${bereta.auth.reset.base-url}") String resetBaseUrl,
+                           @Value("${bereta.auth.forgot-password.enabled:false}") boolean forgotEnabled) {
         this.users = users;
         this.resetTokens = resetTokens;
         this.passwordEncoder = passwordEncoder;
-        this.phoneNumbers = phoneNumbers;
-        this.otp = otp;
         this.refreshTokens = refreshTokens;
-        this.smsSender = smsSender;
         this.emailSender = emailSender;
         this.rateLimiter = rateLimiter;
         this.audit = audit;
         this.clock = clock;
         this.resetBaseUrl = resetBaseUrl.replaceAll("/$", "");
+        this.forgotEnabled = forgotEnabled;
     }
 
-    /** Réponse identique que le compte existe ou non ; un échec d'envoi n'est visible que dans les logs. */
-    @Transactional(noRollbackFor = AuthException.class)
-    public ForgotPasswordResponse forgot(String identifier) {
+    /** Réponse identique que le compte existe ou non. Désactivé par défaut. */
+    @Transactional
+    public String forgot(String identifier) {
+        if (!forgotEnabled) {
+            throw new AuthException(HttpStatus.SERVICE_UNAVAILABLE, "FORGOT_PASSWORD_DISABLED",
+                    "Contactez votre responsable ou l’administrateur pour réinitialiser votre mot de passe.");
+        }
         rateLimiter.check(Limit.FORGOT_PER_IP, ClientInfo.current().ipAddress());
         String value = identifier.trim();
         rateLimiter.check(Limit.FORGOT_PER_IDENTIFIER, value.toLowerCase(Locale.ROOT));
-        boolean byEmail = value.contains("@");
-        UUID challengeId = UUID.randomUUID();
-
-        Optional<UserAccountEntity> account = (byEmail
-                ? users.findByEmailIgnoreCase(value)
-                : phoneNumbers.tryNormalize(value).flatMap(users::findByPhoneE164))
-                .filter(UserAccountEntity::isEnabled);
-        account.ifPresent(user -> audit.record(AuthEvent.PASSWORD_RESET_REQUESTED, user.getId(),
-                AuthAuditService.hint(value), byEmail ? "Lien par e-mail" : "Code par SMS"));
-        if (account.isEmpty()) {
-            audit.record(AuthEvent.PASSWORD_RESET_REQUESTED, null, AuthAuditService.hint(value), "Compte inconnu");
-        }
-
-        if (byEmail) {
-            account.ifPresent(this::sendResetLink);
-            return new ForgotPasswordResponse(GENERIC_FORGOT_MESSAGE, OtpChannel.EMAIL, null, LINK_TTL.toSeconds());
-        }
-        if (account.isPresent()) {
-            try {
-                challengeId = otp.issue(account.get(), OtpType.PASSWORD_RESET, OtpChannel.SMS,
-                        account.get().getPhoneE164()).challengeId();
-            } catch (AuthException deliveryFailure) {
-                logger.warn("Code de réinitialisation non envoyé : {}", deliveryFailure.getMessage());
-            }
-        }
-        return new ForgotPasswordResponse(GENERIC_FORGOT_MESSAGE, OtpChannel.SMS, challengeId,
-                OtpService.TTL.toSeconds());
+        users.findByEmailIgnoreCase(value).filter(UserAccountEntity::isEnabled).ifPresentOrElse(user -> {
+            audit.record(AuthEvent.PASSWORD_RESET_REQUESTED, user.getId(), AuthAuditService.hint(value), "Lien par e-mail");
+            sendResetLink(user);
+        }, () -> audit.record(AuthEvent.PASSWORD_RESET_REQUESTED, null, AuthAuditService.hint(value), "Compte inconnu"));
+        return GENERIC_FORGOT_MESSAGE;
     }
 
-    @Transactional(noRollbackFor = AuthException.class)
+    @Transactional
     public void resetWithLink(String token, String newPassword) {
         PasswordPolicy.check(newPassword);
         PasswordResetTokenEntity resetToken = resetTokens.findUnusedForUpdate(sha256(token))
@@ -122,19 +95,6 @@ public class PasswordService {
         UserAccountEntity user = users.findByIdForUpdate(resetToken.getUserAccount().getId())
                 .orElseThrow(() -> new AuthException(HttpStatus.GONE, "LINK_INVALID", "Ce lien est invalide."));
         applyNewPassword(user, newPassword, AuthEvent.PASSWORD_RESET_COMPLETED, "Par lien e-mail");
-    }
-
-    @Transactional(noRollbackFor = AuthException.class)
-    public void resetWithCode(UUID challengeId, String code, String newPassword) {
-        rateLimiter.check(Limit.OTP_VERIFY_PER_IP, ClientInfo.current().ipAddress());
-        PasswordPolicy.check(newPassword);
-        OtpCodeEntity verified = otp.verify(challengeId, OtpType.PASSWORD_RESET, code);
-        UserAccountEntity user = users.findByIdForUpdate(verified.getUserAccount().getId())
-                .orElseThrow(AuthException::invalidCredentials);
-        if (!user.isPhoneVerified() && verified.getDestination().equals(user.getPhoneE164())) {
-            user.verifyPhone(verified.getDestination());
-        }
-        applyNewPassword(user, newPassword, AuthEvent.PASSWORD_RESET_COMPLETED, "Par code SMS");
     }
 
     @Transactional(noRollbackFor = AuthException.class)
@@ -152,7 +112,25 @@ public class PasswordService {
         return user;
     }
 
-    /** Mot de passe provisoire lisible, remis par le responsable au trésorier. */
+    /**
+     * Réinitialisation par un administrateur : mot de passe provisoire (à changer à la prochaine
+     * connexion), sessions révoquées. Le mot de passe n'est renvoyé qu'une fois, à l'administrateur.
+     */
+    @Transactional
+    public String resetByAdministrator(UUID adminId, UUID userId) {
+        UserAccountEntity user = users.findByIdForUpdate(userId)
+                .orElseThrow(() -> new AuthException(HttpStatus.NOT_FOUND, "USER_NOT_FOUND", "Utilisateur introuvable."));
+        String temporaryPassword = generateTemporaryPassword();
+        user.setTemporaryPasswordHash(passwordEncoder.encode(temporaryPassword));
+        user.resetFailedLogins();
+        user.bumpTokenVersion();
+        refreshTokens.revokeAll(user.getId(), "ADMIN_RESET");
+        resetTokens.findAllByUserAccountIdAndUsedAtIsNull(user.getId()).forEach(PasswordResetTokenEntity::markUsed);
+        audit.record(AuthEvent.TEMPORARY_PASSWORD_ISSUED, user.getId(), null, "Par l’administrateur " + adminId);
+        return temporaryPassword;
+    }
+
+    /** Mot de passe provisoire lisible (10 caractères dont au moins 1 chiffre). */
     public String generateTemporaryPassword() {
         String alphabet = "abcdefghjkmnpqrstuvwxyz23456789";
         StringBuilder password = new StringBuilder();
@@ -168,7 +146,6 @@ public class PasswordService {
         refreshTokens.revokeAll(user.getId(), "PASSWORD_CHANGED");
         resetTokens.findAllByUserAccountIdAndUsedAtIsNull(user.getId()).forEach(PasswordResetTokenEntity::markUsed);
         audit.record(event, user.getId(), null, details);
-        notifyPasswordChanged(user);
     }
 
     private void sendResetLink(UserAccountEntity user) {
@@ -182,18 +159,6 @@ public class PasswordService {
                     AuthMessages.passwordResetLinkBody(resetBaseUrl + "/reinitialiser-mot-de-passe?token=" + token));
         } catch (RuntimeException deliveryFailure) {
             logger.warn("Lien de réinitialisation non envoyé : {}", deliveryFailure.getMessage());
-        }
-    }
-
-    private void notifyPasswordChanged(UserAccountEntity user) {
-        try {
-            if (user.getPhoneE164() != null) smsSender.send(user.getPhoneE164(), AuthMessages.PASSWORD_CHANGED_SMS);
-            if (user.getEmail() != null && user.isEmailVerified()) {
-                emailSender.send(user.getEmail(), AuthMessages.PASSWORD_CHANGED_SUBJECT,
-                        AuthMessages.PASSWORD_CHANGED_EMAIL);
-            }
-        } catch (RuntimeException deliveryFailure) {
-            logger.warn("Notification de changement de mot de passe non envoyée : {}", deliveryFailure.getMessage());
         }
     }
 

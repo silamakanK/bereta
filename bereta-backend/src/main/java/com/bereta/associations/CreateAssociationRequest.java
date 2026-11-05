@@ -9,5 +9,7 @@ public record CreateAssociationRequest(
         @Size(max = 1000) String description,
         @Email @Size(max = 320) String contactEmail,
         @Size(max = 30) String contactPhone,
-        @Size(max = 500) String address
+        @Size(max = 500) String address,
+        /** Objectif principal de la caisse (maquette) ; par défaut « Cotisations de l'association ». */
+        @Size(max = 180) String objective
 ) { }

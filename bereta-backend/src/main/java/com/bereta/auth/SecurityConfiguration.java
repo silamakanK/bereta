@@ -28,10 +28,8 @@ import java.util.List;
 public class SecurityConfiguration {
 
     private static final String[] PUBLIC_AUTH_ROUTES = {
-            "/api/auth/register", "/api/auth/register/verify",
-            "/api/auth/login", "/api/auth/login/phone", "/api/auth/login/verify",
-            "/api/auth/otp/resend", "/api/auth/refresh", "/api/auth/logout",
-            "/api/auth/password/forgot", "/api/auth/password/reset", "/api/auth/password/reset/code"
+            "/api/auth/register", "/api/auth/login", "/api/auth/refresh", "/api/auth/logout",
+            "/api/auth/password/forgot", "/api/auth/password/reset"
     };
 
     @Bean

@@ -11,6 +11,7 @@ public interface FundMembershipRepository extends JpaRepository<FundMembershipEn
     List<FundMembershipEntity> findAllByUserAccountIdAndAssociationIdAndActiveTrueOrderByCreatedAtAsc(UUID userId, UUID associationId);
     List<FundMembershipEntity> findAllByAssociationIdAndActiveTrueOrderByCreatedAtAsc(UUID associationId);
     List<FundMembershipEntity> findAllByPrimaryFundIdAndActiveTrueOrderByRoleAscCreatedAtAsc(UUID primaryFundId);
+    List<FundMembershipEntity> findAllByLocalFundIdAndRoleAndActiveTrueOrderByCreatedAtAsc(UUID localFundId, FundRole role);
     Optional<FundMembershipEntity> findByUserAccountIdAndPrimaryFundIdAndActiveTrue(UUID userId, UUID primaryFundId);
     Optional<FundMembershipEntity> findByUserAccountIdAndPrimaryFundId(UUID userId, UUID primaryFundId);
     Optional<FundMembershipEntity> findByUserAccountIdAndLocalFundId(UUID userId, UUID localFundId);

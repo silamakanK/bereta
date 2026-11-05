@@ -39,13 +39,22 @@ public class FundMembershipController {
         return fundAccessService.listMembers(user.getId(), primaryFundId);
     }
 
-    /** Désigne un trésorier par téléphone (compte rattaché ou créé avec mot de passe provisoire). */
+    /** Désigne (ou remplace) le trésorier d'une caisse locale : compte rattaché ou créé avec mot de passe provisoire. */
     @PostMapping
     public ResponseEntity<TreasurerDesignationResponse> designate(@AuthenticationPrincipal BeretaUserDetails user,
                                                                   @PathVariable UUID primaryFundId,
                                                                   @Valid @RequestBody DesignateTreasurerRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).cacheControl(CacheControl.noStore())
                 .body(treasurerAccounts.designate(user.getId(), primaryFundId, request));
+    }
+
+    /** Recherche exacte par téléphone ou e-mail : « Compte BERETA existant détecté ». Responsable uniquement. */
+    @GetMapping("/compte")
+    public ResponseEntity<TreasurerAccountService.AccountLookupResponse> lookup(
+            @AuthenticationPrincipal BeretaUserDetails user, @PathVariable UUID primaryFundId,
+            @org.springframework.web.bind.annotation.RequestParam("identifiant") String identifier) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .body(treasurerAccounts.lookup(user.getId(), primaryFundId, identifier));
     }
 
     @PostMapping("/{membershipId}/mot-de-passe-provisoire")

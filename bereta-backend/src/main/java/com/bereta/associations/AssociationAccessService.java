@@ -20,17 +20,23 @@ public class AssociationAccessService {
     private final FundMembershipRepository fundMemberships;
     private final UserAccountRepository users;
     private final AssociationRequestContext requestContext;
+    private final com.bereta.funds.PrimaryFundRepository primaryFunds;
+    private final com.bereta.admin.AdminAuditService auditService;
 
     public AssociationAccessService(AssociationRepository associations,
                                     AssociationMembershipRepository memberships,
                                     FundMembershipRepository fundMemberships,
                                     UserAccountRepository users,
-                                    AssociationRequestContext requestContext) {
+                                    AssociationRequestContext requestContext,
+                                    com.bereta.funds.PrimaryFundRepository primaryFunds,
+                                    com.bereta.admin.AdminAuditService auditService) {
         this.associations = associations;
         this.memberships = memberships;
         this.fundMemberships = fundMemberships;
         this.users = users;
         this.requestContext = requestContext;
+        this.primaryFunds = primaryFunds;
+        this.auditService = auditService;
     }
 
     public AssociationEntity requireAccess(UUID userId, UUID associationId) {
@@ -72,15 +78,33 @@ public class AssociationAccessService {
                 memberships.findByAssociationIdAndUserAccountIdAndActiveTrue(a.getId(), userId).isPresent())).toList();
     }
 
+    /**
+     * Le responsable crée son association ; la caisse principale est créée avec elle (maquette
+     * « Créer une association »). Un compte trésorier ne peut pas créer d'association.
+     */
     @Transactional
     public AssociationResponse create(UUID userId, CreateAssociationRequest request) {
         var user = users.findById(userId).filter(com.bereta.auth.UserAccountEntity::isEnabled)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Session invalide."));
+        if ("TRESORIER".equals(user.getRole())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Un compte trésorier ne peut pas créer d’association.");
+        }
         AssociationEntity association = associations.save(new AssociationEntity(
                 request.name().trim(), clean(request.description()), clean(request.contactEmail()),
                 clean(request.contactPhone()), clean(request.address())));
         memberships.save(new AssociationMembershipEntity(association, user));
+        createPrimaryFund(association, request.objective());
+        auditService.record(user, "ASSOCIATION_CREATED", "ASSOCIATION", association.getId(), association,
+                "Association et caisse principale créées par leur responsable");
         return AssociationResponse.from(association, true);
+    }
+
+    /** Caisse principale créée automatiquement avec l'association. */
+    public com.bereta.funds.PrimaryFundEntity createPrimaryFund(AssociationEntity association, String objective) {
+        String goal = objective == null || objective.isBlank() ? "Cotisations de l’association" : objective.trim();
+        return primaryFunds.save(new com.bereta.funds.PrimaryFundEntity(association, "Caisse principale",
+                goal.length() > 180 ? goal.substring(0, 180) : goal, null));
     }
 
     public List<AssociationManagerResponse> listManagers(UUID userId, UUID associationId) {

@@ -24,12 +24,13 @@ public class FundAccessService {
     private final AssociationAccessService associationAccess;
     private final AssociationMembershipRepository associationMemberships;
     private final AssociationRequestContext context;
+    private final com.bereta.admin.AdminAuditService adminAudit;
 
     public FundAccessService(FundMembershipRepository membershipRepository, UserAccountRepository userAccountRepository,
                              PrimaryFundRepository primaryFundRepository, LocalFundRepository localFundRepository,
                              AssociationAccessService associationAccess,
                              AssociationMembershipRepository associationMemberships,
-                             AssociationRequestContext context) {
+                             AssociationRequestContext context, com.bereta.admin.AdminAuditService adminAudit) {
         this.membershipRepository = membershipRepository;
         this.userAccountRepository = userAccountRepository;
         this.primaryFundRepository = primaryFundRepository;
@@ -37,6 +38,7 @@ public class FundAccessService {
         this.associationAccess = associationAccess;
         this.associationMemberships = associationMemberships;
         this.context = context;
+        this.adminAudit = adminAudit;
     }
 
     public List<FundMembershipEntity> membershipsForUser(UUID userId) {
@@ -158,5 +160,10 @@ public class FundAccessService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Cet accès historique ne peut pas être désactivé ici.");
         }
         membership.deactivate();
+        userAccountRepository.findById(managerId).ifPresent(manager -> adminAudit.record(manager, "TREASURER_REMOVED",
+                "LOCAL_FUND", membership.getLocalFund() == null ? null : membership.getLocalFund().getId(),
+                membership.getAssociation(), "Retiré : " + (membership.getUserAccount().getDisplayName() == null
+                        ? "Sans nom" : membership.getUserAccount().getDisplayName())
+                        + " [" + membership.getUserAccount().getId() + "]"));
     }
 }

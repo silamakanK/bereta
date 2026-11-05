@@ -6,7 +6,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
-/** SMTP générique (fonctionne aussi avec le relais SMTP de Brevo). */
+/** SMTP générique, par exemple le relais Brevo (smtp-relay.brevo.com:587, STARTTLS). */
 @Component
 @ConditionalOnProperty(prefix = "bereta.mail", name = "provider", havingValue = "smtp")
 public class SmtpEmailSender implements EmailSender {
@@ -14,10 +14,12 @@ public class SmtpEmailSender implements EmailSender {
     private final JavaMailSender mailSender;
     private final String from;
 
-    public SmtpEmailSender(JavaMailSender mailSender, @Value("${bereta.mail.from:}") String from) {
+    public SmtpEmailSender(JavaMailSender mailSender, @Value("${bereta.mail.from:}") String from,
+                           @Value("${bereta.mail.from-name:}") String fromName) {
         if (from.isBlank()) throw new IllegalStateException("MAIL_FROM doit être défini quand BERETA_MAIL_PROVIDER=smtp.");
         this.mailSender = mailSender;
-        this.from = from;
+        // « Bereta <adresse> » : nom affiché dans la boîte de réception.
+        this.from = fromName.isBlank() ? from.trim() : "\"" + fromName.trim().replace("\"", "") + "\" <" + from.trim() + ">";
     }
 
     @Override

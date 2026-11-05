@@ -41,6 +41,13 @@ public class AdminController {
         return service.updateUser(actor.getId(), id, request);
     }
 
+    /** Réinitialise le mot de passe : renvoie une seule fois un mot de passe provisoire à transmettre. */
+    @PostMapping("/users/{id}/password")
+    public com.bereta.auth.AuthResponses.TemporaryPasswordResponse resetPassword(
+            @AuthenticationPrincipal BeretaUserDetails actor, @PathVariable UUID id) {
+        return new com.bereta.auth.AuthResponses.TemporaryPasswordResponse(service.resetPassword(actor.getId(), id));
+    }
+
     @PatchMapping("/users/{id}/activation")
     public AdminUserResponse setEnabled(@AuthenticationPrincipal BeretaUserDetails actor,
             @PathVariable UUID id, @RequestBody AdminEnabledRequest request) {
