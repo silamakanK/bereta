@@ -1,0 +1,11 @@
+# Ni secrets ni fichiers de build locaux dans l'image
+.env
+.env.*
+!.env.example
+build
+.gradle
+bin
+out
+.idea
+.vscode
+*.log
