@@ -27,7 +27,7 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
 
       # Compilation + tests (H2 en mémoire, profil "test" : aucune base externe nécessaire)
       # + rapport JaCoCo XML (jacocoTestReport est lancé après test).
@@ -65,7 +65,7 @@ jobs:
           cache: npm
           cache-dependency-path: bereta-frontend/package-lock.json
 
-      - run: npm ci
+      - run: npm ci --ignore-scripts
 
       - name: Tests unitaires (sans watch) + couverture lcov
         run: npm run test:ci
@@ -112,6 +112,6 @@ jobs:
         run: sed -i 's|^SF:src/|SF:bereta-frontend/src/|' bereta-frontend/coverage/bereta/lcov.info
 
       - name: Analyse SonarQube Cloud
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@2f77a1ec69fb1d595b06f35ab27e97605bdef703 # v5.3.2
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
