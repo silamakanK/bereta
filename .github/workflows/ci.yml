@@ -92,17 +92,17 @@ jobs:
         with:
           fetch-depth: 0 # historique complet : blame et détection du nouveau code
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: backend-classes
           path: bereta-backend/build/classes/java/main
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: backend-coverage
           path: bereta-backend/build/reports/jacoco/test
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: frontend-coverage
           path: bereta-frontend/coverage/bereta
