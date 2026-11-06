@@ -27,7 +27,7 @@
       </div>
 
       @if (error()) { <p class="admin-message error" role="alert">{{ error() }}</p> }
-      @if (success()) { <p class="admin-message success" role="status">{{ success() }}</p> }
+      @if (success()) { <output class="admin-message success">{{ success() }}</output> }
 
       @if (tab() === 'overview') {
         <section class="admin-metrics" aria-label="Indicateurs globaux">

@@ -160,9 +160,18 @@ export class MemberTableComponent {
     });
   }
 
-  @HostListener('document:click')
-  protected closeMenu(): void {
+  /** Clic hors du menu « ⋯ » : il se ferme (un clic dans le menu est traité par ses boutons). */
+  @HostListener('document:click', ['$event'])
+  protected closeMenu(event: MouseEvent): void {
+    if ((event.target as Element | null)?.closest?.('.menu')) return;
     this.menuFor.set(null);
+  }
+
+  /** Échap ferme le menu « ⋯ » et la feuille des filtres (mobile). */
+  @HostListener('document:keydown.escape')
+  protected closeOnEscape(): void {
+    this.menuFor.set(null);
+    this.filtersOpen.set(false);
   }
 
   protected load(): void {

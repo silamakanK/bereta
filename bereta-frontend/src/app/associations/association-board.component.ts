@@ -7,6 +7,7 @@ import { FundService } from '../funds/fund.service';
 import { AccountLookup, LocalFund, TreasurerSummary } from '../funds/fund.model';
 import { apiErrorMessage } from '../shared/api-error';
 import { DataRefreshService } from '../shared/data-refresh';
+import { ModalDialogDirective } from '../shared/modal-dialog.directive';
 
 interface AssociationCard {
   association: Association;
@@ -30,7 +31,7 @@ interface Wizard {
 @Component({
   selector: 'app-association-board',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, ModalDialogDirective],
   templateUrl: './association-board.component.html',
   styleUrl: './association-board.component.scss',
 })

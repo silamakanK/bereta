@@ -18,11 +18,12 @@ import { AssociationService } from './associations/association.service';
 import { AssociationBoardComponent } from './associations/association-board.component';
 import { MemberTableComponent } from './members/member-table.component';
 import { DataRefreshService } from './shared/data-refresh';
+import { ModalDialogDirective } from './shared/modal-dialog.directive';
 import { CreatePaymentRequest, Payment, PaymentEnrollment, PaymentMethod, PaymentSummary } from './payments/payment.model';
 
 @Component({
   selector: 'app-root',
-  imports: [CurrencyPipe, DatePipe, FormsModule, LowerCasePipe, UpperCasePipe, FundSetupComponent, RouterLink, RouterOutlet, FirstLoginComponent, AssociationBoardComponent, MemberTableComponent],
+  imports: [CurrencyPipe, DatePipe, FormsModule, LowerCasePipe, UpperCasePipe, FundSetupComponent, RouterLink, RouterOutlet, FirstLoginComponent, AssociationBoardComponent, MemberTableComponent, ModalDialogDirective],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
@@ -527,14 +528,6 @@ export class App {
         this.isLoadingPaymentTargets.set(false);
       },
     });
-  }
-
-  /**
-   * Clic sur le fond du modal uniquement. Ne rien renvoyer : un gestionnaire Angular qui renvoie
-   * `false` annule l'action par défaut, ce qui bloquait l'envoi du formulaire (« Vérifier le paiement »).
-   */
-  protected closePaymentFormFromBackdrop(event: MouseEvent): void {
-    if (event.target === event.currentTarget) this.closePaymentForm();
   }
 
   protected closePaymentForm(): void {

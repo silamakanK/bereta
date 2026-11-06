@@ -10,8 +10,11 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
 
 ::selection { background: #dbeade; color: #234a33; }
 
-.payment-overlay { position: fixed; z-index: 20; inset: 0; display: grid; place-items: center; overflow-y: auto; padding: 22px; background: #14251bb8; }
-.payment-dialog { width: min(560px, 100%); max-height: min(92vh, 820px); overflow-y: auto; padding: 25px; border: 1px solid #e8ebe6; border-radius: 15px; background: #fff; box-shadow: 0 22px 70px #10221742; }
+/* Modal de paiement : <dialog> natif (showModal), centré par le navigateur, fond via ::backdrop. */
+.payment-dialog { box-sizing: border-box; width: min(560px, calc(100vw - 44px)); max-width: none; max-height: min(92vh, 820px); margin: auto; overflow-y: auto; padding: 25px; border: 1px solid #e8ebe6; border-radius: 15px; background: #fff; color: inherit; box-shadow: 0 22px 70px #10221742; }
+.payment-dialog::backdrop { background: #14251bb8; }
+/* Messages d'état (<output>) : même rendu que les anciens paragraphes. */
+output { display: block; }
 .payment-dialog-heading { display: flex; align-items: start; justify-content: space-between; gap: 15px; margin-bottom: 18px; }
 .payment-dialog-heading .eyebrow { margin-bottom: 7px; }
 .payment-dialog-heading h2 { margin: 0 0 6px; color: #303a31; font-size: 21px; letter-spacing: -.5px; }
@@ -56,8 +59,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
 .member-payment-history-row { display: flex; justify-content: space-between; gap: 10px; color: #737d73; font-size: 9px; }
 .member-payment-history-row strong { color: #3b7750; font-size: 9px; white-space: nowrap; }
 @media (max-width: 600px) {
-  .payment-overlay { align-items: end; padding: 0; }
-  .payment-dialog { width: 100%; max-height: 94vh; padding: 21px 17px calc(21px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; }
+  .payment-dialog { width: 100%; max-height: 94vh; margin: auto 0 0; padding: 21px 17px calc(21px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; }
   .payment-fields { grid-template-columns: 1fr; }
   .payment-note { grid-column: auto; }
   .payment-dialog-actions { display: grid; grid-template-columns: 1fr 1.5fr; }
