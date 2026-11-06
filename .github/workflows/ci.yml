@@ -1,0 +1,117 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  backend:
+    name: backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: bereta-backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@748248ddd2a24f49513d8f472f81c3a07d4d50e1 # v4.4.4
+
+      # Compilation + tests (H2 en mémoire, profil "test" : aucune base externe nécessaire)
+      # + rapport JaCoCo XML (jacocoTestReport est lancé après test).
+      - name: Build et tests
+        run: ./gradlew build --no-daemon
+
+      - name: Rapport de couverture JaCoCo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: bereta-backend/build/reports/jacoco/test/jacocoTestReport.xml
+          if-no-files-found: warn
+
+      # Classes compilées, nécessaires à l'analyse Java de SonarQube Cloud.
+      - name: Classes compilées
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-classes
+          path: bereta-backend/build/classes/java/main
+          retention-days: 1
+
+  frontend:
+    name: frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: bereta-frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: bereta-frontend/package-lock.json
+
+      - run: npm ci --ignore-scripts
+
+      - name: Tests unitaires (sans watch) + couverture lcov
+        run: npm run test:ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Rapport de couverture lcov
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: bereta-frontend/coverage/bereta/lcov.info
+          if-no-files-found: warn
+
+  sonar:
+    name: sonar
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    # Les PR Dependabot et celles venant de forks n'ont pas accès au secret SONAR_TOKEN.
+    if: github.actor != 'dependabot[bot]' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # historique complet : blame et détection du nouveau code
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: backend-classes
+          path: bereta-backend/build/classes/java/main
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: backend-coverage
+          path: bereta-backend/build/reports/jacoco/test
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-coverage
+          path: bereta-frontend/coverage/bereta
+
+      # lcov contient des chemins relatifs à bereta-frontend : on les rend relatifs à la racine.
+      - name: Chemins lcov depuis la racine
+        run: sed -i 's|^SF:src/|SF:bereta-frontend/src/|' bereta-frontend/coverage/bereta/lcov.info
+
+      - name: Analyse SonarQube Cloud
+        uses: SonarSource/sonarqube-scan-action@2f77a1ec69fb1d595b06f35ab27e97605bdef703 # v5.3.2
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
