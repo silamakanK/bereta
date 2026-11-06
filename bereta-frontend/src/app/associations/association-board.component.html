@@ -8,7 +8,7 @@
     </div>
   </header>
 
-  @if (success()) { <p class="board-message ok" role="status">{{ success() }}<button type="button" aria-label="Fermer" (click)="success.set(null)">×</button></p> }
+  @if (success()) { <output class="board-message ok">{{ success() }}<button type="button" aria-label="Fermer" (click)="success.set(null)">×</button></output> }
   @if (error()) { <p class="board-message ko" role="alert">{{ error() }}</p> }
 
   @if (loading() && cards().length === 0) {
@@ -61,8 +61,7 @@
 </section>
 
 @if (wizard(); as w) {
-  <div class="dialog-backdrop" (click)="closeWizard()"></div>
-  <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="wizard-title">
+  <dialog class="dialog" appModal (closed)="closeWizard()" aria-labelledby="wizard-title">
     @if (!w.replace && !issued()) {
       <ol class="steps" aria-label="Étapes">
         <li [class.current]="w.step === 'fund'" [class.done]="w.step === 'treasurer'">1. Caisse</li>
@@ -127,5 +126,5 @@
         </form>
       }
     }
-  </section>
+  </dialog>
 }

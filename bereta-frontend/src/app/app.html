@@ -1,5 +1,5 @@
 @if (isCheckingSession()) {
-  <main class="session-check" role="status"><span class="session-spinner"></span>Vérification de votre connexion…</main>
+  <main class="session-check"><span class="session-spinner"></span><output>Vérification de votre connexion…</output></main>
 } @else if (currentUser()?.mustChangePassword) {
   <app-first-login />
 } @else if (currentUser()?.role === 'ADMIN' && isAdminRoute()) {
@@ -7,7 +7,7 @@
 } @else if (currentUser() && isAccountRoute()) {
   <router-outlet />
 } @else if (currentUser() && (isCheckingAssociations() || (activeAssociationId() && isCheckingFunds()))) {
-  <main class="session-check" role="status"><span class="session-spinner"></span>Vérification de votre connexion…</main>
+  <main class="session-check"><span class="session-spinner"></span><output>Vérification de votre connexion…</output></main>
 } @else if (currentUser() && associationLoadError()) {
   <main class="onboarding-page"><section class="onboarding-card"><h1>Associations indisponibles</h1><p>Impossible de charger les espaces auxquels votre compte a accès.</p><button class="login-submit" type="button" (click)="loadAssociations()">Réessayer</button><button class="onboarding-link" type="button" (click)="logout()">Se déconnecter</button></section></main>
 } @else if (currentUser() && fundLoadError()) {
@@ -195,7 +195,7 @@
           }
           @if (loadErrorMessage()) { <p class="api-message api-error" role="alert">{{ loadErrorMessage() }} <button type="button" (click)="loadMembers()">Réessayer</button></p> }
           @if (saveErrorMessage()) { <p class="api-message api-error" role="alert">{{ saveErrorMessage() }}</p> }
-          @if (successMessage()) { <p class="api-message api-success" role="status">{{ successMessage() }}</p> }
+          @if (successMessage()) { <output class="api-message api-success">{{ successMessage() }}</output> }
 
           <app-member-table [responsible]="isResponsible()" [localFunds]="accessibleLocalFunds()"
             (add)="openCreateForm()" (edit)="openEditForm(asMember($event))" (history)="openEnrollment(asMember($event))"
@@ -211,7 +211,7 @@
                 <div class="member-state">Chargement des campagnes…</div>
               } @else {
                 @if (enrollmentErrorMessage()) { <p class="api-message api-error" role="alert">{{ enrollmentErrorMessage() }}</p> }
-                @if (enrollmentSuccessMessage()) { <p class="api-message api-success" role="status">{{ enrollmentSuccessMessage() }}</p> }
+                @if (enrollmentSuccessMessage()) { <output class="api-message api-success">{{ enrollmentSuccessMessage() }}</output> }
                 @if (enrollmentCampaigns().length > 0) {
                   <form class="enrollment-form" (ngSubmit)="enrollMember()">
                     <label>Campagne *
@@ -265,7 +265,7 @@
       </section>
       <section class="panel payments-panel" id="paiements" aria-labelledby="payments-title">
         <div class="panel-heading"><div><h2 id="payments-title">Derniers paiements</h2><p>Les 10 versements les plus récents dans vos caisses.</p></div><button class="text-button" type="button" (click)="openPaymentForm()">＋ Enregistrer un paiement</button></div>
-        @if (paymentSuccessMessage()) { <p class="api-message api-success" role="status">{{ paymentSuccessMessage() }}</p> }
+        @if (paymentSuccessMessage()) { <output class="api-message api-success">{{ paymentSuccessMessage() }}</output> }
         @for (payment of visiblePayments(); track payment.id) {
           <article class="payment-row">
             <span class="payment-avatar" aria-hidden="true">€</span>
@@ -282,11 +282,10 @@
   </main>
 
   @if (showPaymentForm()) {
-    <div class="payment-overlay" (click)="closePaymentFormFromBackdrop($event)">
-      <section class="payment-dialog" role="dialog" aria-modal="true" aria-labelledby="payment-dialog-title">
+    <dialog class="payment-dialog" appModal (closed)="closePaymentForm()" aria-labelledby="payment-dialog-title">
         <div class="payment-dialog-heading"><div><span class="eyebrow">COTISATION</span><h2 id="payment-dialog-title">Enregistrer un paiement</h2><p>Le versement sera conservé dans l’historique de la caisse.</p></div><button class="enrollment-close" type="button" (click)="closePaymentForm()" aria-label="Fermer">×</button></div>
         @if (paymentErrorMessage()) { <p class="api-message api-error" role="alert">{{ paymentErrorMessage() }}</p> }
-        @if (paymentSuccessMessage()) { <p class="api-message api-success" role="status">{{ paymentSuccessMessage() }}</p> }
+        @if (paymentSuccessMessage()) { <output class="api-message api-success">{{ paymentSuccessMessage() }}</output> }
         @if (isLoadingPaymentTargets()) {
           <div class="member-state"><span class="loading-dot"></span>Chargement des cotisations à payer…</div>
         } @else if (paymentTargets().length === 0) {
@@ -313,8 +312,7 @@
           <div class="payment-review"><h3>Confirmer le versement</h3><dl><div><dt>Membre</dt><dd>{{ target.memberName }}</dd></div><div><dt>Campagne</dt><dd>{{ target.campaignName }} · {{ target.localFundName }}</dd></div><div><dt>Montant</dt><dd>{{ paymentAmount | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</dd></div><div><dt>Date et mode</dt><dd>{{ paymentDate | date:'d MMM y':'UTC':'fr-FR' }} · {{ paymentMethodLabel(paymentMethod) }}</dd></div><div><dt>Reste après paiement</dt><dd>{{ (target.remainingAmount ?? 0) - paymentAmount | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</dd></div></dl><p>Vérifiez les informations avant d’enregistrer. Le paiement apparaîtra dans l’historique.</p></div>
           <div class="payment-dialog-actions"><button class="cancel-button" type="button" (click)="isReviewingPayment.set(false)">Modifier</button><button class="primary-button" type="button" (click)="savePayment()" [disabled]="isSavingPayment()">{{ isSavingPayment() ? 'Enregistrement…' : 'Confirmer le paiement' }}</button></div>
         }
-      </section>
-    </div>
+    </dialog>
   }
 
   @if (associations().length > 0) {

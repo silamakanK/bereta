@@ -10,7 +10,7 @@
   </div>
 </div>
 
-@if (filtersOpen()) { <div class="mt-sheet-backdrop" (click)="filtersOpen.set(false)"></div> }
+@if (filtersOpen()) { <button type="button" class="mt-sheet-backdrop" tabindex="-1" aria-label="Fermer les filtres" (click)="filtersOpen.set(false)"></button> }
 <div class="mt-filters" [class.open]="filtersOpen()" role="search" aria-label="Filtres des membres">
   <div class="mt-sheet-title"><strong>Filtres</strong><button type="button" class="mt-icon" aria-label="Fermer les filtres" (click)="filtersOpen.set(false)">×</button></div>
   <label class="mt-search">Recherche
@@ -65,7 +65,7 @@
   </div>
 }
 
-@if (message()) { <p class="mt-message ok" role="status">{{ message() }}<button type="button" aria-label="Fermer" (click)="message.set(null)">×</button></p> }
+@if (message()) { <output class="mt-message ok">{{ message() }}<button type="button" aria-label="Fermer" (click)="message.set(null)">×</button></output> }
 @if (error()) { <p class="mt-message ko" role="alert">{{ error() }}</p> }
 
 @if (loading()) {
@@ -107,7 +107,7 @@
               <button type="button" class="mt-icon" [attr.aria-expanded]="menuFor() === row.key" aria-haspopup="menu"
                 [attr.aria-label]="'Plus d’actions pour ' + row.member.firstName + ' ' + row.member.lastName" (click)="toggleMenu(row.key, $event)">⋯</button>
               @if (menuFor() === row.key) {
-                <span class="menu" role="menu" (click)="$event.stopPropagation()">
+                <span class="menu" role="menu">
                   <button type="button" role="menuitem" (click)="menuFor.set(null); edit.emit(row.member)">Modifier</button>
                   <button type="button" role="menuitem" (click)="menuFor.set(null); history.emit(row.member)">Historique et inscriptions</button>
                   <button type="button" role="menuitem" (click)="toggleArchive(row)">{{ row.member.active ? 'Archiver' : 'Réactiver' }}</button>

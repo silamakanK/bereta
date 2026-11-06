@@ -9,7 +9,7 @@
   </header>
 
   @if (errorMessage()) { <p class="setup-message setup-error" role="alert">{{ errorMessage() }}</p> }
-  @if (successMessage()) { <p class="setup-message setup-success" role="status">{{ successMessage() }}</p> }
+  @if (successMessage()) { <output class="setup-message setup-success">{{ successMessage() }}</output> }
 
   @if (isLoading()) {
     <div class="setup-loading">Chargement de la configuration…</div>
