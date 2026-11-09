@@ -16,6 +16,7 @@ public record MemberResponse(
         String fundName,
         boolean inPrimaryFund,
         boolean active,
+        UUID importId,
         Instant createdAt
 ) {
     static MemberResponse from(MemberEntity member) {
@@ -30,6 +31,7 @@ public record MemberResponse(
                 local != null ? local.getName() : primary != null ? "Caisse principale" : null,
                 local == null && primary != null,
                 member.isActive(),
+                member.getImportId(),
                 member.getCreatedAt()
         );
     }

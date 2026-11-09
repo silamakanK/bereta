@@ -29,6 +29,9 @@ dependencies {
     implementation 'com.googlecode.libphonenumber:libphonenumber:9.0.39'
     implementation 'com.bucket4j:bucket4j_jdk17-core:8.20.0'
     implementation 'org.flywaydb:flyway-core'
+    // Import de membres : CSV et Excel (.xlsx)
+    implementation 'org.apache.commons:commons-csv:1.14.1'
+    implementation 'org.apache.poi:poi-ooxml:5.5.1'
     runtimeOnly 'org.postgresql:postgresql'
     runtimeOnly 'org.flywaydb:flyway-database-postgresql'
     testRuntimeOnly 'com.h2database:h2'
