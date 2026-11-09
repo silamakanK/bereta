@@ -25,14 +25,23 @@ public class PhoneNumberService {
     }
 
     public Optional<String> tryNormalize(String raw) {
+        return tryNormalize(raw, defaultRegion);
+    }
+
+    /** Comme {@link #tryNormalize(String)}, en lisant les numéros sans indicatif avec la région donnée (ML, SN…). */
+    public Optional<String> tryNormalize(String raw, String region) {
         if (raw == null || raw.isBlank()) return Optional.empty();
         try {
-            PhoneNumber number = util.parse(raw.trim(), defaultRegion);
+            PhoneNumber number = util.parse(raw.trim(), region);
             if (!util.isValidNumber(number)) return Optional.empty();
             return Optional.of(util.format(number, PhoneNumberUtil.PhoneNumberFormat.E164));
         } catch (NumberParseException invalid) {
             return Optional.empty();
         }
+    }
+
+    public String defaultRegion() {
+        return defaultRegion;
     }
 
     /** +33612345678 → « +33 6 ** ** ** 78 ». */

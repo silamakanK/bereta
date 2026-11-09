@@ -1,5 +1,6 @@
 package com.bereta.members;
 
+import com.bereta.auth.PhoneNumberService;
 import com.bereta.auth.UserAccountEntity;
 import com.bereta.auth.UserAccountRepository;
 import com.bereta.associations.AssociationRequestContext;
@@ -30,12 +31,15 @@ public class MemberService {
     private final LocalFundRepository localFundRepository;
     private final AssociationRequestContext associationContext;
     private final com.bereta.funds.PrimaryFundRepository primaryFundRepository;
+    private final PhoneNumberService phoneNumberService;
 
     public MemberService(MemberRepository memberRepository, MemberCampaignRepository memberCampaignRepository,
                          UserAccountRepository userAccountRepository, FundAccessService fundAccessService,
                          LocalFundRepository localFundRepository, AssociationRequestContext associationContext,
-                         com.bereta.funds.PrimaryFundRepository primaryFundRepository) {
+                         com.bereta.funds.PrimaryFundRepository primaryFundRepository,
+                         PhoneNumberService phoneNumberService) {
         this.primaryFundRepository = primaryFundRepository;
+        this.phoneNumberService = phoneNumberService;
         this.memberRepository = memberRepository;
         this.memberCampaignRepository = memberCampaignRepository;
         this.userAccountRepository = userAccountRepository;
@@ -112,6 +116,7 @@ public class MemberService {
                 primaryFund,
                 localFund
         );
+        member.setPhoneE164(phoneNumberService.tryNormalize(member.getPhone()).orElse(null));
         return MemberResponse.from(memberRepository.save(member));
     }
 
@@ -123,6 +128,7 @@ public class MemberService {
                 request.lastName().trim(),
                 cleanPhone(request.phone())
         );
+        member.setPhoneE164(phoneNumberService.tryNormalize(member.getPhone()).orElse(null));
         return MemberResponse.from(memberRepository.save(member));
     }
 

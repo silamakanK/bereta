@@ -40,6 +40,14 @@ public class MemberEntity {
     @Column(length = 30)
     private String phone;
 
+    /** Téléphone normalisé (E.164), base de la détection des doublons ; vide si le numéro est illisible. */
+    @Column(name = "phone_e164", length = 20)
+    private String phoneE164;
+
+    /** Import d'origine (facultatif) : traçabilité et filtre « membres de cet import ». */
+    @Column(name = "import_id")
+    private UUID importId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by_user_id")
     private UserAccountEntity createdBy;
@@ -120,6 +128,11 @@ public class MemberEntity {
         this.lastName = lastName;
         this.phone = phone;
     }
+
+    public String getPhoneE164() { return phoneE164; }
+    public void setPhoneE164(String phoneE164) { this.phoneE164 = phoneE164; }
+    public UUID getImportId() { return importId; }
+    public void setImportId(UUID importId) { this.importId = importId; }
 
     public Instant getCreatedAt() {
         return createdAt;
