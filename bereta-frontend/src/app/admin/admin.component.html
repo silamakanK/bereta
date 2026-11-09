@@ -1,6 +1,6 @@
 <main class="admin-shell">
   <header class="admin-header">
-    <a class="admin-brand" routerLink="/admin"><span class="admin-mark">B</span><strong>bereta<span>.</span></strong><small>ADMINISTRATION GÉNÉRALE</small></a>
+    <a class="admin-brand" routerLink="/admin"><span class="admin-mark" aria-hidden="true"><img src="brand/bereta-icone-app.svg" alt="" width="38" height="38" /></span><strong>bereta<span>.</span></strong><small>ADMINISTRATION GÉNÉRALE</small></a>
     <div class="admin-header-actions">
       <label><span>Contexte métier actif</span><select [ngModel]="activeAssociationId() || ''" (ngModelChange)="selectAssociation($event)"><option value="">Aucune association sélectionnée</option>@for (association of associations(); track association.id) { <option [value]="association.id">{{ association.name }}</option> }</select></label>
       <button class="admin-logout" type="button" (click)="logout()">Se déconnecter</button>

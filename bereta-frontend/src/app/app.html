@@ -11,11 +11,11 @@
 } @else if (currentUser() && associationLoadError()) {
   <main class="onboarding-page"><section class="onboarding-card"><h1>Associations indisponibles</h1><p>Impossible de charger les espaces auxquels votre compte a accès.</p><button class="login-submit" type="button" (click)="loadAssociations()">Réessayer</button><button class="onboarding-link" type="button" (click)="logout()">Se déconnecter</button></section></main>
 } @else if (currentUser() && fundLoadError()) {
-  <main class="onboarding-page"><section class="onboarding-card"><a class="login-brand" routerLink="/" aria-label="BERETA, accueil"><span class="login-mark">B</span><span>bereta<span class="brand-dot">.</span></span></a><h1>Connexion à vos caisses impossible</h1><p>Le serveur n’a pas pu charger vos accès. Réessayez dans un instant.</p><button class="login-submit" type="button" (click)="retryLoadFunds()">Réessayer</button><button class="onboarding-link" type="button" (click)="logout()">Se déconnecter</button></section></main>
+  <main class="onboarding-page"><section class="onboarding-card"><a class="login-brand" routerLink="/" aria-label="BERETA, accueil"><span class="login-mark" aria-hidden="true"><img src="brand/bereta-icone-app.svg" alt="" width="38" height="38" /></span><span>bereta<span class="brand-dot">.</span></span></a><h1>Connexion à vos caisses impossible</h1><p>Le serveur n’a pas pu charger vos accès. Réessayez dans un instant.</p><button class="login-submit" type="button" (click)="retryLoadFunds()">Réessayer</button><button class="onboarding-link" type="button" (click)="logout()">Se déconnecter</button></section></main>
 } @else if (currentUser() && activeAssociationId() && !hasPrimaryFunds()) {
   <main class="onboarding-page">
     <section class="onboarding-card" aria-labelledby="onboarding-title">
-      <a class="login-brand" routerLink="/" aria-label="BERETA, accueil"><span class="login-mark">B</span><span>bereta<span class="brand-dot">.</span></span></a>
+      <a class="login-brand" routerLink="/" aria-label="BERETA, accueil"><span class="login-mark" aria-hidden="true"><img src="brand/bereta-icone-app.svg" alt="" width="38" height="38" /></span><span>bereta<span class="brand-dot">.</span></span></a>
       @if (!showFundSetup()) {
         <p class="login-eyebrow">VOTRE ESPACE ASSOCIATIF</p>
         <h1 id="onboarding-title">Votre compte est prêt</h1>
@@ -33,7 +33,7 @@
 <div class="app-shell">
   <aside class="sidebar" aria-label="Navigation principale">
     <a class="brand" href="#accueil" aria-label="BERETA, accueil">
-      <span class="brand-mark" aria-hidden="true">B</span>
+      <span class="brand-mark" aria-hidden="true"><img src="brand/bereta-icone-app.svg" alt="" width="38" height="38" /></span>
       <span class="brand-name">bereta<span>.</span></span>
     </a>
 

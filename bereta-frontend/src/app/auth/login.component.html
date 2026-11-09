@@ -1,6 +1,6 @@
 <main class="login-page">
   <section class="login-card" aria-labelledby="login-title">
-    <a class="login-brand" routerLink="/" aria-label="BERETA, accueil"><span class="login-mark">B</span><span>bereta<span class="brand-dot">.</span></span></a>
+    <a class="login-brand" routerLink="/" aria-label="BERETA, accueil"><span class="login-mark" aria-hidden="true"><img src="brand/bereta-icone-app.svg" alt="" width="38" height="38" /></span><span>bereta<span class="brand-dot">.</span></span></a>
     <h1 id="login-title">Connexion</h1>
     @if (errorMessage()) { <p class="login-error" role="alert">{{ errorMessage() }}</p> }
     <form novalidate (ngSubmit)="submit()">

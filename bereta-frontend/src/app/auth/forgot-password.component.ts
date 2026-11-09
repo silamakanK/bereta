@@ -13,7 +13,7 @@ import { RouterLink } from '@angular/router';
   template: `
     <main class="login-page">
       <section class="login-card" aria-labelledby="forgot-title">
-        <a class="login-brand" routerLink="/" aria-label="BERETA, accueil"><span class="login-mark">B</span><span>bereta<span class="brand-dot">.</span></span></a>
+        <a class="login-brand" routerLink="/" aria-label="BERETA, accueil"><span class="login-mark" aria-hidden="true"><img src="brand/bereta-icone-app.svg" alt="" width="38" height="38" /></span><span>bereta<span class="brand-dot">.</span></span></a>
         <h1 id="forgot-title">Mot de passe oublié</h1>
         <p class="login-intro">Contactez votre responsable d’association ou l’administrateur BERETA : il vous donnera un mot de passe provisoire.</p>
         <a class="login-secondary" href="mailto:aide@bereta.fr">Contacter l’assistance</a>
