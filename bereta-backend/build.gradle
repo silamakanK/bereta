@@ -31,7 +31,7 @@ dependencies {
     implementation 'org.flywaydb:flyway-core'
     // Import de membres : CSV et Excel (.xlsx)
     implementation 'org.apache.commons:commons-csv:1.14.1'
-    implementation 'org.apache.poi:poi-ooxml:5.5.1'
+    implementation 'org.apache.poi:poi-ooxml:6.0.0'
     runtimeOnly 'org.postgresql:postgresql'
     runtimeOnly 'org.flywaydb:flyway-database-postgresql'
     testRuntimeOnly 'com.h2database:h2'
