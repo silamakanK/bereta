@@ -6,6 +6,7 @@
   <div class="mt-head-actions">
     <button type="button" class="mt-button mt-filters-toggle" (click)="filtersOpen.set(true)" [attr.aria-expanded]="filtersOpen()">
       Filtres{{ chips().length ? ' (' + chips().length + ')' : '' }}</button>
+    <button type="button" class="mt-button" (click)="importList.emit()">↑ Importer une liste</button>
     <button type="button" class="mt-button primary" (click)="add.emit()">＋ Ajouter un membre</button>
   </div>
 </div>

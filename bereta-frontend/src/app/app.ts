@@ -17,13 +17,14 @@ import { PaymentService } from './payments/payment.service';
 import { AssociationService } from './associations/association.service';
 import { AssociationBoardComponent } from './associations/association-board.component';
 import { MemberTableComponent } from './members/member-table.component';
+import { MemberImportComponent } from './imports/member-import.component';
 import { DataRefreshService } from './shared/data-refresh';
 import { ModalDialogDirective } from './shared/modal-dialog.directive';
 import { CreatePaymentRequest, Payment, PaymentEnrollment, PaymentMethod, PaymentSummary } from './payments/payment.model';
 
 @Component({
   selector: 'app-root',
-  imports: [CurrencyPipe, DatePipe, FormsModule, LowerCasePipe, UpperCasePipe, FundSetupComponent, RouterLink, RouterOutlet, FirstLoginComponent, AssociationBoardComponent, MemberTableComponent, ModalDialogDirective],
+  imports: [CurrencyPipe, DatePipe, FormsModule, LowerCasePipe, UpperCasePipe, FundSetupComponent, RouterLink, RouterOutlet, FirstLoginComponent, AssociationBoardComponent, MemberTableComponent, MemberImportComponent, ModalDialogDirective],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
@@ -95,6 +96,9 @@ export class App {
   protected readonly memberPayments = signal<Payment[]>([]);
   protected readonly paymentTargets = signal<PaymentEnrollment[]>([]);
   protected readonly showPaymentForm = signal(false);
+  /** Import de membres (photo ou fichier) et filtre « membres importés » du tableau. */
+  protected readonly showImport = signal(false);
+  protected readonly importFilter = signal<string | null>(null);
   protected readonly isLoadingPaymentTargets = signal(false);
   protected readonly isSavingPayment = signal(false);
   protected readonly isReviewingPayment = signal(false);
@@ -411,6 +415,21 @@ export class App {
   private defaultMemberFund(): string {
     if (this.isResponsible() && this.hasPrimaryFunds()) return this.primaryFundChoice;
     return this.accessibleLocalFunds()[0]?.id ?? '';
+  }
+
+  protected openImport(): void {
+    this.showImport.set(true);
+  }
+
+  protected closeImport(): void {
+    this.showImport.set(false);
+  }
+
+  /** Fin d'import : le tableau des membres est filtré sur les membres créés. */
+  protected showImportedMembers(importId: string): void {
+    this.showImport.set(false);
+    this.importFilter.set(importId);
+    queueMicrotask(() => document.getElementById('membres')?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
   }
 
   protected updateSearch(event: Event): void {

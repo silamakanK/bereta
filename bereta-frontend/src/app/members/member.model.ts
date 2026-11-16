@@ -23,6 +23,8 @@ export interface MemberTracking {
   localFundId: string | null;
   fundName: string | null;
   active: boolean;
+  /** Import d'origine (filtre « membres importés »). */
+  importId: string | null;
   createdAt: string;
   enrollments: PaymentEnrollment[];
 }

@@ -27,13 +27,11 @@ public class ImportNormalizer {
         String collapsed = raw.strip().replaceAll("\\s+", " ");
         if (collapsed.isEmpty()) return null;
         StringBuilder out = new StringBuilder(collapsed.length());
-        boolean startOfWord = true;
-        for (int i = 0; i < collapsed.length(); ) {
-            int cp = collapsed.codePointAt(i);
-            out.appendCodePoint(startOfWord ? Character.toTitleCase(cp) : Character.toLowerCase(cp));
-            startOfWord = cp == ' ' || cp == '-' || cp == '\'' || cp == '’';
-            i += Character.charCount(cp);
-        }
+        boolean[] startOfWord = {true};
+        collapsed.codePoints().forEach(cp -> {
+            out.appendCodePoint(startOfWord[0] ? Character.toTitleCase(cp) : Character.toLowerCase(cp));
+            startOfWord[0] = cp == ' ' || cp == '-' || cp == '\'' || cp == '’';
+        });
         return out.toString();
     }
 
@@ -46,17 +44,20 @@ public class ImportNormalizer {
 
     public PhoneResult normalizePhone(String raw) {
         String phone = phone(raw);
-        if (phone == null) return PhoneResult.EMPTY;
+        if (phone == null) return PhoneResult.NONE;
         Optional<String> normalized = phones.tryNormalize(phone);
-        if (normalized.isPresent()) return new PhoneResult(normalized.get(), false, false);
+        if (normalized.isPresent()) return new PhoneResult(normalized.get(), false, false, false);
         if (!phone.startsWith("+") && !phone.startsWith("00")) {
             for (String region : FALLBACK_REGIONS) {
                 if (region.equalsIgnoreCase(phones.defaultRegion())) continue;
                 Optional<String> other = phones.tryNormalize(phone, region);
-                if (other.isPresent()) return new PhoneResult(other.get(), true, false);
+                if (other.isPresent()) return new PhoneResult(other.get(), true, false, false);
             }
         }
-        return PhoneResult.INVALID;
+        // Longueur plausible, mais plage inconnue (ex. 06 39 98 …) : à confirmer, pas bloquant.
+        Optional<String> possible = phones.tryFormatPossible(phone);
+        if (possible.isPresent()) return new PhoneResult(possible.get(), false, false, true);
+        return PhoneResult.UNREADABLE;
     }
 
     /** Clé de comparaison des noms : sans accents, sans casse, sans ponctuation. */
@@ -73,10 +74,11 @@ public class ImportNormalizer {
     /**
      * @param e164        numéro normalisé, ou null
      * @param deduced     indicatif déduit (numéro sans indicatif, non valide pour la région par défaut)
-     * @param invalid     numéro présent mais illisible
+     * @param invalid     numéro présent mais illisible (bloquant)
+     * @param unusual     longueur plausible mais plage inconnue : à confirmer par l'utilisateur
      */
-    public record PhoneResult(String e164, boolean deduced, boolean invalid) {
-        static final PhoneResult EMPTY = new PhoneResult(null, false, false);
-        static final PhoneResult INVALID = new PhoneResult(null, false, true);
+    public record PhoneResult(String e164, boolean deduced, boolean invalid, boolean unusual) {
+        static final PhoneResult NONE = new PhoneResult(null, false, false, false);
+        static final PhoneResult UNREADABLE = new PhoneResult(null, false, true, false);
     }
 }

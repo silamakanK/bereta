@@ -1,0 +1,158 @@
+/* Import de membres : plein écran sur mobile, grande fenêtre sur ordinateur. */
+* { box-sizing: border-box; }
+
+.imp {
+  display: flex; flex-direction: column; width: min(1120px, 96vw); max-width: none; height: min(900px, 94vh);
+  max-height: none; padding: 0; overflow: hidden; border: 0; border-radius: 16px; background: #f7f8f5; color: #1f2a1f;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, .25);
+}
+.imp:not([open]) { display: none; }
+.imp::backdrop { background: rgba(15, 23, 42, .45); }
+
+/* En-tête : étape et avancement */
+.imp-head { position: relative; display: flex; align-items: flex-start; gap: 12px; padding: 16px 20px 14px; background: #fff; border-bottom: 1px solid #e5ebe4; }
+.imp-head-text { flex: 1; min-width: 0; }
+.imp-eyebrow { color: #2e6248; font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.imp-head h2 { margin: 2px 0 0; font-size: 19px; }
+.imp-close { flex: 0 0 40px; width: 40px; height: 40px; border: 1px solid #e2e8e0; border-radius: 10px; background: #fff; font-size: 22px; line-height: 1; cursor: pointer; }
+.imp-progress { position: absolute; right: 0; bottom: -1px; left: 0; width: 100%; height: 3px; border: 0; background: #e5ebe4; appearance: none; }
+.imp-progress::-webkit-progress-bar { background: #e5ebe4; }
+.imp-progress::-webkit-progress-value { background: #2e6248; transition: width .3s; }
+.imp-progress::-moz-progress-bar { background: #2e6248; }
+.imp-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.imp-body { flex: 1; min-height: 0; padding: 18px 20px; overflow-y: auto; }
+.imp-lead { margin: 0 0 14px; color: #4b554b; font-size: 14px; }
+
+.imp-foot { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 12px 20px calc(12px + env(safe-area-inset-bottom)); background: #fff; border-top: 1px solid #e5ebe4; }
+.imp-btn { min-height: 44px; padding: 0 16px; border: 1px solid #d6ddd4; border-radius: 10px; background: #fff; color: #1f2a1f; font: inherit; font-size: 14px; font-weight: 650; cursor: pointer; }
+.imp-btn.primary { border-color: #2e6248; background: #2e6248; color: #fff; }
+.imp-btn:disabled { opacity: .5; cursor: not-allowed; }
+.imp-link { border: 0; background: none; color: #0051d5; font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; text-decoration: underline; }
+.imp-icon { flex: 0 0 auto; width: 34px; height: 34px; border: 1px solid #e2e8e0; border-radius: 8px; background: #fff; font-size: 15px; line-height: 1; cursor: pointer; }
+
+.imp-alert { display: block; margin: 0 0 14px; padding: 10px 12px; border-radius: 10px; font-size: 13px; }
+.imp-alert.ko { border: 1px solid #fecaca; background: #fef2f2; color: #b91c1c; }
+.imp-alert.info { border: 1px solid #bfdbfe; background: #eff6ff; color: #1e40af; }
+.imp-alert.warn { border: 1px solid #fde68a; background: #fffbeb; color: #92400e; }
+
+/* 1. Destination */
+.imp-field { display: grid; gap: 6px; max-width: 460px; font-size: 13px; font-weight: 650; }
+.imp-field select, .imp-field input { min-height: 46px; padding: 0 12px; border: 1px solid #d6ddd4; border-radius: 10px; background: #fff; font: inherit; font-size: 15px; }
+.imp-field input[readonly] { background: #eef2ed; }
+.imp-field small { color: #6b756b; font-weight: 500; }
+
+/* 2. Sources */
+.imp-sources { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+.imp-source { position: relative; display: grid; justify-items: center; gap: 4px; padding: 22px 14px; border: 2px dashed #bcd3c2; border-radius: 14px; background: #fff; text-align: center; cursor: pointer; }
+.imp-source:hover, .imp-source:focus-within { border-color: #2e6248; background: #f2f8f3; }
+.imp-source:focus-within { outline: 3px solid rgba(46, 98, 72, .25); }
+.imp-source.disabled { opacity: .5; cursor: not-allowed; }
+.imp-source input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.imp-source-icon { font-size: 30px; }
+.imp-source strong { font-size: 15px; }
+.imp-source small { color: #6b756b; font-size: 12px; }
+.imp-tips { margin-bottom: 14px; padding: 10px 14px; border-radius: 10px; background: #eef5ef; color: #234d37; font-size: 13px; }
+.imp-tips ul { display: grid; gap: 2px; margin: 4px 0 0; padding-left: 18px; }
+.imp-pages { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.imp-pages li { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; min-width: 180px; padding: 6px; border: 1px solid #e2e8e0; border-radius: 10px; background: #fff; font-size: 13px; }
+.imp-pages img { width: 52px; height: 52px; border-radius: 6px; object-fit: cover; }
+.imp-doc { display: grid; width: 52px; height: 52px; place-items: center; font-size: 24px; }
+.imp-page-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* 3. Lecture */
+.imp-wait { display: grid; justify-items: center; gap: 10px; max-width: 420px; margin: 60px auto; text-align: center; }
+.imp-wait strong { font-size: 18px; }
+.imp-wait p { margin: 0; color: #6b756b; font-size: 14px; }
+.imp-wait-inline { display: flex; align-items: center; gap: 8px; color: #4b554b; font-size: 13px; }
+.imp-spinner { display: inline-block; width: 18px; height: 18px; border: 3px solid #d6e4d9; border-top-color: #2e6248; border-radius: 50%; animation: imp-spin .8s linear infinite; }
+.imp-spinner.big { width: 46px; height: 46px; border-width: 5px; }
+@keyframes imp-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .imp-spinner { animation-duration: 3s; } }
+
+/* 4. Aperçu : photo à côté (ordinateur) ou au-dessus (mobile) */
+.imp-review { display: grid; gap: 16px; }
+.imp-review.with-photo { grid-template-columns: minmax(260px, 2fr) 3fr; align-items: start; }
+.imp-photo { padding: 10px; border: 1px solid #e2e8e0; border-radius: 12px; background: #fff; }
+.imp-review.with-photo .imp-photo { position: sticky; top: 0; }
+.imp-photo-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+.imp-photo img { display: block; width: 100%; max-height: 70vh; border-radius: 8px; object-fit: contain; background: #eef2ed; }
+.imp-photo-tabs { display: flex; gap: 6px; margin-top: 8px; }
+.imp-photo-tabs button { padding: 4px 10px; border: 1px solid #d6ddd4; border-radius: 99px; background: #fff; font: inherit; font-size: 12px; cursor: pointer; }
+.imp-photo-tabs button.on { border-color: #2e6248; background: #2e6248; color: #fff; }
+
+.imp-tabs { display: flex; gap: 6px; min-width: 0; margin: 0 0 12px; padding: 0; overflow-x: auto; border: 0; }
+.imp-tabs button { flex: 0 0 auto; min-height: 36px; padding: 0 12px; border: 1px solid #d6ddd4; border-radius: 99px; background: #fff; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.imp-tabs button[aria-pressed="true"] { border-color: #2e6248; background: #2e6248; color: #fff; }
+.imp-tabs b { margin-left: 4px; font-variant-numeric: tabular-nums; }
+.imp-empty { color: #6b756b; font-size: 13px; }
+
+.imp-rows { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.imp-row { padding: 12px; border: 1px solid #e2e8e0; border-left-width: 4px; border-radius: 12px; background: #fff; }
+.imp-row.st-ok { border-left-color: #16a34a; }
+.imp-row.st-warn { border-color: #fcd34d; border-left-color: #d97706; background: #fffbeb; }
+.imp-row.st-dup { border-left-color: #2563eb; }
+.imp-row.st-off { border-left-color: #94a3b8; background: #f8fafc; }
+.imp-row.st-off .imp-row-fields { opacity: .55; }
+.imp-row-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.imp-include { display: flex; align-items: center; gap: 6px; color: #4b554b; font-size: 12px; font-weight: 650; }
+.imp-include input, .imp-confirm input { width: 18px; height: 18px; accent-color: #2e6248; }
+.imp-status { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px 2px 3px; border: 1px solid transparent; border-radius: 99px; font-size: 12px; font-weight: 650; white-space: nowrap; }
+.imp-status-icon { display: grid; width: 18px; height: 18px; place-items: center; border-radius: 50%; color: #fff; font-size: 11px; font-weight: 800; }
+.imp-status.ok { border-color: #bbf7d0; background: #f0fdf4; color: #166534; } .imp-status.ok .imp-status-icon { background: #15803d; }
+.imp-status.warn { border-color: #fde68a; background: #fff7d6; color: #92400e; } .imp-status.warn .imp-status-icon { background: #b45309; }
+.imp-status.dup { border-color: #bfdbfe; background: #eff6ff; color: #1e40af; } .imp-status.dup .imp-status-icon { background: #2563eb; }
+.imp-status.off { border-color: #e2e8f0; background: #f1f5f9; color: #475569; } .imp-status.off .imp-status-icon { background: #64748b; }
+.imp-dirty { color: #6b756b; font-style: italic; }
+.imp-row-top .imp-icon { margin-left: auto; }
+
+.imp-row-fields { display: grid; grid-template-columns: 1fr 1fr 1.1fr; gap: 8px; }
+.imp-row-fields label { display: grid; gap: 3px; min-width: 0; color: #6b756b; font-size: 11px; font-weight: 650; }
+.imp-row-fields input { width: 100%; min-width: 0; min-height: 40px; padding: 0 10px; border: 1px solid #d6ddd4; border-radius: 8px; background: #fff; color: #1f2a1f; font: inherit; font-size: 14px; }
+.imp-row-fields input:focus { border-color: #2e6248; outline: 2px solid rgba(46, 98, 72, .2); }
+.imp-row-notes { display: grid; gap: 2px; margin-top: 8px; font-size: 12px; }
+.imp-issues { color: #92400e; font-weight: 650; }
+.imp-row-notes small { color: #6b756b; }
+.imp-fix { margin: 8px 0 0; color: #92400e; font-size: 13px; font-weight: 600; }
+.imp-confirm { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.imp-dup { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 8px; color: #1e40af; font-size: 13px; }
+.imp-seg { display: inline-flex; margin: 0; padding: 0; overflow: hidden; border: 1px solid #bfdbfe; border-radius: 10px; }
+.imp-seg label { position: relative; display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; background: #fff; color: #1e40af; font-size: 13px; font-weight: 650; cursor: pointer; }
+.imp-seg label.on { background: #1d4ed8; color: #fff; }
+.imp-seg label:focus-within { outline: 3px solid rgba(37, 99, 235, .35); outline-offset: -3px; }
+.imp-seg input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.imp-add { width: 100%; min-height: 46px; margin-top: 12px; border: 2px dashed #bcd3c2; border-radius: 12px; background: #fff; color: #2e6248; font: inherit; font-size: 14px; font-weight: 650; cursor: pointer; }
+
+/* 5. Récapitulatif */
+.imp-summary { display: grid; gap: 14px; max-width: 640px; margin: 0 auto; }
+.imp-big { margin: 0; font-size: 18px; line-height: 1.45; }
+.imp-big strong:first-child { color: #2e6248; font-size: 30px; }
+.imp-recap { display: grid; gap: 0; margin: 0; padding: 0; overflow: hidden; border: 1px solid #e2e8e0; border-radius: 12px; background: #fff; list-style: none; }
+.imp-recap li { display: flex; justify-content: space-between; padding: 10px 14px; border-top: 1px solid #eef2ed; font-size: 14px; }
+.imp-recap li:first-child { border-top: 0; }
+.imp-enroll { align-items: flex-start; padding: 12px 14px; border: 1px solid #e2e8e0; border-radius: 12px; background: #fff; }
+.imp-enroll span { display: grid; gap: 2px; }
+.imp-enroll small { color: #6b756b; font-weight: 500; }
+.imp-safe { margin: 0; color: #4b554b; font-size: 13px; }
+
+/* 6. Résultat */
+.imp-done { display: grid; justify-items: center; gap: 10px; max-width: 460px; margin: 50px auto; text-align: center; }
+.imp-done-icon { display: grid; width: 64px; height: 64px; place-items: center; border-radius: 50%; background: #15803d; color: #fff; font-size: 32px; font-weight: 800; }
+.imp-done strong { font-size: 19px; }
+.imp-done p { margin: 0; color: #4b554b; font-size: 14px; }
+
+/* Mobile : plein écran, photo au-dessus, cartes en une colonne */
+@media (max-width: 760px) {
+  .imp { inset: 0; width: 100%; height: 100%; margin: 0; border-radius: 0; }
+  .imp-head { padding: 12px 16px; }
+  .imp-body { padding: 14px 16px; }
+  .imp-foot { padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); }
+  .imp-foot .imp-btn { flex: 1 1 auto; }
+  .imp-sources { grid-template-columns: 1fr; }
+  .imp-review.with-photo { grid-template-columns: 1fr; }
+  .imp-review.with-photo .imp-photo { position: static; }
+  .imp-photo img { max-height: 40vh; }
+  .imp-row-fields { grid-template-columns: 1fr 1fr; }
+  .imp-row-fields label:last-child { grid-column: 1 / -1; }
+  .imp-pages li { flex: 1 1 100%; }
+}
