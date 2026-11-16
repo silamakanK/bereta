@@ -235,6 +235,50 @@ class MemberImportIntegrationTest {
                 .file(new MockMultipartFile("fichiers", "vide.csv", "text/csv", "prenom;nom\n".getBytes())), null)
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.detail").value("Aucun membre trouvé dans ce document."));
+
+        // Plus de 5 photos, ou plusieurs documents : refusés avant toute lecture.
+        MockMultipartHttpServletRequestBuilder sixPhotos = multipart("/api/imports/membres/analyse");
+        for (int i = 0; i < 6; i++) {
+            sixPhotos.file(new MockMultipartFile("fichiers", "p" + i + ".jpg", "image/jpeg", new byte[]{(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, 1}));
+        }
+        call(manager, association, sixPhotos, null)
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.detail").value("5 photos maximum par import."));
+        call(manager, association, multipart("/api/imports/membres/analyse")
+                .file(new MockMultipartFile("fichiers", "a.csv", "text/csv", "prenom;nom\nA;B\n".getBytes()))
+                .file(new MockMultipartFile("fichiers", "b.csv", "text/csv", "prenom;nom\nC;D\n".getBytes())), null)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.startsWith("Plusieurs fichiers")));
+        // Photo valide, mais lecture des photos pas encore disponible (Lot 3).
+        call(manager, association, multipart("/api/imports/membres/analyse")
+                .file(new MockMultipartFile("fichiers", "p.jpg", "image/jpeg", new byte[]{(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, 1})), null)
+                .andExpect(status().isUnsupportedMediaType());
+    }
+
+    @Test
+    void refusesToValidateWhileALineRemainsToCheck() throws Exception {
+        String manager = registerManager();
+        String association = createAssociation(manager, "Import à vérifier");
+        String csv = "prenom;nom;telephone\nAwa;Diallo;0612345678\nSidi;Keita;12345\n";
+        JsonNode preview = json(call(manager, association, multipart("/api/imports/membres/analyse")
+                .file(new MockMultipartFile("fichiers", "l.csv", "text/csv", csv.getBytes())), null)
+                .andExpect(status().isCreated()));
+        String importId = preview.get("id").asText();
+        assertThat(preview.at("/rows/1/confirmable").asBoolean()).isFalse(); // téléphone impossible : à corriger
+
+        call(manager, association, post("/api/imports/" + importId + "/valider"), "{}")
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("1 ligne est à vérifier : corrigez-la ou décochez-la."));
+        call(manager, association, put("/api/imports/" + importId + "/lignes"),
+                "{\"rows\":[{\"id\":\"%s\",\"firstName\":\"X\",\"lastName\":\"Y\",\"included\":true}]}"
+                        .formatted(UUID.randomUUID()))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.detail").value("Ligne inconnue dans cet import."));
+        // Tout exclu : rien à créer.
+        String allExcluded = "{\"rows\":[{\"id\":\"%s\",\"included\":false},{\"id\":\"%s\",\"included\":false}]}"
+                .formatted(preview.at("/rows/0/id").asText(), preview.at("/rows/1/id").asText());
+        call(manager, association, put("/api/imports/" + importId + "/lignes"), allExcluded).andExpect(status().isOk());
+        call(manager, association, post("/api/imports/" + importId + "/valider"), "{}")
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("Aucun membre à créer : toutes les lignes sont exclues ou ignorées."));
     }
 
     @Test
