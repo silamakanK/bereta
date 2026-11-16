@@ -5,9 +5,7 @@
       <h2 id="imp-title">{{ stepTitle() }}</h2>
     </div>
     <button type="button" class="imp-close" (click)="requestClose()" aria-label="Fermer l’import">×</button>
-    <div class="imp-progress" role="progressbar" aria-label="Avancement" [attr.aria-valuenow]="progress()" aria-valuemin="0" aria-valuemax="100">
-      <span [style.width.%]="progress()"></span>
-    </div>
+    <progress class="imp-progress" max="100" [value]="progress()" aria-label="Avancement de l’import"></progress>
   </header>
 
   <div class="imp-body">
@@ -101,12 +99,12 @@
           }
 
           <section class="imp-lines" aria-label="Lignes lues">
-            <div class="imp-tabs" role="group" aria-label="Filtrer les lignes">
+            <fieldset class="imp-tabs"><legend class="imp-sr">Filtrer les lignes</legend>
               <button type="button" [attr.aria-pressed]="tab() === 'toutes'" (click)="setTab('toutes')">Toutes <b>{{ counts().toutes }}</b></button>
               <button type="button" [attr.aria-pressed]="tab() === 'verifier'" (click)="setTab('verifier')">À vérifier <b>{{ counts().verifier }}</b></button>
               <button type="button" [attr.aria-pressed]="tab() === 'doublons'" (click)="setTab('doublons')">Doublons <b>{{ counts().doublons }}</b></button>
               <button type="button" [attr.aria-pressed]="tab() === 'exclues'" (click)="setTab('exclues')">Exclues <b>{{ counts().exclues }}</b></button>
-            </div>
+            </fieldset>
 
             @if (visibleRows().length === 0) {
               <p class="imp-empty">Aucune ligne dans cette catégorie.</p>
@@ -150,10 +148,10 @@
                   @if (row.included && row.status === 'DOUBLON') {
                     <div class="imp-dup">
                       <span>{{ duplicateLabel(row) }}</span>
-                      <div class="imp-seg" role="radiogroup" [attr.aria-label]="'Doublon ligne ' + row.lineNumber">
-                        <button type="button" role="radio" [attr.aria-checked]="row.duplicateAction !== 'CREER'" (click)="change(row, { duplicateAction: 'IGNORER' })">Ignorer</button>
-                        <button type="button" role="radio" [attr.aria-checked]="row.duplicateAction === 'CREER'" (click)="change(row, { duplicateAction: 'CREER' })">Créer quand même</button>
-                      </div>
+                      <fieldset class="imp-seg"><legend class="imp-sr">Doublon de la ligne {{ row.lineNumber }}</legend>
+                        <label [class.on]="row.duplicateAction !== 'CREER'"><input type="radio" [name]="'dup' + row.key" [checked]="row.duplicateAction !== 'CREER'" (change)="change(row, { duplicateAction: 'IGNORER' })" />Ignorer</label>
+                        <label [class.on]="row.duplicateAction === 'CREER'"><input type="radio" [name]="'dup' + row.key" [checked]="row.duplicateAction === 'CREER'" (change)="change(row, { duplicateAction: 'CREER' })" />Créer quand même</label>
+                      </fieldset>
                     </div>
                   }
                 </li>

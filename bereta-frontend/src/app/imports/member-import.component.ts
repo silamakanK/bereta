@@ -165,40 +165,47 @@ export class MemberImportComponent implements OnInit, OnDestroy {
     if (files.length === 0) return;
     this.error.set(null);
     this.notice.set(null);
-    for (const file of files) {
-      if (file.size > MAX_BYTES) {
-        this.error.set(`« ${file.name} » dépasse 10 Mo.`);
-        return;
-      }
-      const image = fromCamera || file.type.startsWith('image/') || isHeic(file);
-      if (!image && !DOCUMENT.test(file.name)) {
-        this.error.set('Format non pris en charge. Envoyez une photo, un PDF, un fichier Excel (.xlsx) ou CSV.');
-        return;
-      }
-      if (!image) {
-        // Un document se lit seul : il remplace les photos déjà ajoutées.
-        if (this.photos().length) this.notice.set('Le document remplace les photos ajoutées.');
-        this.replacePages([{ key: this.nextKey++, blob: file, name: file.name, photo: false, previewUrl: null }]);
-        continue;
-      }
-      if (this.photos().length >= MAX_PHOTOS) {
-        this.error.set(`${MAX_PHOTOS} photos maximum par import.`);
-        return;
-      }
-      await this.addPhoto(file);
+    const problem = this.checkFiles(files);
+    if (problem) {
+      this.error.set(problem);
+      return;
     }
+    const isPhoto = (file: File) => fromCamera || file.type.startsWith('image/') || isHeic(file);
+    const document = files.find((file) => !isPhoto(file));
+    if (document) {
+      // Un document se lit seul : il remplace les photos déjà ajoutées.
+      if (this.photos().length) this.notice.set('Le document remplace les photos ajoutées.');
+      this.replacePages([{ key: this.nextKey++, blob: document, name: document.name, photo: false, previewUrl: null }]);
+      return;
+    }
+    if (this.photos().length + files.length > MAX_PHOTOS) {
+      this.error.set(`${MAX_PHOTOS} photos maximum par import.`);
+      return;
+    }
+    await this.addPhotos(files);
   }
 
-  private async addPhoto(file: File): Promise<void> {
+  /** Taille et format ; renvoie le message d'erreur, ou null si tout est accepté. */
+  private checkFiles(files: File[]): string | null {
+    const tooLarge = files.find((file) => file.size > MAX_BYTES);
+    if (tooLarge) return `« ${tooLarge.name} » dépasse 10 Mo.`;
+    const unsupported = files.some((file) => !file.type.startsWith('image/') && !isHeic(file) && !DOCUMENT.test(file.name));
+    return unsupported ? 'Format non pris en charge. Envoyez une photo, un PDF, un fichier Excel (.xlsx) ou CSV.' : null;
+  }
+
+  /** Compression de toutes les photos en parallèle, ajoutées dans l'ordre choisi. */
+  private async addPhotos(files: File[]): Promise<void> {
     this.preparing.set(true);
     try {
-      const blob = await compressPhoto(file);
-      const name = file.name.replace(/\.[^.]+$/, '') + '.jpg';
-      const page: Page = { key: this.nextKey++, blob, name, photo: true, previewUrl: URL.createObjectURL(blob) };
+      const blobs = await Promise.all(files.map((file) => compressPhoto(file)));
+      const added: Page[] = blobs.map((blob, index) => ({
+        key: this.nextKey++, blob, name: files[index].name.replace(/\.[^.]+$/, '') + '.jpg', photo: true,
+        previewUrl: URL.createObjectURL(blob),
+      }));
       if (this.hasDocument()) this.notice.set('La photo remplace le document choisi.');
-      this.replacePages([...this.photos(), page]);
+      this.replacePages([...this.photos(), ...added]);
     } catch (error) {
-      this.error.set(error instanceof UnreadableImageError && isHeic(file)
+      this.error.set(error instanceof UnreadableImageError && files.some(isHeic)
         ? 'Photo HEIC illisible sur cet appareil : enregistrez-la en JPEG (ou réglez l’appareil photo sur « Le plus compatible »).'
         : 'Cette photo n’a pas pu être lue. Réessayez avec une autre photo.');
     } finally {

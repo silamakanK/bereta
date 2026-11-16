@@ -29,9 +29,11 @@ import java.util.UUID;
 @RequestMapping("/api/imports")
 public class MemberImportController {
 
+    private final MemberImportAnalysisService analysis;
     private final MemberImportService service;
 
-    public MemberImportController(MemberImportService service) {
+    public MemberImportController(MemberImportAnalysisService analysis, MemberImportService service) {
+        this.analysis = analysis;
         this.service = service;
     }
 
@@ -41,7 +43,7 @@ public class MemberImportController {
     public PreviewResponse analyse(@AuthenticationPrincipal BeretaUserDetails user,
                                    @RequestParam(name = "fichiers", required = false) List<MultipartFile> files,
                                    @RequestParam(name = "localFundId", required = false) UUID localFundId) {
-        return service.analyse(user.getId(), localFundId, files);
+        return analysis.analyse(user.getId(), localFundId, files);
     }
 
     @GetMapping
