@@ -343,6 +343,7 @@ public class MemberImportService {
         if (phone.invalid()) blocking.add("Téléphone invalide");
         else if (row.getPhone() == null) warnings.add("Téléphone manquant");
         else if (phone.deduced()) warnings.add("Indicatif déduit (" + phone.e164().substring(0, 4) + ") : vérifiez");
+        else if (phone.unusual()) warnings.add("Numéro inhabituel : vérifiez-le");
         if (row.getConfidence() == Confidence.BASSE) warnings.add("Lecture incertaine");
         else if (row.getConfidence() == Confidence.MOYENNE) {
             warnings.add(row.getRemark() != null ? row.getRemark() : "Lecture à vérifier");
@@ -354,7 +355,7 @@ public class MemberImportService {
         else if (!warnings.isEmpty() && !row.isConfirmed()) status = ImportRowStatus.A_VERIFIER;
         else status = ImportRowStatus.PRETE;
         if (!row.isConfirmed()) issues.addAll(warnings);
-        return new Evaluation(status, issues);
+        return new Evaluation(status, issues, blocking.isEmpty());
     }
 
     static boolean willBeCreated(MemberImportRowEntity row) {
@@ -415,7 +416,8 @@ public class MemberImportService {
             }
             return new RowResponse(row.getId(), row.getLineNumber(), row.getReadFirstName(), row.getReadLastName(),
                     row.getReadPhone(), row.getFirstName(), row.getLastName(), row.getPhone(), row.getPhoneE164(),
-                    row.getConfidence(), row.getRemark(), row.getStatus(), issues, row.isIncluded(), row.isConfirmed(),
+                    row.getConfidence(), row.getRemark(), row.getStatus(), issues, evaluation.confirmable(),
+                    row.isIncluded(), row.isConfirmed(),
                     duplicate, row.getDuplicateOfLine(), row.getDuplicateAction());
         }).toList();
 
@@ -456,6 +458,7 @@ public class MemberImportService {
     private record Destination(PrimaryFundEntity primary, LocalFundEntity local) {
     }
 
-    private record Evaluation(ImportRowStatus status, List<String> issues) {
+    /** {@code confirmable} : aucun problème bloquant, « Ligne vérifiée » suffit à valider la ligne. */
+    private record Evaluation(ImportRowStatus status, List<String> issues, boolean confirmable) {
     }
 }

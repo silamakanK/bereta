@@ -198,6 +198,7 @@
           @if (successMessage()) { <output class="api-message api-success">{{ successMessage() }}</output> }
 
           <app-member-table [responsible]="isResponsible()" [localFunds]="accessibleLocalFunds()"
+            [(importFilter)]="importFilter" (importList)="openImport()"
             (add)="openCreateForm()" (edit)="openEditForm(asMember($event))" (history)="openEnrollment(asMember($event))"
             (pay)="openPaymentForm($event)" />
           @if (selectedMemberForEnrollment(); as selectedMember) {
@@ -254,7 +255,7 @@
             <div class="panel-heading compact-heading"><div><h2>Actions rapides</h2><p>Les tâches les plus courantes</p></div></div>
             <a class="quick-action" href="#membres"><span class="quick-icon quick-search" aria-hidden="true">⌕</span><span><strong>Rechercher un membre</strong><small>Consulter son suivi</small></span><b aria-hidden="true">→</b></a>
             <button class="quick-action" type="button" (click)="openPaymentForm()"><span class="quick-icon quick-pay" aria-hidden="true">＋</span><span><strong>Enregistrer un paiement</strong><small>Saisir une cotisation reçue</small></span><b aria-hidden="true">→</b></button>
-            <button class="quick-action" type="button"><span class="quick-icon quick-import" aria-hidden="true">↑</span><span><strong>Importer mon cahier</strong><small>Photo, PDF, Excel ou CSV</small></span><b aria-hidden="true">→</b></button>
+            <button class="quick-action" type="button" (click)="openImport()"><span class="quick-icon quick-import" aria-hidden="true">↑</span><span><strong>Importer mon cahier</strong><small>Photo, PDF, Excel ou CSV</small></span><b aria-hidden="true">→</b></button>
           </article>
 
           <article class="reminder-card">
@@ -280,6 +281,18 @@
       }
     </div>
   </main>
+
+  @if (showImport()) {
+    <!-- Chargé à la demande : l'écran d'import n'alourdit pas le premier chargement. -->
+    @defer (on immediate) {
+      <app-member-import [responsible]="isResponsible()" [localFunds]="accessibleLocalFunds()"
+        [defaultLocalFundId]="activeLocalFundId()" (closed)="closeImport()" (showMembers)="showImportedMembers($event)" />
+    } @loading (minimum 200ms) {
+      <output class="import-loading">Ouverture de l’import…</output>
+    } @error {
+      <p class="import-loading" role="alert">L’import n’a pas pu s’ouvrir. Rechargez la page.</p>
+    }
+  }
 
   @if (showPaymentForm()) {
     <dialog class="payment-dialog" appModal (closed)="closePaymentForm()" aria-labelledby="payment-dialog-title">

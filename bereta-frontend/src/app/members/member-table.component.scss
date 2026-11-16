@@ -5,7 +5,7 @@
 .mt-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
 .mt-head h2 { margin: 0; color: #1f2a1f; font-size: 17px; }
 .mt-head p { margin: 2px 0 0; color: #6b756b; font-size: 13px; }
-.mt-head-actions { display: flex; gap: 8px; }
+.mt-head-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .mt-button { min-height: 36px; padding: 0 12px; border: 1px solid #d6ddd4; border-radius: 8px; background: #fff; color: #1f2a1f; font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; white-space: nowrap; }
 .mt-button.primary { border-color: #2e6248; background: #2e6248; color: #fff; }
@@ -74,6 +74,8 @@
 
 /* Mobile : cartes, et filtres dans une feuille du bas */
 @media (max-width: 760px) {
+  .mt-head-actions { width: 100%; }
+  .mt-head-actions .mt-button { flex: 1 1 auto; }
   .mt-filters-toggle { display: inline-block; }
   .mt-filters { display: none; }
   .mt-filters.open { position: fixed; right: 0; bottom: 0; left: 0; z-index: 51; display: grid; grid-template-columns: 1fr; max-height: 88vh; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); overflow-y: auto; border-radius: 16px 16px 0 0; background: #fff; box-shadow: 0 -12px 40px rgba(15, 23, 42, .2); }

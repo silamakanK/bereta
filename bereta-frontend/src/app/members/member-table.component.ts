@@ -1,4 +1,4 @@
-import { Component, HostListener, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
+import { Component, HostListener, computed, effect, inject, input, model, output, signal, untracked } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { AssociationService } from '../associations/association.service';
@@ -59,7 +59,11 @@ export class MemberTableComponent {
   readonly responsible = input(false);
   readonly localFunds = input<LocalFund[]>([]);
 
+  /** Filtre « membres importés » (posé à la fin d'un import, retiré par sa pastille). */
+  readonly importFilter = model<string | null>(null);
+
   readonly add = output<void>();
+  readonly importList = output<void>();
   readonly edit = output<MemberTracking>();
   readonly history = output<MemberTracking>();
   readonly pay = output<string>();
@@ -112,7 +116,9 @@ export class MemberTableComponent {
     const fund = this.fund();
     const status = this.status();
     const enrolled = this.enrolled();
+    const importId = this.importFilter();
     const result = this.rows().filter(({ member, enrollment, status: rowStatus }) => {
+      if (importId && member.importId !== importId) return false;
       if (query && !`${member.firstName} ${member.lastName} ${member.phone ?? ''}`.toLocaleLowerCase('fr').includes(query)) return false;
       if (fund === PRIMARY ? member.localFundId !== null : fund && member.localFundId !== fund) return false;
       if (status && rowStatus !== status) return false;
@@ -139,6 +145,7 @@ export class MemberTableComponent {
 
   protected readonly chips = computed<Chip[]>(() => {
     const chips: Chip[] = [];
+    if (this.importFilter()) chips.push({ key: 'import', label: 'Membres importés', clear: () => this.set(this.importFilter, null) });
     if (this.search().trim()) chips.push({ key: 'search', label: `« ${this.search().trim()} »`, clear: () => this.set(this.search, '') });
     if (this.fund()) chips.push({ key: 'fund', label: `Caisse : ${this.fundLabel(this.fund())}`, clear: () => this.set(this.fund, '') });
     if (this.campaign() !== this.defaultCampaignId()) {
@@ -206,6 +213,7 @@ export class MemberTableComponent {
   }
 
   protected resetFilters(): void {
+    this.importFilter.set(null);
     this.search.set('');
     this.fund.set('');
     this.status.set('');

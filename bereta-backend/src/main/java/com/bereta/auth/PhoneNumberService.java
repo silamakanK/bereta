@@ -40,6 +40,21 @@ public class PhoneNumberService {
         }
     }
 
+    /**
+     * Numéro de longueur plausible mais absent des plages connues de libphonenumber (plage non attribuée,
+     * ou données pas encore à jour) : formaté en E.164, à faire confirmer par l'utilisateur.
+     */
+    public Optional<String> tryFormatPossible(String raw) {
+        if (raw == null || raw.isBlank()) return Optional.empty();
+        try {
+            PhoneNumber number = util.parse(raw.trim(), defaultRegion);
+            if (!util.isPossibleNumber(number)) return Optional.empty();
+            return Optional.of(util.format(number, PhoneNumberUtil.PhoneNumberFormat.E164));
+        } catch (NumberParseException invalid) {
+            return Optional.empty();
+        }
+    }
+
     public String defaultRegion() {
         return defaultRegion;
     }

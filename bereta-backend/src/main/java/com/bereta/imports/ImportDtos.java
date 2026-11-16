@@ -38,6 +38,8 @@ public final class ImportDtos {
             String remark,
             ImportRowStatus status,
             List<String> issues,
+            /** Aucun problème bloquant : cocher « Ligne vérifiée » suffit (sinon il faut corriger ou exclure). */
+            boolean confirmable,
             boolean included,
             boolean confirmed,
             ExistingMember duplicateMember,

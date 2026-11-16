@@ -16,12 +16,14 @@ public record MemberTrackingResponse(
         UUID localFundId,
         String fundName,
         boolean active,
+        /** Import d'origine, s'il y en a un (filtre « membres de cet import »). */
+        UUID importId,
         Instant createdAt,
         List<PaymentEnrollmentResponse> enrollments
 ) {
     static MemberTrackingResponse from(MemberEntity member, List<PaymentEnrollmentResponse> enrollments) {
         return new MemberTrackingResponse(member.getId(), member.getFirstName(), member.getLastName(), member.getPhone(),
                 PaymentService.fundId(member.getCreatedInLocalFund()), PaymentService.fundLabel(member.getCreatedInLocalFund()),
-                member.isActive(), member.getCreatedAt(), enrollments);
+                member.isActive(), member.getImportId(), member.getCreatedAt(), enrollments);
     }
 }

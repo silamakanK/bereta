@@ -101,12 +101,14 @@ class MemberExtractionTest {
         assertThat(normalizer.name("  fatou   KAMISSOKO-diallo ")).isEqualTo("Fatou Kamissoko-Diallo");
         assertThat(normalizer.name("n'diaye")).isEqualTo("N'Diaye");
         assertThat(normalizer.name("   ")).isNull();
-        assertThat(normalizer.normalizePhone("06 12 34 56 78")).isEqualTo(new ImportNormalizer.PhoneResult("+33612345678", false, false));
+        assertThat(normalizer.normalizePhone("06 12 34 56 78")).isEqualTo(new ImportNormalizer.PhoneResult("+33612345678", false, false, false));
         assertThat(normalizer.normalizePhone("+221 77 123 45 67").e164()).isEqualTo("+221771234567");
         assertThat(normalizer.normalizePhone("00223 76 12 34 56").e164()).isEqualTo("+22376123456");
         // Sans indicatif, invalide en France : indicatif malien déduit, signalé à vérifier.
-        assertThat(normalizer.normalizePhone("76 12 34 56")).isEqualTo(new ImportNormalizer.PhoneResult("+22376123456", true, false));
+        assertThat(normalizer.normalizePhone("76 12 34 56")).isEqualTo(new ImportNormalizer.PhoneResult("+22376123456", true, false, false));
         assertThat(normalizer.normalizePhone("12345").invalid()).isTrue();
+        // Longueur plausible mais plage inconnue de libphonenumber : à confirmer, pas bloquant.
+        assertThat(normalizer.normalizePhone("0639980002")).isEqualTo(new ImportNormalizer.PhoneResult("+33639980002", false, false, true));
         assertThat(normalizer.normalizePhone(" ").invalid()).isFalse();
         assertThat(ImportNormalizer.nameKey("Aïssata", "TRAORÉ")).isEqualTo(ImportNormalizer.nameKey("aissata", "Traore"));
         assertThat(DuplicateDetector.atMostOneEdit("moussa|diarra", "mousa|diarra")).isTrue();

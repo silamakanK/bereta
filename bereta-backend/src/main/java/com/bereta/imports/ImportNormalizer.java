@@ -48,14 +48,17 @@ public class ImportNormalizer {
         String phone = phone(raw);
         if (phone == null) return PhoneResult.EMPTY;
         Optional<String> normalized = phones.tryNormalize(phone);
-        if (normalized.isPresent()) return new PhoneResult(normalized.get(), false, false);
+        if (normalized.isPresent()) return new PhoneResult(normalized.get(), false, false, false);
         if (!phone.startsWith("+") && !phone.startsWith("00")) {
             for (String region : FALLBACK_REGIONS) {
                 if (region.equalsIgnoreCase(phones.defaultRegion())) continue;
                 Optional<String> other = phones.tryNormalize(phone, region);
-                if (other.isPresent()) return new PhoneResult(other.get(), true, false);
+                if (other.isPresent()) return new PhoneResult(other.get(), true, false, false);
             }
         }
+        // Longueur plausible, mais plage inconnue (ex. 06 39 98 …) : à confirmer, pas bloquant.
+        Optional<String> possible = phones.tryFormatPossible(phone);
+        if (possible.isPresent()) return new PhoneResult(possible.get(), false, false, true);
         return PhoneResult.INVALID;
     }
 
@@ -73,10 +76,11 @@ public class ImportNormalizer {
     /**
      * @param e164        numéro normalisé, ou null
      * @param deduced     indicatif déduit (numéro sans indicatif, non valide pour la région par défaut)
-     * @param invalid     numéro présent mais illisible
+     * @param invalid     numéro présent mais illisible (bloquant)
+     * @param unusual     longueur plausible mais plage inconnue : à confirmer par l'utilisateur
      */
-    public record PhoneResult(String e164, boolean deduced, boolean invalid) {
-        static final PhoneResult EMPTY = new PhoneResult(null, false, false);
-        static final PhoneResult INVALID = new PhoneResult(null, false, true);
+    public record PhoneResult(String e164, boolean deduced, boolean invalid, boolean unusual) {
+        static final PhoneResult EMPTY = new PhoneResult(null, false, false, false);
+        static final PhoneResult INVALID = new PhoneResult(null, false, true, false);
     }
 }

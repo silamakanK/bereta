@@ -1,0 +1,232 @@
+<dialog class="imp" appModal (closed)="requestClose()" aria-labelledby="imp-title">
+  <header class="imp-head">
+    <div class="imp-head-text">
+      <span class="imp-eyebrow">IMPORT DE MEMBRES · ÉTAPE {{ step() }} SUR 6</span>
+      <h2 id="imp-title">{{ stepTitle() }}</h2>
+    </div>
+    <button type="button" class="imp-close" (click)="requestClose()" aria-label="Fermer l’import">×</button>
+    <div class="imp-progress" role="progressbar" aria-label="Avancement" [attr.aria-valuenow]="progress()" aria-valuemin="0" aria-valuemax="100">
+      <span [style.width.%]="progress()"></span>
+    </div>
+  </header>
+
+  <div class="imp-body">
+    @if (error()) { <p class="imp-alert ko" role="alert">{{ error() }}</p> }
+    @if (notice()) { <output class="imp-alert info">{{ notice() }}</output> }
+
+    @switch (step()) {
+      <!-- 1. Destination -->
+      @case (1) {
+        <p class="imp-lead">Choisissez la caisse qui recevra les nouveaux membres. <strong>Rien n’est enregistré avant votre validation.</strong></p>
+        <label class="imp-field">Caisse de destination
+          @if (fundLocked()) {
+            <input type="text" [value]="fundName()" readonly aria-readonly="true" />
+            <small>Vous importez dans votre caisse.</small>
+          } @else {
+            <select [ngModel]="fundChoice()" (ngModelChange)="fundChoice.set($event)">
+              @for (option of fundOptions(); track option.id) { <option [value]="option.id">{{ option.name }}</option> }
+            </select>
+          }
+        </label>
+        @if (fundOptions().length === 0) { <p class="imp-alert ko">Aucune caisse disponible pour l’import.</p> }
+      }
+
+      <!-- 2. Photo ou fichier -->
+      @case (2) {
+        <p class="imp-lead">Destination : <strong>{{ fundName() }}</strong></p>
+        <div class="imp-sources">
+          <label class="imp-source" [class.disabled]="photos().length >= maxPhotos || preparing()">
+            <input type="file" accept="image/*" capture="environment" (change)="addFiles($event, true)"
+              [disabled]="photos().length >= maxPhotos || preparing()" />
+            <span class="imp-source-icon" aria-hidden="true">📷</span>
+            <strong>{{ photos().length ? 'Ajouter une page' : 'Prendre une photo' }}</strong>
+            <small>Cahier, feuille imprimée · {{ maxPhotos }} pages maximum</small>
+          </label>
+          <label class="imp-source" [class.disabled]="preparing()">
+            <input type="file" accept=".xlsx,.csv,.pdf,.jpg,.jpeg,.png,.heic,.heif,image/*" multiple
+              (change)="addFiles($event, false)" [disabled]="preparing()" />
+            <span class="imp-source-icon" aria-hidden="true">📄</span>
+            <strong>Choisir un fichier</strong>
+            <small>Excel (.xlsx), CSV, PDF ou photo</small>
+          </label>
+        </div>
+        <aside class="imp-tips" aria-label="Conseils pour la photo">
+          <strong>Pour une bonne lecture</strong>
+          <ul><li>Bonne lumière, sans ombre</li><li>Page à plat, bien cadrée</li><li>Une page à la fois</li></ul>
+        </aside>
+        @if (preparing()) { <p class="imp-wait-inline"><span class="imp-spinner" aria-hidden="true"></span>Préparation de la photo…</p> }
+        @if (pages().length) {
+          <ul class="imp-pages" aria-label="Documents ajoutés">
+            @for (page of pages(); track page.key; let i = $index) {
+              <li>
+                @if (page.previewUrl) { <img [src]="page.previewUrl" [alt]="'Page ' + (i + 1)" /> }
+                @else { <span class="imp-doc" aria-hidden="true">📄</span> }
+                <span class="imp-page-name">{{ page.photo ? 'Page ' + (i + 1) : page.name }}</span>
+                <button type="button" class="imp-icon" (click)="removePage(page.key)" [attr.aria-label]="'Retirer ' + (page.photo ? 'la page ' + (i + 1) : page.name)">×</button>
+              </li>
+            }
+          </ul>
+        }
+      }
+
+      <!-- 3. Lecture -->
+      @case (3) {
+        <div class="imp-wait" aria-live="polite">
+          <span class="imp-spinner big" aria-hidden="true"></span>
+          <strong>Lecture de la liste…</strong>
+          <p>Nous repérons les prénoms, noms et téléphones. Pour une photo, cela peut prendre jusqu’à une minute.</p>
+        </div>
+      }
+
+      <!-- 4. Aperçu modifiable -->
+      @case (4) {
+        <div class="imp-review" [class.with-photo]="photos().length && showPhoto()">
+          @if (photos().length) {
+            <section class="imp-photo" aria-label="Document d’origine">
+              <div class="imp-photo-bar">
+                <strong>Document d’origine</strong>
+                <button type="button" class="imp-link" (click)="showPhoto.set(!showPhoto())" [attr.aria-expanded]="showPhoto()">{{ showPhoto() ? 'Masquer' : 'Afficher' }}</button>
+              </div>
+              @if (showPhoto()) {
+                <img [src]="photos()[activePage()]?.previewUrl" [alt]="'Page ' + (activePage() + 1) + ' du document'" />
+                @if (photos().length > 1) {
+                  <div class="imp-photo-tabs">
+                    @for (page of photos(); track page.key; let i = $index) {
+                      <button type="button" [class.on]="activePage() === i" (click)="activePage.set(i)">Page {{ i + 1 }}</button>
+                    }
+                  </div>
+                }
+              }
+            </section>
+          }
+
+          <section class="imp-lines" aria-label="Lignes lues">
+            <div class="imp-tabs" role="group" aria-label="Filtrer les lignes">
+              <button type="button" [attr.aria-pressed]="tab() === 'toutes'" (click)="setTab('toutes')">Toutes <b>{{ counts().toutes }}</b></button>
+              <button type="button" [attr.aria-pressed]="tab() === 'verifier'" (click)="setTab('verifier')">À vérifier <b>{{ counts().verifier }}</b></button>
+              <button type="button" [attr.aria-pressed]="tab() === 'doublons'" (click)="setTab('doublons')">Doublons <b>{{ counts().doublons }}</b></button>
+              <button type="button" [attr.aria-pressed]="tab() === 'exclues'" (click)="setTab('exclues')">Exclues <b>{{ counts().exclues }}</b></button>
+            </div>
+
+            @if (visibleRows().length === 0) {
+              <p class="imp-empty">Aucune ligne dans cette catégorie.</p>
+            }
+            <ol class="imp-rows">
+              @for (row of visibleRows(); track row.key) {
+                <li class="imp-row" [class]="'imp-row st-' + statusInfo(row).css" [class.dirty]="row.dirty">
+                  <div class="imp-row-top">
+                    <label class="imp-include">
+                      <input type="checkbox" [ngModel]="row.included" (ngModelChange)="change(row, { included: $event })"
+                        [attr.aria-label]="(row.included ? 'Exclure' : 'Inclure') + ' la ligne ' + (row.lineNumber ?? 'ajoutée')" />
+                      <span>{{ row.lineNumber ? 'Ligne ' + row.lineNumber : 'Ajoutée' }}</span>
+                    </label>
+                    <span class="imp-status" [class]="'imp-status ' + statusInfo(row).css">
+                      <span class="imp-status-icon" aria-hidden="true">{{ statusInfo(row).icon }}</span>{{ row.status === null ? 'Nouvelle' : statusInfo(row).label }}
+                    </span>
+                    @if (row.dirty) { <small class="imp-dirty">modifiée</small> }
+                    <button type="button" class="imp-icon" (click)="removeRow(row)" [attr.aria-label]="'Supprimer la ligne ' + (row.lineNumber ?? 'ajoutée')">🗑</button>
+                  </div>
+                  <div class="imp-row-fields">
+                    <label>Prénom<input type="text" class="f-first" [name]="'first' + row.key" maxlength="100" autocomplete="off"
+                      [ngModel]="row.firstName" (ngModelChange)="change(row, { firstName: $event })" /></label>
+                    <label>Nom<input type="text" class="f-last" [name]="'last' + row.key" maxlength="100" autocomplete="off"
+                      [ngModel]="row.lastName" (ngModelChange)="change(row, { lastName: $event })" /></label>
+                    <label>Téléphone<input type="tel" class="f-phone" [name]="'phone' + row.key" maxlength="40" autocomplete="off" inputmode="tel"
+                      [ngModel]="row.phone" (ngModelChange)="change(row, { phone: $event })" /></label>
+                  </div>
+                  @if (row.included && (otherIssues(row).length || row.read)) {
+                    <div class="imp-row-notes">
+                      @if (otherIssues(row).length) { <span class="imp-issues">{{ otherIssues(row).join(' · ') }}</span> }
+                      @if (row.read) { <small>Lu : {{ row.read }}</small> }
+                    </div>
+                  }
+                  @if (row.included && row.status === 'A_VERIFIER') {
+                    @if (row.confirmable) {
+                      <label class="imp-confirm"><input type="checkbox" [ngModel]="row.confirmed" (ngModelChange)="change(row, { confirmed: $event })" /> Ligne vérifiée</label>
+                    } @else {
+                      <p class="imp-fix">À corriger : modifiez la ligne, ou décochez-la pour l’exclure.</p>
+                    }
+                  }
+                  @if (row.included && row.status === 'DOUBLON') {
+                    <div class="imp-dup">
+                      <span>{{ duplicateLabel(row) }}</span>
+                      <div class="imp-seg" role="radiogroup" [attr.aria-label]="'Doublon ligne ' + row.lineNumber">
+                        <button type="button" role="radio" [attr.aria-checked]="row.duplicateAction !== 'CREER'" (click)="change(row, { duplicateAction: 'IGNORER' })">Ignorer</button>
+                        <button type="button" role="radio" [attr.aria-checked]="row.duplicateAction === 'CREER'" (click)="change(row, { duplicateAction: 'CREER' })">Créer quand même</button>
+                      </div>
+                    </div>
+                  }
+                </li>
+              }
+            </ol>
+            <button type="button" class="imp-add" (click)="addRow()">＋ Ajouter une ligne oubliée</button>
+          </section>
+        </div>
+      }
+
+      <!-- 5. Récapitulatif -->
+      @case (5) {
+        @if (preview(); as current) {
+          <div class="imp-summary">
+            <p class="imp-big"><strong>{{ current.counters.toCreate }}</strong> membre{{ current.counters.toCreate > 1 ? 's' : '' }}
+              ser{{ current.counters.toCreate > 1 ? 'ont' : 'a' }} ajouté{{ current.counters.toCreate > 1 ? 's' : '' }} à la <strong>{{ current.fund.name }}</strong>@if (current.counters.ignored) {, {{ current.counters.ignored }} ignoré{{ current.counters.ignored > 1 ? 's' : '' }}}.</p>
+            <ul class="imp-recap">
+              <li><span>Lignes lues</span><b>{{ current.counters.total }}</b></li>
+              <li><span>Doublons ignorés</span><b>{{ current.counters.duplicates - (current.counters.toCreate - current.counters.ready) }}</b></li>
+              <li><span>Lignes exclues</span><b>{{ current.counters.excluded }}</b></li>
+            </ul>
+            @if (current.alreadyImportedAt) {
+              <div class="imp-alert warn">
+                <strong>Ce document semble déjà avoir été importé</strong> (le {{ current.alreadyImportedAt | date:'d MMMM y':'':'fr-FR' }}).
+                <label class="imp-confirm"><input type="checkbox" [(ngModel)]="acknowledged" /> J’ai vérifié, il s’agit bien de nouveaux membres.</label>
+              </div>
+            }
+            @if (current.currentCampaignName) {
+              <label class="imp-confirm imp-enroll"><input type="checkbox" [(ngModel)]="enroll" />
+                <span>Inscrire ces membres à la campagne en cours : <strong>{{ current.currentCampaignName }}</strong><small>Facultatif · compte comme une inscription manuelle</small></span></label>
+            }
+            <p class="imp-safe">🔒 Rien n’est enregistré avant votre validation.</p>
+          </div>
+        }
+      }
+
+      <!-- 6. Résultat -->
+      @case (6) {
+        @if (result(); as done) {
+          <div class="imp-done" aria-live="polite">
+            <span class="imp-done-icon" aria-hidden="true">✓</span>
+            <strong>{{ done.created }} membre{{ done.created > 1 ? 's' : '' }} ajouté{{ done.created > 1 ? 's' : '' }} à la {{ done.fund.name }}</strong>
+            <p>@if (done.ignored) { {{ done.ignored }} ligne{{ done.ignored > 1 ? 's' : '' }} ignorée{{ done.ignored > 1 ? 's' : '' }}. }
+              @if (done.enrolled) { {{ done.enrolled }} inscrit{{ done.enrolled > 1 ? 's' : '' }} à « {{ done.campaignName }} ». }</p>
+          </div>
+        }
+      }
+    }
+  </div>
+
+  <footer class="imp-foot">
+    @switch (step()) {
+      @case (1) {
+        <button type="button" class="imp-btn" (click)="requestClose()">Annuler</button>
+        <button type="button" class="imp-btn primary" (click)="goToDocument()" [disabled]="!fundChoice()">Continuer</button>
+      }
+      @case (2) {
+        <button type="button" class="imp-btn" (click)="back()">Retour</button>
+        <button type="button" class="imp-btn primary" (click)="analyse()" [disabled]="pages().length === 0 || preparing() || busy()">Lancer la lecture</button>
+      }
+      @case (4) {
+        <button type="button" class="imp-btn" (click)="back()">Autre document</button>
+        <button type="button" class="imp-btn" (click)="save(false)" [disabled]="busy() || !hasUnsavedChanges()">{{ busy() ? 'Vérification…' : 'Vérifier mes corrections' }}</button>
+        <button type="button" class="imp-btn primary" (click)="save(true)" [disabled]="busy()">Continuer</button>
+      }
+      @case (5) {
+        <button type="button" class="imp-btn" (click)="back()">Modifier</button>
+        <button type="button" class="imp-btn primary" (click)="validate()" [disabled]="busy() || !acknowledged">{{ busy() ? 'Enregistrement…' : 'Valider et enregistrer' }}</button>
+      }
+      @case (6) {
+        <button type="button" class="imp-btn" (click)="restart()">Importer une autre liste</button>
+        <button type="button" class="imp-btn primary" (click)="viewMembers()">Voir les membres importés</button>
+      }
+    }
+  </footer>
+</dialog>
