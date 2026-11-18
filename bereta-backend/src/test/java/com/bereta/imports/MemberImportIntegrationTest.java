@@ -290,7 +290,8 @@ class MemberImportIntegrationTest {
         jdbc.update("update member_imports set updated_at = ? where id = ?",
                 Timestamp.from(Instant.now().minus(8, ChronoUnit.DAYS)), UUID.fromString(stale));
 
-        assertThat(purgeService.purgeStaleDrafts()).isGreaterThanOrEqualTo(1);
+        // Comme au démarrage (appel interne, hors proxy transactionnel) : c'est ce chemin qui plantait en production.
+        purgeService.purgeAtStartup();
         assertThat(jdbc.queryForObject("select status from member_imports where id = ?", String.class, UUID.fromString(stale)))
                 .isEqualTo("ANNULE");
         assertThat(jdbc.queryForObject("select count(*) from member_import_rows where import_id = ?", Long.class,
