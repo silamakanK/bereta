@@ -42,8 +42,15 @@ public class LocalFundEntity {
     @Column(length = 500)
     private String description;
 
+    /** ACTIVE ou ARCHIVED : une caisse archivée reste consultable, plus aucune opération n'y est possible. */
+    @Column(nullable = false, length = 20)
+    private String status = STATUS_ACTIVE;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
+    public static final String STATUS_ACTIVE = "ACTIVE";
+    public static final String STATUS_ARCHIVED = "ARCHIVED";
 
     protected LocalFundEntity() {
     }
@@ -72,4 +79,8 @@ public class LocalFundEntity {
     public String getLocation() { return location; }
     public String getDescription() { return description; }
     public Instant getCreatedAt() { return createdAt; }
+    public String getStatus() { return status; }
+    public boolean isActive() { return STATUS_ACTIVE.equals(status); }
+    public void archive() { status = STATUS_ARCHIVED; }
+    public void restore() { status = STATUS_ACTIVE; }
 }

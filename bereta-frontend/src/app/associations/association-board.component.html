@@ -35,7 +35,9 @@
                     <strong>{{ fund.name }}</strong>
                     @if (fund.location) { <small>{{ fund.location }}</small> }
                   </div>
-                  @if (fund.treasurers.length === 0) {
+                  @if (fund.status === 'ARCHIVED') {
+                    <span class="badge off">Archivée · consultation seule</span>
+                  } @else if (fund.treasurers.length === 0) {
                     <span class="badge warn">Sans responsable</span>
                     <button type="button" class="small-button" (click)="openDesignation(card, fund)">Désigner un responsable</button>
                   } @else {

@@ -6,7 +6,8 @@ import java.util.UUID;
 
 /** treasurers vide = caisse « Sans responsable ». */
 public record LocalFundResponse(UUID id, UUID primaryFundId, String primaryFundName, String name, String location,
-                                String description, List<TreasurerSummary> treasurers, Instant createdAt) {
+                                String description, List<TreasurerSummary> treasurers, Instant createdAt,
+                                String status) {
 
     public record TreasurerSummary(UUID membershipId, UUID userId, String displayName, String phone, String email) {
     }
@@ -21,6 +22,6 @@ public record LocalFundResponse(UUID id, UUID primaryFundId, String primaryFundN
                 treasurers.stream().map(m -> new TreasurerSummary(m.getId(), m.getUserAccount().getId(),
                         m.getUserAccount().getDisplayName(), m.getUserAccount().getPhoneE164(),
                         m.getUserAccount().getEmail())).toList(),
-                fund.getCreatedAt());
+                fund.getCreatedAt(), fund.getStatus());
     }
 }

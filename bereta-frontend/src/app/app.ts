@@ -132,7 +132,8 @@ export class App {
       if (this.isCheckingSession() || !user || user.mustChangePassword) return;
       // L'administrateur supervise depuis son espace : il n'agit pas dans l'espace de gestion d'une association.
       if (user.role === 'ADMIN') {
-        if (!this.isAdminRoute()) void this.router.navigateByUrl('/admin');
+        // Après la première navigation seulement : un lien direct (/admin/caisses/…) ouvert ou rechargé est conservé.
+        if (!this.isAdminRoute() && this.router.navigated) void this.router.navigateByUrl('/admin');
         return;
       }
       this.loadAssociations();

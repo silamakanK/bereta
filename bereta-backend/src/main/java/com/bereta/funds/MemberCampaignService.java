@@ -64,6 +64,7 @@ public class MemberCampaignService {
                 : localFundRepository.findById(request.localFundId())
                     .filter(found -> found.getAssociation().getId().equals(scope.associationId()))
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Caisse locale introuvable"));
+        FundAccessService.requireOpen(localFund);
         if (localFund != null && !localFund.getPrimaryFund().getId().equals(campaign.getPrimaryFund().getId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "La caisse locale doit appartenir à la caisse principale de la campagne.");

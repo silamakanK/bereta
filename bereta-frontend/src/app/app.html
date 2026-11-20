@@ -69,7 +69,7 @@
       <div class="breadcrumb"><span>Mon espace</span><span aria-hidden="true">/</span><strong>{{ associations().length === 0 ? 'Accueil' : 'Ma caisse' }}</strong></div>
       <div class="topbar-right">
         @if (associations().length > 0) {
-          <label class="active-association-picker"><span>Association active</span><select [ngModel]="activeAssociationId()" (ngModelChange)="selectAssociation($event)" aria-label="Association active">@for (association of associations(); track association.id) { <option [value]="association.id">{{ association.name }}</option> }</select></label>
+          <label class="active-association-picker"><span>Association active</span><select [ngModel]="activeAssociationId()" (ngModelChange)="selectAssociation($event)" aria-label="Association active">@for (association of associations(); track association.id) { <option [value]="association.id">{{ association.name }}{{ association.status === 'ARCHIVED' ? ' (archivée)' : '' }}</option> }</select></label>
         }
         @if (canCreateAssociation()) { <button class="association-add-button" type="button" (click)="showAssociationForm.set(!showAssociationForm())">＋ Association</button> }
         <span class="demo-badge"><span></span> Démonstration</span>
@@ -80,6 +80,9 @@
         <span class="avatar top-avatar" aria-hidden="true">{{ userInitials() }}</span>
       </div>
     </header>
+    @if (activeAssociation()?.status === 'ARCHIVED') {
+      <p class="archived-banner" role="note"><strong>Association archivée</strong> · Consultation et exports uniquement : plus aucune opération ne peut être enregistrée. Contactez l’administrateur BERETA pour la restaurer.</p>
+    }
 
     <div class="page-content">
       @if (showAssociationForm()) {

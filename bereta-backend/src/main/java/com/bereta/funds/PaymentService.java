@@ -51,6 +51,7 @@ public class PaymentService {
         if (!scope.covers(enrollment.getLocalFund())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cette inscription n’est pas suivie par votre caisse.");
         }
+        FundAccessService.requireOpen(enrollment.getLocalFund());
         if (enrollment.getExpectedAmount() == null) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Définissez le montant attendu de la campagne avant d’enregistrer un paiement.");

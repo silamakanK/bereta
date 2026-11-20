@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { apiErrorMessage } from '../../shared/api-error';
 import { AdminApiService } from '../admin-api.service';
@@ -19,7 +19,7 @@ const TARGET_TYPES: Record<string, string> = { USER: 'Compte', ASSOCIATION: 'Ass
   templateUrl: './admin-audit.component.html',
   styleUrls: ['../admin-common.scss', './admin-audit.component.scss'],
 })
-export class AdminAuditComponent {
+export class AdminAuditComponent implements OnInit {
   private readonly api = inject(AdminApiService);
 
   protected readonly actions = Object.entries(ACTION_LABELS);
@@ -45,7 +45,12 @@ export class AdminAuditComponent {
     return chips;
   });
 
-  constructor() {
+  /** Paramètres ?associationId= et ?targetId= (liens « Historique » des fiches). */
+  readonly associationId = input<string>();
+  readonly targetId = input<string>();
+
+  ngOnInit(): void {
+    this.filters.update((f) => ({ ...f, associationId: this.associationId() ?? '', targetId: this.targetId() ?? '' }));
     this.load();
   }
 

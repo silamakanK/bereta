@@ -67,6 +67,8 @@ public class CampaignService {
         // (caisse locale, ou caisse principale si le membre n'a pas de caisse locale). Montant dû copié.
         List<MemberCampaignEntity> enrollments = memberRepository
                 .findAllByAssociationIdAndActiveTrue(primaryFund.getAssociation().getId()).stream()
+                // Une caisse locale archivée ne collecte plus : ses membres ne sont pas inscrits.
+                .filter(member -> member.getCreatedInLocalFund() == null || member.getCreatedInLocalFund().isActive())
                 .map(member -> new MemberCampaignEntity(member, campaign, member.getCreatedInLocalFund(),
                         campaign.getExpectedAmount()))
                 .toList();

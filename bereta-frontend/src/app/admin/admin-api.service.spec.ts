@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AdminApiService, queryParams } from './admin-api.service';
-import { accountStatus, actionLabel, describeValues } from './admin-labels';
+import { accountStatus, actionLabel, archiveStatus, describeValues } from './admin-labels';
 
 describe('AdminApiService', () => {
   let api: AdminApiService;
@@ -41,6 +41,38 @@ describe('AdminApiService', () => {
       expect(request.request.body).toEqual({ reason: 'Motif suffisant' });
       request.flush({});
     }
+  });
+
+  it('lists associations and funds and acts on them with a reason', () => {
+    api.associations({ q: 'sig', status: 'ARCHIVED', sort: 'name', direction: 'asc', page: 0, size: 20 }).subscribe();
+    expect(http.expectOne((r) => r.url === '/api/admin/associations').request.params.get('status')).toBe('ARCHIVED');
+    api.association('a1').subscribe();
+    http.expectOne('/api/admin/associations/a1').flush({});
+    api.funds({ q: '', status: '', associationId: 'a1', sort: 'createdAt', direction: 'desc', page: 0, size: 20 }).subscribe();
+    expect(http.expectOne((r) => r.url === '/api/admin/funds').request.params.get('associationId')).toBe('a1');
+    api.fund('f1').subscribe();
+    http.expectOne('/api/admin/funds/f1').flush({});
+
+    const calls: [() => { subscribe: () => unknown }, string, object][] = [
+      [() => api.setAssociationArchived('a1', true, 'Motif suffisant'), '/api/admin/associations/a1/archive', { reason: 'Motif suffisant' }],
+      [() => api.setAssociationArchived('a1', false, 'Motif suffisant'), '/api/admin/associations/a1/restore', { reason: 'Motif suffisant' }],
+      [() => api.transferAssociation('a1', 'u1', 'u2', 'Motif suffisant'), '/api/admin/associations/a1/transfer',
+        { fromUserId: 'u1', toUserId: 'u2', reason: 'Motif suffisant' }],
+      [() => api.setFundArchived('f1', true, 'Motif suffisant'), '/api/admin/funds/f1/archive', { reason: 'Motif suffisant' }],
+      [() => api.setFundArchived('f1', false, 'Motif suffisant'), '/api/admin/funds/f1/restore', { reason: 'Motif suffisant' }],
+      [() => api.reassignTreasurer('f1', 'u2', null, 'Motif suffisant'), '/api/admin/funds/f1/reassign-treasurer',
+        { toUserId: 'u2', replaceUserId: null, reason: 'Motif suffisant' }],
+    ];
+    for (const [call, url, body] of calls) {
+      call().subscribe();
+      const request = http.expectOne(url);
+      expect(request.request.method).toBe('POST');
+      expect(request.request.body).toEqual(body);
+      request.flush({});
+    }
+    expect(archiveStatus('ACTIVE').label).toBe('Active');
+    expect(archiveStatus('ARCHIVED')).toEqual({ css: 'off', icon: '▪', label: 'Archivée' });
+    expect(actionLabel('TREASURER_REASSIGNED')).toBe('Trésorier réaffecté');
   });
 
   it('reads and exports the audit log without pagination in the export', () => {

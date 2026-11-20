@@ -1,6 +1,10 @@
 package com.bereta.admin;
 
 import com.bereta.admin.AdminDtos.ActionRequest;
+import com.bereta.admin.AdminDtos.AssociationDetail;
+import com.bereta.admin.AdminDtos.AssociationSummary;
+import com.bereta.admin.AdminDtos.TransferRequest;
+import com.bereta.associations.AssociationStatus;
 import com.bereta.auth.BeretaUserDetails;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,15 +18,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
-/** Vue d'ensemble et associations (lot suivant : transfert, restauration, caisses). */
+/** Vue d'ensemble et associations : liste, fiche, archivage, restauration, transfert du responsable. */
 @RestController
 @RequestMapping("/api/admin")
 public class AdminController {
 
     private final AdminService service;
+    private final AdminAssociationService associations;
 
-    public AdminController(AdminService service) {
+    public AdminController(AdminService service, AdminAssociationService associations) {
         this.service = service;
+        this.associations = associations;
     }
 
     @GetMapping("/overview")
@@ -31,19 +37,36 @@ public class AdminController {
     }
 
     @GetMapping("/associations")
-    public AdminPageResponse<AdminAssociationResponse> associations(@RequestParam(defaultValue = "") String q,
-                                                                    @RequestParam(defaultValue = "0") int page) {
-        return service.listAssociations(q, page);
+    public AdminPageResponse<AssociationSummary> associations(@RequestParam(required = false) String q,
+                                                              @RequestParam(required = false) AssociationStatus status,
+                                                              @RequestParam(defaultValue = "createdAt") String sort,
+                                                              @RequestParam(defaultValue = "desc") String direction,
+                                                              @RequestParam(defaultValue = "0") int page,
+                                                              @RequestParam(defaultValue = "20") int size) {
+        return associations.list(new AdminAssociationQuery.Filter(q, status, sort, "asc".equalsIgnoreCase(direction)),
+                page, size);
     }
 
     @GetMapping("/associations/{id}")
-    public AdminAssociationResponse association(@PathVariable UUID id) {
-        return service.getAssociation(id);
+    public AssociationDetail association(@PathVariable UUID id) {
+        return associations.detail(id);
     }
 
     @PostMapping("/associations/{id}/archive")
-    public AdminAssociationResponse archive(@AuthenticationPrincipal BeretaUserDetails admin, @PathVariable UUID id,
-                                            @Valid @RequestBody ActionRequest request) {
-        return service.archiveAssociation(admin.getId(), id, request.reason().trim());
+    public AssociationDetail archive(@AuthenticationPrincipal BeretaUserDetails admin, @PathVariable UUID id,
+                                     @Valid @RequestBody ActionRequest request) {
+        return associations.archive(admin.getId(), id, request.reason().trim());
+    }
+
+    @PostMapping("/associations/{id}/restore")
+    public AssociationDetail restore(@AuthenticationPrincipal BeretaUserDetails admin, @PathVariable UUID id,
+                                     @Valid @RequestBody ActionRequest request) {
+        return associations.restore(admin.getId(), id, request.reason().trim());
+    }
+
+    @PostMapping("/associations/{id}/transfer")
+    public AssociationDetail transfer(@AuthenticationPrincipal BeretaUserDetails admin, @PathVariable UUID id,
+                                      @Valid @RequestBody TransferRequest request) {
+        return associations.transfer(admin.getId(), id, request);
     }
 }

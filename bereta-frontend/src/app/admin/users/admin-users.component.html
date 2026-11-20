@@ -49,12 +49,6 @@
         }
       </tbody>
     </table>
-    @if (page.totalPages > 1) {
-      <nav class="adm-pages" aria-label="Pagination">
-        <span>Page {{ page.page + 1 }} / {{ page.totalPages }}</span>
-        <div><button type="button" class="adm-btn" [disabled]="page.page === 0" (click)="goTo(page.page - 1)">← Précédent</button>
-          <button type="button" class="adm-btn" [disabled]="page.page + 1 >= page.totalPages" (click)="goTo(page.page + 1)">Suivant →</button></div>
-      </nav>
-    }
+    <app-admin-pager [page]="page" (go)="goTo($event)" />
   }
 </section>

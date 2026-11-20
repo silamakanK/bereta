@@ -6,6 +6,7 @@
         @for (line of impact(); track line) { <li>{{ line }}</li> }
       </ul>
     }
+    <ng-content />
     <label class="acd-reason">Motif <span>(obligatoire, conservé dans le journal)</span>
       <textarea name="reason" rows="3" maxlength="500" required [ngModel]="reason()" (ngModelChange)="reason.set($event)"
         placeholder="Ex. : demande écrite du responsable, identité vérifiée par téléphone"></textarea>
@@ -14,7 +15,7 @@
     @if (error()) { <p class="acd-error" role="alert">{{ error() }}</p> }
     <div class="acd-actions">
       <button type="button" class="acd-btn" (click)="cancel()" [disabled]="busy()">Annuler</button>
-      <button type="submit" class="acd-btn primary" [class.danger]="danger()" [disabled]="remaining() > 0 || busy()">
+      <button type="submit" class="acd-btn primary" [class.danger]="danger()" [disabled]="remaining() > 0 || busy() || !ready()">
         {{ busy() ? 'En cours…' : confirmLabel() }}</button>
     </div>
   </form>

@@ -1,4 +1,4 @@
-/** Contrats de l'API /api/admin (lot 1 : comptes et journal). */
+/** Contrats de l'API /api/admin (comptes, associations, caisses et journal). */
 
 export interface AdminPage<T> {
   items: T[];
@@ -91,4 +91,109 @@ export interface AdminAuditFilters {
   to: string;
   page: number;
   size: number;
+}
+
+// ---- Associations et caisses (lot 2) -------------------------------------------------------
+
+export type AdminStatus = 'ACTIVE' | 'ARCHIVED';
+
+/** Filtres communs aux listes paginées. */
+export interface AdminListFilters {
+  q: string;
+  sort: string;
+  direction: 'asc' | 'desc';
+  page: number;
+  size: number;
+}
+
+/** Personne rattachée (fiche : coordonnées complètes). */
+export interface AdminPerson {
+  userId: string;
+  displayName: string | null;
+  phone: string | null;
+  email: string | null;
+  role: AdminRole;
+  enabled: boolean;
+}
+
+export interface AdminBalance { collected: number; availableLocally: number; inTransit: number; }
+
+export interface AdminAssociationSummary {
+  id: string;
+  name: string;
+  status: AdminStatus;
+  createdAt: string;
+  responsibleName: string | null;
+  localFundCount: number;
+  memberCount: number;
+}
+
+export interface AdminFundLine {
+  id: string;
+  name: string;
+  location: string | null;
+  status: AdminStatus;
+  treasurers: AdminPerson[];
+  memberCount: number;
+  balance: AdminBalance;
+}
+
+export interface AdminAssociationDetail {
+  id: string;
+  name: string;
+  description: string | null;
+  contactEmail: string | null;
+  contactPhone: string | null;
+  address: string | null;
+  status: AdminStatus;
+  createdAt: string;
+  responsibles: AdminPerson[];
+  primaryFundId: string | null;
+  primaryFundName: string | null;
+  localFunds: AdminFundLine[];
+  memberCount: number;
+  activeMemberCount: number;
+  campaignCount: number;
+  openCampaignCount: number;
+  balances: { totalCollected: number; central: number; inTransit: number; availableLocally: number };
+}
+
+export interface AdminAssociationFilters extends AdminListFilters {
+  status: '' | AdminStatus;
+  sort: 'createdAt' | 'name';
+}
+
+export interface AdminFundSummary {
+  id: string;
+  name: string;
+  location: string | null;
+  status: AdminStatus;
+  associationId: string;
+  associationName: string;
+  associationStatus: AdminStatus;
+  treasurerNames: string[];
+  balance: AdminBalance;
+  createdAt: string;
+}
+
+export interface AdminFundDetail {
+  id: string;
+  name: string;
+  location: string | null;
+  description: string | null;
+  status: AdminStatus;
+  associationId: string;
+  associationName: string;
+  associationStatus: AdminStatus;
+  primaryFundName: string;
+  createdAt: string;
+  treasurers: AdminPerson[];
+  memberCount: number;
+  balance: AdminBalance;
+}
+
+export interface AdminFundFilters extends AdminListFilters {
+  status: '' | AdminStatus;
+  associationId: string;
+  sort: 'createdAt' | 'name' | 'association';
 }

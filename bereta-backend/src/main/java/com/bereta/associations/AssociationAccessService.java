@@ -39,10 +39,13 @@ public class AssociationAccessService {
         this.auditService = auditService;
     }
 
+    /**
+     * Accès d'un responsable ou d'un trésorier à l'association, archivée comprise (consultation seule : les écritures
+     * sont refusées par {@link AssociationContextInterceptor}). L'administrateur général n'a pas d'accès implicite.
+     */
     public AssociationEntity requireAccess(UUID userId, UUID associationId) {
-        AssociationEntity association = associations.findByIdAndStatus(associationId, AssociationStatus.ACTIVE)
+        AssociationEntity association = associations.findById(associationId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Association introuvable."));
-        if (users.findById(userId).map(u -> "ADMIN".equals(u.getRole())).orElse(false)) return association;
         boolean manager = memberships.findByAssociationIdAndUserAccountIdAndActiveTrue(associationId, userId).isPresent();
         boolean treasurer = fundMemberships.existsByUserAccountIdAndAssociationIdAndRoleAndActiveTrue(
                 userId, associationId, FundRole.TRESORIER);
@@ -54,26 +57,20 @@ public class AssociationAccessService {
 
     public AssociationEntity requireManager(UUID userId, UUID associationId) {
         AssociationEntity association = requireAccess(userId, associationId);
-        if (!users.findById(userId).map(u -> "ADMIN".equals(u.getRole())).orElse(false)
-                && memberships.findByAssociationIdAndUserAccountIdAndActiveTrue(associationId, userId).isEmpty()) {
+        if (memberships.findByAssociationIdAndUserAccountIdAndActiveTrue(associationId, userId).isEmpty()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Action réservée aux responsables de l’association.");
         }
         return association;
     }
 
+    /** Associations du compte, archivées comprises (affichées en lecture seule). */
     public List<AssociationResponse> listFor(UUID userId) {
-        if (users.findById(userId).map(u -> "ADMIN".equals(u.getRole())).orElse(false)) {
-            return associations.findAllByStatusOrderByNameAsc(AssociationStatus.ACTIVE).stream()
-                    .map(a -> AssociationResponse.from(a, false)).toList();
-        }
         LinkedHashMap<UUID, AssociationEntity> visible = new LinkedHashMap<>();
         memberships.findAllByUserAccountIdAndActiveTrueOrderByCreatedAtAsc(userId)
-                .stream().map(AssociationMembershipEntity::getAssociation)
-                .filter(a -> a.getStatus() == AssociationStatus.ACTIVE).forEach(a -> visible.put(a.getId(), a));
+                .stream().map(AssociationMembershipEntity::getAssociation).forEach(a -> visible.put(a.getId(), a));
         fundMemberships.findAllByUserAccountIdAndActiveTrueOrderByCreatedAtAsc(userId).stream()
                 .filter(m -> m.getRole() == FundRole.TRESORIER)
-                .map(m -> m.getAssociation())
-                .filter(a -> a.getStatus() == AssociationStatus.ACTIVE).forEach(a -> visible.put(a.getId(), a));
+                .map(m -> m.getAssociation()).forEach(a -> visible.put(a.getId(), a));
         return visible.values().stream().map(a -> AssociationResponse.from(a,
                 memberships.findByAssociationIdAndUserAccountIdAndActiveTrue(a.getId(), userId).isPresent())).toList();
     }

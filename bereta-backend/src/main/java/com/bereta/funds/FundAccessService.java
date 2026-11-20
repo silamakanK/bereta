@@ -121,9 +121,20 @@ public class FundAccessService {
                 manager ? java.util.Set.of() : java.util.Set.copyOf(accessibleLocalFundIds(userId)));
     }
 
+    /**
+     * Responsable actif de l'association. L'administrateur général n'en fait pas partie : il consulte depuis
+     * son espace et n'agit pas à la place des responsables.
+     */
     public boolean isAssociationManager(UUID userId, UUID associationId) {
-        if (userAccountRepository.findById(userId).map(u -> "ADMIN".equals(u.getRole())).orElse(false)) return true;
         return associationMemberships.findByAssociationIdAndUserAccountIdAndActiveTrue(associationId, userId).isPresent();
+    }
+
+    /** Une caisse locale archivée reste consultable, mais plus aucune opération n'y est enregistrée. */
+    public static void requireOpen(LocalFundEntity localFund) {
+        if (localFund != null && !localFund.isActive()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "La caisse « " + localFund.getName() + " » est archivée : consultation seule.");
+        }
     }
 
     public LocalFundEntity requireLocalAccess(UUID userId, UUID primaryFundId, UUID localFundId) {

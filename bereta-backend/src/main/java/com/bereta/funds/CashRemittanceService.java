@@ -50,6 +50,7 @@ public class CashRemittanceService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Caisse locale introuvable"));
         PrimaryFundEntity primaryFund = localFund.getPrimaryFund();
         fundAccessService.requireTreasurer(userId, primaryFund.getId(), localFundId);
+        FundAccessService.requireOpen(localFund);
 
         BigDecimal collected = paymentRepository.sumForLocalFunds(List.of(localFundId));
         BigDecimal alreadyCommitted = remittanceRepository.sumForLocalFundAndStatuses(
