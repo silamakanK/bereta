@@ -1,0 +1,63 @@
+<a class="adm-link back" routerLink="/admin/caisses">← Toutes les caisses</a>
+
+@if (error()) { <p class="adm-alert ko" role="alert">{{ error() }}</p> }
+@if (message()) { <output class="adm-alert ok">{{ message() }}</output> }
+
+@if (loading() && !fund()) {
+  <p class="adm-empty">Chargement de la caisse…</p>
+} @else if (fund(); as f) {
+  <div class="adm-head">
+    <div><h1>{{ f.name }}</h1>
+      <p><app-admin-status-pill [status]="f.status" />
+        <a class="adm-link" [routerLink]="['/admin/associations', f.associationId]">{{ f.associationName }}</a>
+        @if (f.associationStatus === 'ARCHIVED') { <app-admin-status-pill [status]="f.associationStatus" /> }</p></div>
+    <div class="add-actions">
+      <a class="adm-btn" routerLink="/admin/journal" [queryParams]="{ targetId: f.id }">Historique</a>
+      @if (f.status === 'ACTIVE') {
+        <button type="button" class="adm-btn" (click)="ask({ kind: 'reassign', replaced: null })">Affecter un trésorier</button>
+        <button type="button" class="adm-btn danger" (click)="ask({ kind: 'archive' })">Archiver</button>
+      } @else { <button type="button" class="adm-btn primary" (click)="ask({ kind: 'restore' })">Restaurer</button> }
+    </div>
+  </div>
+  @if (f.status === 'ARCHIVED') {
+    <p class="adm-alert warn">Caisse archivée : consultable, mais plus aucune opération n’y est enregistrée.</p>
+  }
+
+  <div class="add-figures" aria-label="Argent de la caisse">
+    <div><span>Encaissé</span><strong>{{ f.balance.collected | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</strong></div>
+    <div><span>Sur place</span><strong>{{ f.balance.availableLocally | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</strong></div>
+    <div><span>Remis, à confirmer</span><strong>{{ f.balance.inTransit | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</strong></div>
+    <div><span>Membres actifs</span><strong>{{ f.memberCount }}</strong></div>
+  </div>
+
+  <div class="add-grid">
+    <section class="adm-panel">
+      <h2>Trésoriers ({{ f.treasurers.length }})</h2>
+      @for (person of f.treasurers; track person.userId) {
+        <div class="add-person">
+          <span class="adm-who"><a class="adm-link" [routerLink]="['/admin/comptes', person.userId]">{{ name(person) }}</a>
+            <small>{{ person.phone || '—' }} · {{ person.email || '—' }}</small></span>
+          @if (f.status === 'ACTIVE') { <button type="button" class="adm-btn" (click)="ask({ kind: 'reassign', replaced: person })">Remplacer</button> }
+        </div>
+      } @empty { <p class="add-none">Sans trésorier.</p> }
+    </section>
+    <section class="adm-panel">
+      <h2>Informations</h2>
+      <dl>
+        <div><dt>Caisse principale</dt><dd>{{ f.primaryFundName }}</dd></div>
+        <div><dt>Lieu</dt><dd>{{ f.location || '—' }}</dd></div>
+        <div><dt>Objectif</dt><dd>{{ f.description || '—' }}</dd></div>
+        <div><dt>Créée le</dt><dd>{{ f.createdAt | date:'d MMMM y':'':'fr-FR' }}</dd></div>
+      </dl>
+    </section>
+  </div>
+}
+
+@if (config(); as c) {
+  <app-admin-confirm-dialog [title]="c.title" [impact]="c.impact" [confirmLabel]="c.confirmLabel" [danger]="c.danger"
+    [busy]="busy()" [error]="actionError()" [ready]="ready()" (confirmed)="confirm($event)" (cancelled)="cancel()">
+    @if (reassigning() && fund(); as f) {
+      <app-admin-account-picker label="Nouveau trésorier" [exclude]="treasurerIds(f)" (picked)="target.set($event)" />
+    }
+  </app-admin-confirm-dialog>
+}

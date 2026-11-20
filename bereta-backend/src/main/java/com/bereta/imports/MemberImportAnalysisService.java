@@ -117,6 +117,7 @@ public class MemberImportAnalysisService {
         if (!scope.covers(local)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Vous n’avez pas accès à cette caisse locale.");
         }
+        FundAccessService.requireOpen(local);
         return new Destination(local.getPrimaryFund(), local);
     }
 

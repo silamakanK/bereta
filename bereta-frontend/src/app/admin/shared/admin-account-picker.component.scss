@@ -1,0 +1,10 @@
+:host { display: block; margin-bottom: 14px; }
+.aap { display: grid; gap: 8px; margin: 0; padding: 0; border: 0; }
+.aap legend { margin-bottom: 6px; padding: 0; color: #1f2a1f; font-size: 14px; font-weight: 700; }
+.aap input[type='search'] { width: 100%; min-height: 40px; padding: 0 10px; border: 1px solid #c9d2c7; border-radius: 10px; font: inherit; font-size: 14px; box-sizing: border-box; }
+.aap-note { margin: 0; color: #4b554b; font-size: 13px; }
+.aap-note.ko { color: #b91c1c; }
+.aap-option { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid #e2e8e0; border-radius: 10px; cursor: pointer; }
+.aap-option.on { border-color: #2e6248; background: #f0f7f2; }
+.aap-option span { display: grid; min-width: 0; }
+.aap-option small { color: #4b554b; font-size: 12px; overflow-wrap: anywhere; }

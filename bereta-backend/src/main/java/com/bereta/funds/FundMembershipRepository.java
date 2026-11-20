@@ -22,4 +22,6 @@ public interface FundMembershipRepository extends JpaRepository<FundMembershipEn
     boolean existsByUserAccountIdAndPrimaryFundIdAndLocalFundIdAndActiveTrue(
             UUID userId, UUID primaryFundId, UUID localFundId);
     boolean existsByPrimaryFundIdAndActiveTrue(UUID primaryFundId);
+    List<FundMembershipEntity> findAllByLocalFundIdInAndRoleAndActiveTrueOrderByCreatedAtAsc(
+            java.util.Collection<UUID> localFundIds, FundRole role);
 }

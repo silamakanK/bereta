@@ -100,6 +100,7 @@ public class TreasurerAccountService {
                 .filter(fund -> fund.getAssociation().getId().equals(associationId))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "La caisse locale ne dépend pas de cette association et caisse principale."));
+        FundAccessService.requireOpen(localFund);
         String phone = blank(request.phone()) ? null : phoneNumbers.normalize(request.phone());
         String email = blank(request.email()) ? null : request.email().trim().toLowerCase(java.util.Locale.ROOT);
         if (phone == null && email == null) {

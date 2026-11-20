@@ -1,0 +1,18 @@
+<fieldset class="aap">
+  <legend>{{ label() }}</legend>
+  <input type="search" name="account-query" placeholder="Nom, téléphone ou e-mail (2 caractères minimum)" autocomplete="off"
+    [ngModel]="query()" (ngModelChange)="search($event)" [attr.aria-label]="label() + ' : recherche'" />
+  @if (error()) { <p class="aap-note ko" role="alert">{{ error() }}</p> }
+  @if (searching()) {
+    <p class="aap-note">Recherche…</p>
+  } @else if (query().trim().length >= 2 && results().length === 0) {
+    <p class="aap-note">Aucun compte actif ne correspond.</p>
+  }
+  @for (account of results(); track account.id) {
+    <label class="aap-option" [class.on]="selected() === account.id">
+      <input type="radio" name="account-choice" [value]="account.id" [checked]="selected() === account.id" (change)="choose(account)" />
+      <span><strong>{{ account.displayName || 'Sans nom' }}</strong>
+        <small>{{ roles[account.role] }} · {{ account.phone || account.email || 'sans coordonnées' }}</small></span>
+    </label>
+  }
+</fieldset>

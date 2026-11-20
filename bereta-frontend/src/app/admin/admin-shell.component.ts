@@ -16,7 +16,7 @@ export class AdminShellComponent {
 
   protected readonly user = this.auth.currentUser;
   /** Écrans des lots suivants, annoncés mais pas encore ouverts. */
-  protected readonly upcoming = ['Tableau de bord', 'Associations', 'Caisses', 'Opérations'];
+  protected readonly upcoming = ['Tableau de bord', 'Opérations'];
 
   protected logout(): void {
     this.auth.logout().subscribe({ complete: () => void this.router.navigateByUrl('/connexion') });

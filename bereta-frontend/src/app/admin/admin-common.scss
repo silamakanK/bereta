@@ -20,7 +20,8 @@
 .adm-table td { padding: 10px; border-bottom: 1px solid #eef2ed; vertical-align: middle; }
 .adm-table tr.clickable { cursor: pointer; }
 .adm-table tr.clickable:hover td { background: #f6f9f5; }
-.adm-who { display: grid; }
+.adm-who { display: grid; justify-items: start; }
+.adm-who .adm-link { padding: 0; text-align: left; }
 .adm-who small { color: #4b554b; font-size: 12px; }
 .adm-pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px 2px 3px; border: 1px solid transparent; border-radius: 99px; font-size: 12px; font-weight: 650; white-space: nowrap; }
 .adm-pill-icon { display: grid; width: 18px; height: 18px; place-items: center; border-radius: 50%; color: #fff; font-size: 11px; font-weight: 800; }

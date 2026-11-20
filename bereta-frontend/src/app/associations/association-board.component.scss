@@ -20,6 +20,7 @@
 .link { padding: 0; border: 0; background: none; color: #0051d5; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
 .badge { padding: 2px 8px; border-radius: 99px; font-size: 12px; font-style: normal; font-weight: 600; white-space: nowrap; }
 .badge.warn { background: #fef3c7; color: #92400e; }
+.badge.off { background: #f1f5f9; color: #334155; }
 .fund-list { display: grid; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
 .fund-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px; border: 1px solid #e5ebe4; border-radius: 8px; background: #fff; }
 .fund-copy { display: grid; flex: 1 1 140px; }

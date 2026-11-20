@@ -14,6 +14,8 @@ import java.util.UUID;
 
 @Component
 public class AssociationContextInterceptor implements HandlerInterceptor {
+    /** Une association archivée reste consultable : seules ces méthodes passent. */
+    private static final java.util.Set<String> READ_METHODS = java.util.Set.of("GET", "HEAD", "OPTIONS");
     private final AssociationAccessService access;
     public AssociationContextInterceptor(AssociationAccessService access) { this.access = access; }
 
@@ -32,7 +34,11 @@ public class AssociationContextInterceptor implements HandlerInterceptor {
         if (authentication == null || !(authentication.getPrincipal() instanceof BeretaUserDetails user)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
-        access.requireAccess(user.getId(), associationId);
+        AssociationEntity association = access.requireAccess(user.getId(), associationId);
+        if (association.getStatus() == AssociationStatus.ARCHIVED && !READ_METHODS.contains(request.getMethod())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Cette association est archivée : consultation et exports uniquement.");
+        }
         request.setAttribute(AssociationRequestContext.REQUEST_ATTRIBUTE, associationId);
         return true;
     }

@@ -1,0 +1,73 @@
+<a class="adm-link back" routerLink="/admin/associations">← Toutes les associations</a>
+
+@if (error()) { <p class="adm-alert ko" role="alert">{{ error() }}</p> }
+@if (message()) { <output class="adm-alert ok">{{ message() }}</output> }
+
+@if (loading() && !association()) {
+  <p class="adm-empty">Chargement de l’association…</p>
+} @else if (association(); as a) {
+  <div class="adm-head">
+    <div><h1>{{ a.name }}</h1>
+      <p><app-admin-status-pill [status]="a.status" /> <span>Créée le {{ a.createdAt | date:'d MMMM y':'':'fr-FR' }}</span></p></div>
+    <div class="add-actions">
+      <a class="adm-btn" routerLink="/admin/journal" [queryParams]="{ associationId: a.id }">Historique</a>
+      @if (a.status === 'ACTIVE') { <button type="button" class="adm-btn danger" (click)="ask({ kind: 'archive' })">Archiver</button> }
+      @else { <button type="button" class="adm-btn primary" (click)="ask({ kind: 'restore' })">Restaurer</button> }
+    </div>
+  </div>
+  @if (a.status === 'ARCHIVED') {
+    <p class="adm-alert warn">Association archivée : ses utilisateurs la consultent et l’exportent, mais n’y enregistrent plus rien.</p>
+  }
+
+  <div class="add-figures" aria-label="Chiffres clés">
+    <div><span>Total encaissé</span><strong>{{ a.balances.totalCollected | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</strong></div>
+    <div><span>Solde central</span><strong>{{ a.balances.central | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</strong></div>
+    <div><span>En transit</span><strong>{{ a.balances.inTransit | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</strong></div>
+    <div><span>Dans les caisses locales</span><strong>{{ a.balances.availableLocally | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</strong></div>
+    <div><span>Membres actifs</span><strong>{{ a.activeMemberCount }} <small>/ {{ a.memberCount }}</small></strong></div>
+    <div><span>Campagnes ouvertes</span><strong>{{ a.openCampaignCount }} <small>/ {{ a.campaignCount }}</small></strong></div>
+  </div>
+
+  <div class="add-grid">
+    <section class="adm-panel">
+      <h2>Responsables ({{ a.responsibles.length }})</h2>
+      @for (person of a.responsibles; track person.userId) {
+        <div class="add-person">
+          <span class="adm-who"><a class="adm-link" [routerLink]="['/admin/comptes', person.userId]">{{ name(person) }}</a>
+            <small>{{ person.phone || '—' }} · {{ person.email || '—' }}</small></span>
+          <button type="button" class="adm-btn" (click)="ask({ kind: 'transfer', from: person })">Transférer</button>
+        </div>
+      } @empty { <p class="add-none">Aucun responsable actif.</p> }
+      <h2>Coordonnées</h2>
+      <dl>
+        <div><dt>Description</dt><dd>{{ a.description || '—' }}</dd></div>
+        <div><dt>E-mail</dt><dd>{{ a.contactEmail || '—' }}</dd></div>
+        <div><dt>Téléphone</dt><dd>{{ a.contactPhone || '—' }}</dd></div>
+        <div><dt>Adresse</dt><dd>{{ a.address || '—' }}</dd></div>
+        <div><dt>Caisse principale</dt><dd>{{ a.primaryFundName || 'Aucune' }}</dd></div>
+      </dl>
+    </section>
+    <section class="adm-panel">
+      <div class="add-title"><h2>Caisses locales ({{ a.localFunds.length }})</h2>
+        <a class="adm-link" routerLink="/admin/caisses" [queryParams]="{ associationId: a.id }">Voir dans la liste</a></div>
+      @for (fund of a.localFunds; track fund.id) {
+        <div class="add-fund">
+          <span class="adm-who"><a class="adm-link" [routerLink]="['/admin/caisses', fund.id]">{{ fund.name }}</a>
+            <small>{{ treasurerNames(fund.treasurers) }} · {{ fund.memberCount }} membre{{ fund.memberCount > 1 ? 's' : '' }}</small></span>
+          <span class="add-fund-side"><app-admin-status-pill [status]="fund.status" />
+            <small>{{ fund.balance.availableLocally | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }} sur place</small></span>
+        </div>
+      } @empty { <p class="add-none">Aucune caisse locale.</p> }
+    </section>
+  </div>
+}
+
+@if (config(); as c) {
+  <app-admin-confirm-dialog [title]="c.title" [impact]="c.impact" [confirmLabel]="c.confirmLabel" [danger]="c.danger"
+    [busy]="busy()" [error]="actionError()" [ready]="ready()"
+    (confirmed)="confirm($event)" (cancelled)="cancel()">
+    @if (transferFrom() && association(); as a) {
+      <app-admin-account-picker label="Nouveau responsable" role="RESPONSABLE" [exclude]="responsibleIds(a)" (picked)="target.set($event)" />
+    }
+  </app-admin-confirm-dialog>
+}

@@ -24,6 +24,8 @@ export interface LocalFund {
   /** Vide : caisse « Sans responsable ». */
   treasurers: TreasurerSummary[];
   createdAt: string;
+  /** ARCHIVED : consultation seule (archivée par l'administrateur). */
+  status?: 'ACTIVE' | 'ARCHIVED';
 }
 
 export interface CreateLocalFundRequest {

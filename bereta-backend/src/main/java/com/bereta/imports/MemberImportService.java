@@ -96,6 +96,7 @@ public class MemberImportService {
         // Verrou de ligne : un double clic attend la fin de la première validation, puis voit VALIDE → 409.
         MemberImportEntity draft = load(userId, importId, true);
         requireDraft(draft);
+        FundAccessService.requireOpen(draft.getLocalFund());
         List<MemberImportRowEntity> lines = rows.findAllByImportIdOrderByLineNumberAsc(importId);
         rules.refresh(draft, lines);
         List<MemberImportRowEntity> creatable = creatableRows(lines);

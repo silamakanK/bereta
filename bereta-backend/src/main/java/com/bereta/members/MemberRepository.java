@@ -16,6 +16,12 @@ public interface MemberRepository extends JpaRepository<MemberEntity, UUID> {
     List<MemberEntity> findAllByCreatedInPrimaryFundIdIn(List<UUID> primaryFundIds);
     List<MemberEntity> findAllByAssociationIdOrderByLastNameAscFirstNameAsc(UUID associationId);
     long countByAssociationId(UUID associationId);
+    long countByAssociationIdAndActiveTrue(UUID associationId);
+
+    /** Membres actifs par caisse locale (supervision administrateur). */
+    @Query("select m.createdInLocalFund.id, count(m) from MemberEntity m "
+            + "where m.active = true and m.createdInLocalFund.id in :localFundIds group by m.createdInLocalFund.id")
+    List<Object[]> countActiveByLocalFund(@Param("localFundIds") java.util.Collection<UUID> localFundIds);
 
     @Modifying
     @Query(value = "UPDATE members SET created_by_user_id = :userId, created_in_primary_fund_id = "

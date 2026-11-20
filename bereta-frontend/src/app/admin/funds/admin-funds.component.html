@@ -1,0 +1,53 @@
+<div class="adm-head">
+  <div><h1>Caisses locales</h1><p>{{ result()?.totalItems ?? 0 }} caisse{{ (result()?.totalItems ?? 0) > 1 ? 's' : '' }}{{ chips().length ? ' (filtrées)' : '' }} · la caisse principale figure sur la fiche de son association</p></div>
+  <button type="button" class="adm-btn adm-filters-toggle" (click)="filtersOpen.set(!filtersOpen())" [attr.aria-expanded]="filtersOpen()">Filtres{{ chips().length ? ' (' + chips().length + ')' : '' }}</button>
+</div>
+
+<section class="adm-panel">
+  <form class="adm-filters" [class.open]="filtersOpen()" aria-label="Filtres des caisses" (submit)="$event.preventDefault()">
+    <label>Recherche<input type="search" name="q" placeholder="Caisse ou association…" [ngModel]="filters().q" (ngModelChange)="search($event)" /></label>
+    <label>Statut<select name="status" [ngModel]="filters().status" (ngModelChange)="setFilter('status', $event)">
+      <option value="">Toutes</option><option value="ACTIVE">Actives</option><option value="ARCHIVED">Archivées</option></select></label>
+  </form>
+
+  @if (chips().length) {
+    <div class="adm-chips" aria-label="Filtres actifs">
+      @for (chip of chips(); track chip.key) {
+        <button type="button" class="adm-chip" (click)="clearChip(chip.key)" [attr.aria-label]="'Retirer le filtre ' + chip.label">{{ chip.label }} <span aria-hidden="true">×</span></button>
+      }
+      <button type="button" class="adm-link" (click)="reset()">Réinitialiser</button>
+    </div>
+  }
+
+  @if (error()) { <p class="adm-alert ko" role="alert">{{ error() }}</p> }
+
+  @if (loading() && !result()) {
+    <p class="adm-empty">Chargement des caisses…</p>
+  } @else if (result()?.items?.length === 0) {
+    <div class="adm-empty"><strong>Aucune caisse ne correspond</strong>@if (chips().length) { <button type="button" class="adm-link" (click)="reset()">Réinitialiser les filtres</button> }</div>
+  } @else if (result(); as page) {
+    <table class="adm-table">
+      <thead><tr>
+        <th scope="col"><button type="button" class="adm-link" (click)="sortBy('name')">Caisse {{ sortIndicator('name') }}</button></th>
+        <th scope="col"><button type="button" class="adm-link" (click)="sortBy('association')">Association {{ sortIndicator('association') }}</button></th>
+        <th scope="col">Trésorier</th>
+        <th scope="col">Encaissé</th>
+        <th scope="col">Sur place</th>
+        <th scope="col">Statut</th>
+      </tr></thead>
+      <tbody>
+        @for (fund of page.items; track fund.id) {
+          <tr>
+            <td><span class="adm-who"><a class="adm-link" [routerLink]="['/admin/caisses', fund.id]">{{ fund.name }}</a><small>{{ fund.location || '—' }}</small></span></td>
+            <td data-label="Association"><a class="adm-link" [routerLink]="['/admin/associations', fund.associationId]">{{ fund.associationName }}</a></td>
+            <td data-label="Trésorier">{{ fund.treasurerNames.length ? fund.treasurerNames.join(', ') : 'Sans trésorier' }}</td>
+            <td data-label="Encaissé">{{ fund.balance.collected | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</td>
+            <td data-label="Sur place">{{ fund.balance.availableLocally | currency:'EUR':'symbol-narrow':'1.2-2':'fr-FR' }}</td>
+            <td data-label="Statut"><app-admin-status-pill [status]="fund.status" /></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    <app-admin-pager [page]="page" (go)="goTo($event)" />
+  }
+</section>

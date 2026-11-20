@@ -30,7 +30,7 @@ class AdminAuditQuery {
     }
 
     Page<AdminAuditEntity> search(Filter filter, int page, int size) {
-        PageRequest pageRequest = PageRequest.of(Math.max(0, page), Math.clamp(size, 1, AdminUserQuery.MAX_PAGE_SIZE));
+        PageRequest pageRequest = PageRequest.of(Math.max(0, page), Math.clamp(size, 1, AdminCriteria.MAX_PAGE_SIZE));
         List<AdminAuditEntity> content = list(filter, (int) pageRequest.getOffset(), pageRequest.getPageSize());
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
         CriteriaQuery<Long> count = cb.createQuery(Long.class);

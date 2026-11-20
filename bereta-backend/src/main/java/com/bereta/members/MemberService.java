@@ -105,6 +105,7 @@ public class MemberService {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Caisse locale introuvable"));
             localFund = fundAccessService.requireLocalAccess(
                     userId, candidate.getPrimaryFund().getId(), candidate.getId());
+            FundAccessService.requireOpen(localFund);
             primaryFund = localFund.getPrimaryFund();
         }
         MemberEntity member = new MemberEntity(
