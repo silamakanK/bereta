@@ -27,7 +27,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'com.googlecode.libphonenumber:libphonenumber:9.0.39'
-    implementation 'com.bucket4j:bucket4j_jdk17-core:8.20.0'
+    implementation 'com.bucket4j:bucket4j_jdk17-core:8.22.0'
     implementation 'org.flywaydb:flyway-core'
     // Import de membres : CSV et Excel (.xlsx)
     implementation 'org.apache.commons:commons-csv:1.14.1'
