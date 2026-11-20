@@ -205,10 +205,12 @@ class AuthFlowIntegrationTest {
         String adminToken = accessToken(perform(postJson("/api/auth/login", loginBody(admin.getEmail(), "TestPassword!234")))
                 .andExpect(status().isOk()).andReturn());
 
-        mockMvc.perform(post("/api/admin/users/" + user.getId() + "/password").header("Authorization", "Bearer " + accessToken(oldSession)))
+        String reason = "{\"reason\":\"Accès perdu, identité vérifiée par téléphone\"}";
+        mockMvc.perform(post("/api/admin/users/" + user.getId() + "/reset-password").header("Authorization", "Bearer " + accessToken(oldSession))
+                        .contentType(APPLICATION_JSON).content(reason))
                 .andExpect(status().isForbidden());
-        JsonNode reset = objectMapper.readTree(mockMvc.perform(post("/api/admin/users/" + user.getId() + "/password")
-                        .header("Authorization", "Bearer " + adminToken))
+        JsonNode reset = objectMapper.readTree(mockMvc.perform(post("/api/admin/users/" + user.getId() + "/reset-password")
+                        .header("Authorization", "Bearer " + adminToken).contentType(APPLICATION_JSON).content(reason))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
         String temporary = reset.get("temporaryPassword").asText();
 

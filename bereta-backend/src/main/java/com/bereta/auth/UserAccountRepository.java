@@ -8,8 +8,6 @@ import jakarta.persistence.LockModeType;
 
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 public interface UserAccountRepository extends JpaRepository<UserAccountEntity, UUID> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
@@ -23,12 +21,6 @@ public interface UserAccountRepository extends JpaRepository<UserAccountEntity, 
     long countByRoleAndEnabledTrue(String role);
     long countByEnabledTrue();
     long countByRole(String role);
-    Page<UserAccountEntity> findAllByOrderByCreatedAtDesc(Pageable pageable);
-
-    @Query("select u from UserAccountEntity u where " +
-            "(:query = '' or lower(u.email) like lower(concat('%', :query, '%')) " +
-            "or lower(u.displayName) like lower(concat('%', :query, '%'))) order by u.createdAt desc")
-    Page<UserAccountEntity> searchForAdmin(@Param("query") String query, Pageable pageable);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select u from UserAccountEntity u where u.role = 'ADMIN' and u.enabled = true order by u.id")

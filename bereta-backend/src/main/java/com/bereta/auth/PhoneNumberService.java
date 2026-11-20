@@ -59,6 +59,19 @@ public class PhoneNumberService {
         return defaultRegion;
     }
 
+    /** Affichage lisible : format national pour la région par défaut (06 12 34 56 78), international sinon. */
+    public String display(String e164) {
+        if (e164 == null) return null;
+        try {
+            PhoneNumber number = util.parse(e164, defaultRegion);
+            boolean local = defaultRegion.equalsIgnoreCase(util.getRegionCodeForNumber(number));
+            return util.format(number, local ? PhoneNumberUtil.PhoneNumberFormat.NATIONAL
+                    : PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL);
+        } catch (NumberParseException invalid) {
+            return e164;
+        }
+    }
+
     /** +33612345678 → « +33 6 ** ** ** 78 ». */
     public String mask(String e164) {
         if (e164 == null) return null;

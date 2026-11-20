@@ -1,0 +1,16 @@
+<div class="as">
+  <div class="as-banner" role="note"><strong>Espace administrateur</strong> · Vos actions sont enregistrées dans le journal.</div>
+  <header class="as-head">
+    <a class="as-brand" routerLink="/admin"><img src="brand/bereta-icone-app.svg" alt="" width="32" height="32" /><span>bereta<b>.</b></span><small>ADMINISTRATION</small></a>
+    <div class="as-user"><span>{{ user()?.displayName || user()?.email || user()?.phone }}</span>
+      <button type="button" class="as-logout" (click)="logout()">Se déconnecter</button></div>
+  </header>
+  <div class="as-layout">
+    <nav class="as-nav" aria-label="Navigation administrateur">
+      <a routerLink="comptes" routerLinkActive="on">Comptes</a>
+      <a routerLink="journal" routerLinkActive="on">Journal</a>
+      @for (item of upcoming; track item) { <span class="as-soon" aria-disabled="true">{{ item }} <small>bientôt</small></span> }
+    </nav>
+    <main class="as-main"><router-outlet /></main>
+  </div>
+</div>

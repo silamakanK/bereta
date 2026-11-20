@@ -1,0 +1,62 @@
+<a class="adm-link back" routerLink="/admin/comptes">← Tous les comptes</a>
+
+@if (error()) { <p class="adm-alert ko" role="alert">{{ error() }}</p> }
+@if (message()) { <output class="adm-alert ok">{{ message() }}</output> }
+
+@if (temporaryPassword(); as password) {
+  <section class="aud-password" aria-labelledby="aud-password-title">
+    <h2 id="aud-password-title">Mot de passe provisoire</h2>
+    <p>Transmettez-le de vive voix ou par message privé. <strong>Il ne sera plus jamais affiché.</strong></p>
+    <code>{{ password }}</code>
+    <div class="aud-actions">
+      <button type="button" class="adm-btn" (click)="copyPassword()">{{ copied() ? 'Copié ✓' : 'Copier' }}</button>
+      <button type="button" class="adm-btn primary" (click)="forgetPassword()">C’est transmis, masquer</button>
+    </div>
+  </section>
+}
+
+@if (loading() && !user()) {
+  <p class="adm-empty">Chargement du compte…</p>
+} @else if (user(); as u) {
+  <div class="adm-head">
+    <div><h1>{{ name(u) }}</h1>
+      <p><span class="adm-role">{{ roles[u.role] }}</span>
+        <span [class]="'adm-pill ' + status(u.enabled).css"><span class="adm-pill-icon" aria-hidden="true">{{ status(u.enabled).icon }}</span>{{ status(u.enabled).label }}</span>
+        @if (u.mustChangePassword) { <span class="adm-pill warn"><span class="adm-pill-icon" aria-hidden="true">!</span>Mot de passe provisoire</span> }</p></div>
+    @if (!isSelf()) {
+      <div class="aud-actions">
+        <button type="button" class="adm-btn" (click)="ask('reset')">Mot de passe provisoire</button>
+        @if (u.enabled) { <button type="button" class="adm-btn danger" (click)="ask('disable')">Désactiver</button> }
+        @else { <button type="button" class="adm-btn primary" (click)="ask('enable')">Réactiver</button> }
+      </div>
+    } @else { <p class="aud-self">C’est votre compte : ces actions passent par la procédure interne.</p> }
+  </div>
+
+  <div class="aud-grid">
+    <section class="adm-panel">
+      <h2>Coordonnées</h2>
+      <dl>
+        <div><dt>Téléphone</dt><dd>{{ u.phone || '—' }}</dd></div>
+        <div><dt>E-mail</dt><dd>{{ u.email || '—' }}</dd></div>
+        <div><dt>Créé le</dt><dd>{{ u.createdAt | date:'d MMMM y':'':'fr-FR' }}</dd></div>
+        <div><dt>Dernière connexion</dt><dd>{{ u.lastLoginAt ? (u.lastLoginAt | date:'d MMMM y, HH:mm':'':'fr-FR') : 'Jamais' }}</dd></div>
+        <div><dt>Sessions ouvertes</dt><dd>{{ u.activeSessions }}</dd></div>
+      </dl>
+    </section>
+    <section class="adm-panel">
+      <h2>Associations ({{ u.associations.length }})</h2>
+      @for (association of u.associations; track association.id) {
+        <p class="aud-line"><strong>{{ association.name }}</strong> <small>{{ association.status === 'ACTIVE' ? 'Active' : 'Archivée' }} · responsable</small></p>
+      } @empty { <p class="aud-none">Responsable d’aucune association.</p> }
+      <h2>Caisses ({{ u.funds.length }})</h2>
+      @for (fund of u.funds; track fund.membershipId) {
+        <p class="aud-line"><strong>{{ fund.localFundName || fund.primaryFundName }}</strong> <small>{{ fund.associationName }} · {{ roles[fund.role] }}</small></p>
+      } @empty { <p class="aud-none">Aucune caisse.</p> }
+    </section>
+  </div>
+}
+
+@if (config(); as c) {
+  <app-admin-confirm-dialog [title]="c.title" [impact]="c.impact" [confirmLabel]="c.confirmLabel" [danger]="c.danger"
+    [busy]="busy()" [error]="actionError()" (confirmed)="confirm($event)" (cancelled)="cancel()" />
+}

@@ -1,0 +1,9 @@
+.aa-head-actions { display: flex; gap: 8px; }
+.aa-list { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.aa-entry { padding: 12px 14px; border: 1px solid #e2e8e0; border-left: 4px solid #2e6248; border-radius: 12px; }
+.aa-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+.aa-top time { color: #4b554b; font-size: 13px; }
+.aa-meta, .aa-reason, .aa-values { margin: 6px 0 0; font-size: 13px; }
+.aa-meta { color: #4b554b; }
+.aa-reason { color: #1f2a1f; font-style: italic; }
+.aa-values { display: flex; flex-wrap: wrap; gap: 4px 16px; color: #334155; }

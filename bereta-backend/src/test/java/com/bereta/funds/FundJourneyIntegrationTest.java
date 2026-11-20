@@ -1,6 +1,5 @@
 package com.bereta.funds;
 
-import com.bereta.admin.AdminAuditRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -35,7 +34,7 @@ class FundJourneyIntegrationTest {
 
     @Autowired private MockMvc mockMvc;
     @Autowired private ObjectMapper objectMapper;
-    @Autowired private AdminAuditRepository adminAudit;
+    @Autowired private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
     @Autowired private PrimaryFundRepository primaryFunds;
     @Autowired private LocalFundRepository localFunds;
     @Autowired private com.bereta.associations.AssociationRepository associations;
@@ -71,7 +70,7 @@ class FundJourneyIntegrationTest {
         call(manager, associationId, get("/api/caisses-principales/" + primaryFundId + "/acces/compte?identifiant=" + phone), null)
                 .andExpect(jsonPath("$.exists").value(true))
                 .andExpect(jsonPath("$.displayName").value("Mamadou Sissoko"));
-        assertThat(adminAudit.findAll()).extracting(entry -> entry.getAction()).contains("TREASURER_ASSIGNED", "ASSOCIATION_CREATED");
+        assertThat(jdbcTemplate.queryForList("select action from admin_audit_log", String.class)).contains("TREASURER_ASSIGNED", "ASSOCIATION_CREATED");
 
         // Première connexion du trésorier : changement de mot de passe obligatoire.
         JsonNode firstLogin = json(postJson("/api/auth/login", "{\"identifier\":\"%s\",\"password\":\"%s\"}"
@@ -143,7 +142,7 @@ class FundJourneyIntegrationTest {
                 .andExpect(jsonPath("$.treasurers.length()").value(0));
         call(treasurer, associationId, get("/api/caisses-principales/" + primaryFundId + "/caisses-locales/" + localFund), null)
                 .andExpect(status().isForbidden());
-        assertThat(adminAudit.findAll()).extracting(entry -> entry.getAction()).contains("TREASURER_REMOVED");
+        assertThat(jdbcTemplate.queryForList("select action from admin_audit_log", String.class)).contains("TREASURER_REMOVED");
 
         // Un autre responsable ne voit rien de cette association.
         String outsider = registerManager();

@@ -1,46 +1,52 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { AdminAssociation, AdminAssociationRequest, AdminAuditEntry, AdminOverview, AdminPage, AdminUser } from './admin.model';
+import {
+  AdminAuditEntry, AdminAuditFilters, AdminPage, AdminPasswordReset, AdminUserActionResult, AdminUserDetail,
+  AdminUserFilters, AdminUserSummary,
+} from './admin.model';
+
+/** Paramètres de requête sans les valeurs vides. */
+export function queryParams(values: object): HttpParams {
+  let params = new HttpParams();
+  for (const [key, value] of Object.entries(values)) {
+    if (value !== '' && value !== null && value !== undefined) params = params.set(key, String(value));
+  }
+  return params;
+}
 
 @Injectable({ providedIn: 'root' })
 export class AdminApiService {
   private readonly http = inject(HttpClient);
   private readonly endpoint = '/api/admin';
 
-  overview(): Observable<AdminOverview> { return this.http.get<AdminOverview>(`${this.endpoint}/overview`); }
-  users(query = '', page = 0): Observable<AdminPage<AdminUser>> {
-    return this.http.get<AdminPage<AdminUser>>(`${this.endpoint}/users`, { params: new HttpParams().set('q', query).set('page', page) });
+  users(filters: AdminUserFilters): Observable<AdminPage<AdminUserSummary>> {
+    return this.http.get<AdminPage<AdminUserSummary>>(`${this.endpoint}/users`, { params: queryParams(filters) });
   }
-  createUser(request: { email: string; displayName: string; password: string; role: string }): Observable<AdminUser> {
-    return this.http.post<AdminUser>(`${this.endpoint}/users`, request);
+
+  user(id: string): Observable<AdminUserDetail> {
+    return this.http.get<AdminUserDetail>(`${this.endpoint}/users/${id}`);
   }
-  updateUser(id: string, request: { email: string; displayName: string; role: string }): Observable<AdminUser> {
-    return this.http.put<AdminUser>(`${this.endpoint}/users/${id}`, request);
+
+  disableUser(id: string, reason: string): Observable<AdminUserActionResult> {
+    return this.http.post<AdminUserActionResult>(`${this.endpoint}/users/${id}/disable`, { reason });
   }
-  /** Mot de passe provisoire (affiché une seule fois), à changer à la prochaine connexion. */
-  resetUserPassword(id: string): Observable<{ temporaryPassword: string }> {
-    return this.http.post<{ temporaryPassword: string }>(`${this.endpoint}/users/${id}/password`, {});
+
+  enableUser(id: string, reason: string): Observable<AdminUserActionResult> {
+    return this.http.post<AdminUserActionResult>(`${this.endpoint}/users/${id}/enable`, { reason });
   }
-  setUserEnabled(id: string, enabled: boolean): Observable<AdminUser> {
-    return this.http.patch<AdminUser>(`${this.endpoint}/users/${id}/activation`, { enabled });
+
+  resetPassword(id: string, reason: string): Observable<AdminPasswordReset> {
+    return this.http.post<AdminPasswordReset>(`${this.endpoint}/users/${id}/reset-password`, { reason });
   }
-  associations(query = '', page = 0): Observable<AdminPage<AdminAssociation>> {
-    return this.http.get<AdminPage<AdminAssociation>>(`${this.endpoint}/associations`, { params: new HttpParams().set('q', query).set('page', page) });
+
+  auditLogs(filters: AdminAuditFilters): Observable<AdminPage<AdminAuditEntry>> {
+    return this.http.get<AdminPage<AdminAuditEntry>>(`${this.endpoint}/audit-logs`, { params: queryParams(filters) });
   }
-  createAssociation(request: AdminAssociationRequest): Observable<AdminAssociation> {
-    return this.http.post<AdminAssociation>(`${this.endpoint}/associations`, request);
-  }
-  updateAssociation(id: string, request: Omit<AdminAssociationRequest, 'responsibleEmail'> & { status: 'ACTIVE' | 'ARCHIVED' }): Observable<AdminAssociation> {
-    return this.http.put<AdminAssociation>(`${this.endpoint}/associations/${id}`, request);
-  }
-  archiveAssociation(id: string): Observable<AdminAssociation> {
-    return this.http.post<AdminAssociation>(`${this.endpoint}/associations/${id}/archive`, {});
-  }
-  addResponsible(id: string, email: string): Observable<unknown> {
-    return this.http.post(`${this.endpoint}/associations/${id}/responsables`, { email });
-  }
-  audit(page = 0): Observable<AdminPage<AdminAuditEntry>> {
-    return this.http.get<AdminPage<AdminAuditEntry>>(`${this.endpoint}/audit`, { params: new HttpParams().set('page', page) });
+
+  exportAuditLogs(filters: AdminAuditFilters): Observable<Blob> {
+    // L'export reprend les filtres, sans la pagination.
+    const params = queryParams({ ...filters, page: '', size: '' });
+    return this.http.get(`${this.endpoint}/audit-logs/export`, { params, responseType: 'blob' });
   }
 }
