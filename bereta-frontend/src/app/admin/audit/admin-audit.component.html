@@ -1,0 +1,53 @@
+<div class="adm-head">
+  <div><h1>Journal</h1><p>Toutes les interventions sensibles, en lecture seule. Rien n’y est modifiable ni supprimable.</p></div>
+  <div class="aa-head-actions">
+    <button type="button" class="adm-btn adm-filters-toggle" (click)="filtersOpen.set(!filtersOpen())" [attr.aria-expanded]="filtersOpen()">Filtres{{ chips().length ? ' (' + chips().length + ')' : '' }}</button>
+    <button type="button" class="adm-btn" (click)="export()" [disabled]="exporting()">{{ exporting() ? 'Export…' : 'Exporter en CSV' }}</button>
+  </div>
+</div>
+
+<section class="adm-panel">
+  <form class="adm-filters" [class.open]="filtersOpen()" aria-label="Filtres du journal" (submit)="$event.preventDefault()">
+    <label>Action<select name="action" [ngModel]="filters().action" (ngModelChange)="setFilter('action', $event)">
+      <option value="">Toutes</option>@for (a of actions; track a[0]) { <option [value]="a[0]">{{ a[1] }}</option> }</select></label>
+    <label>Type de cible<select name="targetType" [ngModel]="filters().targetType" (ngModelChange)="setFilter('targetType', $event)">
+      <option value="">Tous</option>@for (t of targetTypes; track t[0]) { <option [value]="t[0]">{{ t[1] }}</option> }</select></label>
+    <label>Du<input type="date" name="from" [ngModel]="filters().from" (ngModelChange)="setFilter('from', $event)" /></label>
+    <label>Au<input type="date" name="to" [ngModel]="filters().to" (ngModelChange)="setFilter('to', $event)" /></label>
+  </form>
+
+  @if (chips().length) {
+    <div class="adm-chips" aria-label="Filtres actifs">
+      @for (chip of chips(); track chip.key) {
+        <button type="button" class="adm-chip" (click)="clearChip(chip.key)" [attr.aria-label]="'Retirer le filtre ' + chip.label">{{ chip.label }} <span aria-hidden="true">×</span></button>
+      }
+      <button type="button" class="adm-link" (click)="reset()">Réinitialiser</button>
+    </div>
+  }
+
+  @if (error()) { <p class="adm-alert ko" role="alert">{{ error() }}</p> }
+
+  @if (loading() && !result()) {
+    <p class="adm-empty">Chargement du journal…</p>
+  } @else if (result()?.items?.length === 0) {
+    <div class="adm-empty"><strong>Aucune action enregistrée</strong>@if (chips().length) { <span>pour ces filtres.</span> }</div>
+  } @else if (result(); as page) {
+    <ol class="aa-list">
+      @for (entry of page.items; track entry.id) {
+        <li class="aa-entry">
+          <div class="aa-top"><strong>{{ label(entry.action) }}</strong><time [attr.datetime]="entry.createdAt">{{ entry.createdAt | date:'d MMM y, HH:mm':'':'fr-FR' }}</time></div>
+          <p class="aa-meta">Par {{ entry.actorName }} · {{ targetLabel(entry.targetType) }}@if (entry.associationName) { · {{ entry.associationName }} }@if (entry.ipAddress) { · IP {{ entry.ipAddress }} }</p>
+          @if (entry.reason || entry.details) { <p class="aa-reason">« {{ entry.reason || entry.details }} »</p> }
+          @if (entry.before || entry.after) { <p class="aa-values"><span>Avant : {{ values(entry.before) }}</span><span>Après : {{ values(entry.after) }}</span></p> }
+        </li>
+      }
+    </ol>
+    @if (page.totalPages > 1) {
+      <nav class="adm-pages" aria-label="Pagination">
+        <span>{{ page.totalItems }} entrées · page {{ page.page + 1 }} / {{ page.totalPages }}</span>
+        <div><button type="button" class="adm-btn" [disabled]="page.page === 0" (click)="goTo(page.page - 1)">← Précédent</button>
+          <button type="button" class="adm-btn" [disabled]="page.page + 1 >= page.totalPages" (click)="goTo(page.page + 1)">Suivant →</button></div>
+      </nav>
+    }
+  }
+</section>

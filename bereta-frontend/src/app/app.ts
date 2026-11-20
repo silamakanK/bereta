@@ -130,6 +130,11 @@ export class App {
     effect(() => {
       const user = this.currentUser();
       if (this.isCheckingSession() || !user || user.mustChangePassword) return;
+      // L'administrateur supervise depuis son espace : il n'agit pas dans l'espace de gestion d'une association.
+      if (user.role === 'ADMIN') {
+        if (!this.isAdminRoute()) void this.router.navigateByUrl('/admin');
+        return;
+      }
       this.loadAssociations();
     });
     effect(() => {

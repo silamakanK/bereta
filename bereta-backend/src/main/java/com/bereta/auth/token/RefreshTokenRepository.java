@@ -19,4 +19,7 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshTokenEntity
     List<RefreshTokenEntity> findAllByFamilyIdAndRevokedAtIsNull(UUID familyId);
 
     List<RefreshTokenEntity> findAllByUserAccountIdAndRevokedAtIsNull(UUID userId);
+
+    /** Sessions encore utilisables (non révoquées, non expirées). */
+    long countByUserAccountIdAndRevokedAtIsNullAndExpiresAtAfter(UUID userId, java.time.Instant now);
 }

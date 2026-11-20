@@ -1,0 +1,51 @@
+/* Styles partagés des écrans d'administration (listes, filtres, pastilles, pagination). */
+:host { display: block; color: #1f2a1f; }
+* { box-sizing: border-box; }
+.adm-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.adm-head h1 { margin: 0; font-size: 22px; }
+.adm-head p { margin: 4px 0 0; color: #4b554b; font-size: 14px; }
+.adm-panel { padding: 16px; border: 1px solid #e2e8e0; border-radius: 14px; background: #fff; }
+.adm-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 40px; padding: 0 14px; border: 1px solid #c9d2c7; border-radius: 10px; background: #fff; color: #1f2a1f; font: inherit; font-size: 14px; font-weight: 650; text-decoration: none; cursor: pointer; }
+.adm-btn.primary { border-color: #2e6248; background: #2e6248; color: #fff; }
+.adm-btn.danger { border-color: #b91c1c; color: #b91c1c; }
+.adm-btn:disabled { opacity: .5; cursor: not-allowed; }
+.adm-filters { display: grid; grid-template-columns: minmax(200px, 2fr) repeat(3, minmax(130px, 1fr)); align-items: end; gap: 10px; margin-bottom: 10px; }
+.adm-filters label { display: grid; gap: 4px; min-width: 0; color: #4b554b; font-size: 12px; font-weight: 650; }
+.adm-filters input, .adm-filters select { width: 100%; min-width: 0; min-height: 40px; padding: 0 10px; border: 1px solid #c9d2c7; border-radius: 10px; background: #fff; color: #1f2a1f; font: inherit; font-size: 14px; }
+.adm-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: 10px; }
+.adm-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 0 10px; border: 1px solid #bcd3c2; border-radius: 99px; background: #eef5ef; color: #1d4430; font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
+.adm-link { border: 0; background: none; color: #1d4ed8; font: inherit; font-size: 13px; font-weight: 650; text-decoration: underline; cursor: pointer; }
+.adm-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.adm-table th { padding: 8px 10px; border-bottom: 1px solid #e2e8e0; color: #4b554b; font-size: 12px; font-weight: 700; text-align: left; text-transform: uppercase; letter-spacing: .03em; }
+.adm-table td { padding: 10px; border-bottom: 1px solid #eef2ed; vertical-align: middle; }
+.adm-table tr.clickable { cursor: pointer; }
+.adm-table tr.clickable:hover td { background: #f6f9f5; }
+.adm-who { display: grid; }
+.adm-who small { color: #4b554b; font-size: 12px; }
+.adm-pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px 2px 3px; border: 1px solid transparent; border-radius: 99px; font-size: 12px; font-weight: 650; white-space: nowrap; }
+.adm-pill-icon { display: grid; width: 18px; height: 18px; place-items: center; border-radius: 50%; color: #fff; font-size: 11px; font-weight: 800; }
+.adm-pill.ok { border-color: #bbf7d0; background: #f0fdf4; color: #166534; } .adm-pill.ok .adm-pill-icon { background: #15803d; }
+.adm-pill.off { border-color: #e2e8f0; background: #f1f5f9; color: #334155; } .adm-pill.off .adm-pill-icon { background: #475569; }
+.adm-pill.warn { border-color: #fde68a; background: #fffbeb; color: #92400e; } .adm-pill.warn .adm-pill-icon { background: #b45309; }
+.adm-role { padding: 2px 8px; border-radius: 6px; background: #eef4ee; color: #1d4430; font-size: 12px; font-weight: 650; }
+.adm-empty { display: grid; justify-items: center; gap: 6px; padding: 32px 12px; color: #4b554b; font-size: 14px; text-align: center; }
+.adm-empty strong { color: #1f2a1f; }
+.adm-alert { margin: 0 0 12px; padding: 10px 12px; border-radius: 10px; font-size: 14px; }
+.adm-alert.ko { border: 1px solid #fecaca; background: #fef2f2; color: #b91c1c; }
+.adm-alert.ok { display: block; border: 1px solid #bbf7d0; background: #f0fdf4; color: #166534; }
+.adm-pages { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; color: #4b554b; font-size: 13px; }
+.adm-pages div { display: flex; gap: 8px; }
+.adm-filters-toggle { display: none; }
+
+/* Mobile : cartes, filtres repliables */
+@media (max-width: 760px) {
+  .adm-filters-toggle { display: inline-flex; }
+  .adm-filters { display: none; grid-template-columns: 1fr; }
+  .adm-filters.open { display: grid; }
+  .adm-table thead { display: none; }
+  .adm-table, .adm-table tbody, .adm-table tr, .adm-table td { display: block; width: 100%; }
+  .adm-table tr { margin-bottom: 10px; padding: 10px 12px; border: 1px solid #e2e8e0; border-radius: 12px; background: #fff; }
+  .adm-table td { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 4px 0; border: 0; text-align: right; }
+  .adm-table td[data-label]::before { content: attr(data-label); color: #4b554b; font-size: 12px; font-weight: 650; text-align: left; }
+  .adm-pages { flex-direction: column; }
+}

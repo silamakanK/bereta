@@ -1,0 +1,21 @@
+<dialog class="acd" appModal (closed)="cancel()" aria-labelledby="acd-title">
+  <form (ngSubmit)="submit()">
+    <h2 id="acd-title">{{ title() }}</h2>
+    @if (impact().length) {
+      <ul class="acd-impact" aria-label="Conséquences">
+        @for (line of impact(); track line) { <li>{{ line }}</li> }
+      </ul>
+    }
+    <label class="acd-reason">Motif <span>(obligatoire, conservé dans le journal)</span>
+      <textarea name="reason" rows="3" maxlength="500" required [ngModel]="reason()" (ngModelChange)="reason.set($event)"
+        placeholder="Ex. : demande écrite du responsable, identité vérifiée par téléphone"></textarea>
+      <small [class.ok]="remaining() === 0">{{ remaining() ? 'Encore ' + remaining() + ' caractère' + (remaining() > 1 ? 's' : '') : 'Motif suffisant' }}</small>
+    </label>
+    @if (error()) { <p class="acd-error" role="alert">{{ error() }}</p> }
+    <div class="acd-actions">
+      <button type="button" class="acd-btn" (click)="cancel()" [disabled]="busy()">Annuler</button>
+      <button type="submit" class="acd-btn primary" [class.danger]="danger()" [disabled]="remaining() > 0 || busy()">
+        {{ busy() ? 'En cours…' : confirmLabel() }}</button>
+    </div>
+  </form>
+</dialog>

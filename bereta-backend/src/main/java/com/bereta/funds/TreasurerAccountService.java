@@ -140,10 +140,10 @@ public class TreasurerAccountService {
                     .filter(m -> m.getLocalFund() != null && m.getLocalFund().getId().equals(localFund.getId()))
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trésorier à remplacer introuvable."));
             previous.deactivate();
-            adminAudit.record(manager, "TREASURER_REMOVED", "LOCAL_FUND", localFund.getId(), localFund.getAssociation(),
+            adminAudit.recordEvent(manager, "TREASURER_REMOVED", "LOCAL_FUND", localFund.getId(), localFund.getAssociation(),
                     "Remplacé : " + label(previous.getUserAccount()) + " (caisse " + localFund.getName() + ")");
         }
-        adminAudit.record(manager, "TREASURER_ASSIGNED", "LOCAL_FUND", localFund.getId(), localFund.getAssociation(),
+        adminAudit.recordEvent(manager, "TREASURER_ASSIGNED", "LOCAL_FUND", localFund.getId(), localFund.getAssociation(),
                 label(treasurer) + (temporaryPassword != null ? " (compte créé)" : " (compte existant)")
                         + " · caisse " + localFund.getName());
         // Emplacement réservé : invitation par e-mail via fund_invitations, à activer avec l'envoi d'e-mails.

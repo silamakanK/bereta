@@ -95,7 +95,7 @@ public class AssociationAccessService {
                 clean(request.contactPhone()), clean(request.address())));
         memberships.save(new AssociationMembershipEntity(association, user));
         createPrimaryFund(association, request.objective());
-        auditService.record(user, "ASSOCIATION_CREATED", "ASSOCIATION", association.getId(), association,
+        auditService.recordEvent(user, "ASSOCIATION_CREATED", "ASSOCIATION", association.getId(), association,
                 "Association et caisse principale créées par leur responsable");
         return AssociationResponse.from(association, true);
     }

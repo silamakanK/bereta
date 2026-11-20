@@ -1,0 +1,60 @@
+<div class="adm-head">
+  <div><h1>Comptes</h1><p>{{ result()?.totalItems ?? 0 }} compte{{ (result()?.totalItems ?? 0) > 1 ? 's' : '' }}{{ chips().length ? ' (filtrés)' : '' }} · coordonnées masquées, visibles sur la fiche</p></div>
+  <button type="button" class="adm-btn adm-filters-toggle" (click)="filtersOpen.set(!filtersOpen())" [attr.aria-expanded]="filtersOpen()">Filtres{{ chips().length ? ' (' + chips().length + ')' : '' }}</button>
+</div>
+
+<section class="adm-panel">
+  <form class="adm-filters" [class.open]="filtersOpen()" aria-label="Filtres des comptes" (submit)="$event.preventDefault()">
+    <label>Recherche<input type="search" name="q" placeholder="Nom, téléphone ou e-mail…" [ngModel]="filters().q" (ngModelChange)="search($event)" /></label>
+    <label>Rôle<select name="role" [ngModel]="filters().role" (ngModelChange)="setFilter('role', $event)">
+      <option value="">Tous</option><option value="ADMIN">Administrateur</option><option value="RESPONSABLE">Responsable</option><option value="TRESORIER">Trésorier</option></select></label>
+    <label>Statut<select name="enabled" [ngModel]="filters().enabled" (ngModelChange)="setFilter('enabled', $event)">
+      <option value="">Tous</option><option value="true">Actifs</option><option value="false">Désactivés</option></select></label>
+  </form>
+
+  @if (chips().length) {
+    <div class="adm-chips" aria-label="Filtres actifs">
+      @for (chip of chips(); track chip.key) {
+        <button type="button" class="adm-chip" (click)="clearChip(chip.key)" [attr.aria-label]="'Retirer le filtre ' + chip.label">{{ chip.label }} <span aria-hidden="true">×</span></button>
+      }
+      <button type="button" class="adm-link" (click)="reset()">Réinitialiser</button>
+    </div>
+  }
+
+  @if (error()) { <p class="adm-alert ko" role="alert">{{ error() }}</p> }
+
+  @if (loading() && !result()) {
+    <p class="adm-empty">Chargement des comptes…</p>
+  } @else if (result()?.items?.length === 0) {
+    <div class="adm-empty"><strong>Aucun compte ne correspond</strong>@if (chips().length) { <button type="button" class="adm-link" (click)="reset()">Réinitialiser les filtres</button> }</div>
+  } @else if (result(); as page) {
+    <table class="adm-table">
+      <thead><tr>
+        <th scope="col"><button type="button" class="adm-link" (click)="sortBy('name')">Compte {{ sortIndicator('name') }}</button></th>
+        <th scope="col">Téléphone</th>
+        <th scope="col"><button type="button" class="adm-link" (click)="sortBy('role')">Rôle {{ sortIndicator('role') }}</button></th>
+        <th scope="col">Statut</th>
+        <th scope="col"><button type="button" class="adm-link" (click)="sortBy('createdAt')">Créé le {{ sortIndicator('createdAt') }}</button></th>
+      </tr></thead>
+      <tbody>
+        @for (user of page.items; track user.id) {
+          <tr>
+            <td><span class="adm-who"><button type="button" class="adm-link" (click)="open(user)">{{ user.displayName || 'Sans nom' }}</button><small>{{ user.email || '—' }}</small></span></td>
+            <td data-label="Téléphone">{{ user.phone || '—' }}</td>
+            <td data-label="Rôle"><span class="adm-role">{{ roleLabel(user.role) }}</span></td>
+            <td data-label="Statut"><span [class]="'adm-pill ' + status(user.enabled).css"><span class="adm-pill-icon" aria-hidden="true">{{ status(user.enabled).icon }}</span>{{ status(user.enabled).label }}</span>
+              @if (user.mustChangePassword) { <span class="adm-pill warn"><span class="adm-pill-icon" aria-hidden="true">!</span>Mot de passe provisoire</span> }</td>
+            <td data-label="Créé le">{{ user.createdAt | date:'d MMM y':'':'fr-FR' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    @if (page.totalPages > 1) {
+      <nav class="adm-pages" aria-label="Pagination">
+        <span>Page {{ page.page + 1 }} / {{ page.totalPages }}</span>
+        <div><button type="button" class="adm-btn" [disabled]="page.page === 0" (click)="goTo(page.page - 1)">← Précédent</button>
+          <button type="button" class="adm-btn" [disabled]="page.page + 1 >= page.totalPages" (click)="goTo(page.page + 1)">Suivant →</button></div>
+      </nav>
+    }
+  }
+</section>

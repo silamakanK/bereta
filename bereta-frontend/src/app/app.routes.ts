@@ -4,7 +4,6 @@ import { RegisterComponent } from './auth/register.component';
 import { ForgotPasswordComponent } from './auth/forgot-password.component';
 import { ResetPasswordComponent } from './auth/reset-password.component';
 import { CompleteProfileComponent } from './auth/complete-profile.component';
-import { AdminComponent } from './admin/admin.component';
 import { adminGuard } from './admin/admin.guard';
 import { authGuard, guestGuard } from './auth/auth.guard';
 
@@ -15,7 +14,7 @@ export const routes: Routes = [
   { path: 'inscription', component: RegisterComponent, canActivate: [guestGuard] },
   { path: 'mot-de-passe-oublie', component: ForgotPasswordComponent, canActivate: [guestGuard] },
   { path: 'reinitialiser-mot-de-passe', component: ResetPasswordComponent },
-  { path: 'admin', component: AdminComponent, canActivate: [authGuard, adminGuard] },
+  { path: 'admin', canActivate: [authGuard, adminGuard], loadChildren: () => import('./admin/admin.routes').then((m) => m.ADMIN_ROUTES) },
   { path: 'completer-profil', component: CompleteProfileComponent, canActivate: [authGuard] },
   { path: '**', redirectTo: '' },
 ];

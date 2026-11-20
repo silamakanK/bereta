@@ -27,7 +27,9 @@ public class RateLimiterService {
         FORGOT_PER_IP(5, Duration.ofMinutes(15)),
         FORGOT_PER_IDENTIFIER(3, Duration.ofMinutes(15)),
         // Analyse de documents (lecture IA des photos : coût par appel)
-        IMPORT_ANALYSE_PER_USER(30, Duration.ofHours(1));
+        IMPORT_ANALYSE_PER_USER(30, Duration.ofHours(1)),
+        // Espace administrateur : protège contre l'extraction massive avec un compte compromis
+        ADMIN_PER_USER(120, Duration.ofMinutes(1));
 
         final int capacity;
         final Duration period;

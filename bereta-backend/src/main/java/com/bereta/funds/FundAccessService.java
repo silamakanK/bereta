@@ -170,7 +170,7 @@ public class FundAccessService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Cet accès historique ne peut pas être désactivé ici.");
         }
         membership.deactivate();
-        userAccountRepository.findById(managerId).ifPresent(manager -> adminAudit.record(manager, "TREASURER_REMOVED",
+        userAccountRepository.findById(managerId).ifPresent(manager -> adminAudit.recordEvent(manager, "TREASURER_REMOVED",
                 "LOCAL_FUND", membership.getLocalFund() == null ? null : membership.getLocalFund().getId(),
                 membership.getAssociation(), "Retiré : " + (membership.getUserAccount().getDisplayName() == null
                         ? "Sans nom" : membership.getUserAccount().getDisplayName())

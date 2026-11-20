@@ -7,4 +7,7 @@ import java.util.UUID;
 
 public interface AuthAuditRepository extends JpaRepository<AuthAuditEntity, UUID> {
     List<AuthAuditEntity> findAllByUserAccountIdOrderByCreatedAtAsc(UUID userAccountId);
+
+    /** Dernière connexion réussie (fiche administrateur). */
+    java.util.Optional<AuthAuditEntity> findFirstByUserAccountIdAndEventOrderByCreatedAtDesc(UUID userAccountId, String event);
 }

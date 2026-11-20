@@ -1,0 +1,18 @@
+.back { display: inline-block; margin-bottom: 12px; }
+.adm-head p { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.aud-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.aud-self { margin: 0; color: #4b554b; font-size: 13px; }
+.aud-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.aud-grid h2 { margin: 0 0 10px; font-size: 16px; }
+.aud-grid h2:not(:first-child) { margin-top: 18px; }
+dl { display: grid; gap: 8px; margin: 0; }
+dl div { display: flex; justify-content: space-between; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid #eef2ed; }
+dt { color: #4b554b; font-size: 13px; }
+dd { margin: 0; font-weight: 650; text-align: right; overflow-wrap: anywhere; }
+.aud-line { margin: 0 0 8px; }
+.aud-line small, .aud-none { color: #4b554b; font-size: 13px; }
+.aud-password { margin-bottom: 16px; padding: 16px; border: 2px solid #b45309; border-radius: 14px; background: #fffbeb; }
+.aud-password h2 { margin: 0 0 6px; font-size: 17px; }
+.aud-password p { margin: 0 0 10px; color: #78350f; font-size: 14px; }
+.aud-password code { display: inline-block; margin-bottom: 12px; padding: 8px 14px; border-radius: 10px; background: #fff; font-size: 22px; letter-spacing: .12em; }
+@media (max-width: 760px) { .aud-grid { grid-template-columns: 1fr; } }
